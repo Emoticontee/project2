@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบติดตามแผนงานและครุภัณฑ์</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root { 
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+            --secondary-bg: #f3f4f6;
+            --text-dark: #1f2937;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f0f2f5; 
+            color: var(--text-dark); 
+            font-size: 14px; 
+        }
+        
+        /* --- Login Page --- */
+        #loginPage { 
+            position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: var(--primary-gradient);
+            z-index: 9999; 
+            display: none; 
+            align-items: center; justify-content: center; 
+        }
+        .login-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            padding: 3rem; 
+            border-radius: 24px; 
+            width: 90%; max-width: 420px; 
+            text-align: center; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+            animation: fadeIn 0.6s ease-out; 
+        }
+        .login-icon {
+            width: 80px; height: 80px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white; font-size: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+        }
+        .btn-login-custom {
+            background: var(--primary-gradient);
+            border: none; color: white;
+            padding: 12px; font-weight: 600; letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .btn-login-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+            background: linear-gradient(to right, #4338ca, #0891b2);
+            color: white;
+        }
+        .form-floating > label { font-family: 'Sarabun', sans-serif; }
+
+        /* --- Main Content --- */
+        #mainContent { display: none; }
+        
+        /* Navbar */
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 0.8rem 1.5rem;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 20px;
+        }
+        .user-profile-badge {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Modern Tabs */
+        .nav-tabs { 
+            border: none; 
+            margin-bottom: 20px; 
+            gap: 8px;
+            padding: 0 10px;
+        }
+        .nav-link { 
+            color: #6b7280; 
+            font-weight: 600; 
+            border: none; 
+            padding: 10px 18px; 
+            border-radius: 10px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            font-size: 0.95rem;
+        }
+        .nav-link:hover { 
+            color: #4f46e5; 
+            background: #eef2ff;
+            transform: translateY(-2px);
+        }
+        .nav-link.active { 
+            background: var(--primary-gradient);
+            color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+        }
+        .tab-icon { margin-right: 8px; }
+
+        /* Modern Card Containers */
+        .page-section { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #4f46e5;
+        }
+
+        .search-container {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        /* Modern Table */
+        .table-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            border: none;
+        }
+        .table-custom {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+        .table-custom thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            padding: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .table-custom tbody tr {
+            transition: all 0.2s;
+        }
+        .table-custom tbody tr:hover {
+            background-color: #f1f5f9;
+            transform: scale(1.002);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+        .table-custom tbody td {
+            padding: 12px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Buttons */
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            transition: 0.3s;
+        }
+        .btn-gradient:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-action { width: 30px; height: 30px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border: none; transition: 0.2s; font-size: 0.8rem; }
+        .btn-edit { background-color: #fef3c7; color: #d97706; }
+        .btn-edit:hover { background-color: #fde68a; transform: rotate(15deg); }
+        .btn-delete { background-color: #fee2e2; color: #dc2626; }
+        .btn-delete:hover { background-color: #fecaca; transform: scale(1.1); }
+
+        /* Status Badges */
+        .status-badge { padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .status-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .status-pending { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .status-wait { background-color: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+
+        /* Modal Beautification */
+        .modal-content { border-radius: 16px; border: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .modal-header { background: var(--primary-gradient); color: white; border-radius: 16px 16px 0 0; padding: 15px 25px; }
+        .modal-body { padding: 20px 25px; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #e5e7eb; padding: 6px 10px; font-size: 0.9rem; } /* Smaller inputs */
+        .form-control:focus, .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        /* New Admin Form Style (Compact) */
+        .form-group-title { 
+            font-size: 0.95rem; font-weight: 700; color: #4338ca; 
+            margin-top: 15px; margin-bottom: 8px; 
+            border-bottom: 1px solid #e0e7ff; padding-bottom: 2px; 
+            background: #f8fafc; padding: 5px 10px; border-radius: 4px;
+        }
+        .form-group-title:first-child { margin-top: 0; }
+        .compact-label { font-size: 0.8rem; font-weight: 600; color: #6b7280; margin-bottom: 1px; }
+        .card-form { background: #f8fafc; border-radius: 12px; padding: 15px; height: 100%; border: 1px solid #f1f5f9; }
+
+        /* Checkbox Styling (Adjusted size to 1.4) */
+        .form-check {
+            display: flex;
+            align-items: center;
+            min-height: 38px; /* Match input height */
+            padding-left: 0;
+            margin-top: 5px;
+            background: #f9fafb;
+            padding: 5px 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .form-check-input { 
+            transform: scale(1.4); 
+            margin-right: 12px !important;
+            margin-left: 0 !important;
+            cursor: pointer;
+            border-color: #cbd5e1;
+            flex-shrink: 0;
+        }
+        .form-check-input:checked {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+        .form-check-label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #374151;
+            padding-top: 2px;
+        }
+
+        /* Timeline (Deprecated in modal, but kept for legacy) */
+        .timeline-item { position: relative; padding-left: 50px; padding-bottom: 30px; }
+        .timeline-line { position: absolute; left: 16px; top: 10px; bottom: 0; width: 3px; background: #e5e7eb; border-radius: 3px; }
+        .timeline-item:last-child .timeline-line { display: none; }
+        .timeline-marker { position: absolute; left: 0; top: 0; width: 35px; height: 35px; border-radius: 50%; background: white; border: 3px solid #e5e7eb; display: flex; align-items: center; justify-content: center; z-index: 1; font-size: 14px; color: #9ca3af; transition: 0.3s; }
+        .timeline-item.active .timeline-marker { background: #10b981; border-color: #10b981; color: white; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); }
+        .timeline-content h6 { font-weight: 700; margin-bottom: 5px; }
+
+        /* Flatpickr Customization - Restored Standard Width */
+        .flatpickr-calendar { 
+            font-family: 'Sarabun', sans-serif; 
+            z-index: 20000 !important; 
+            width: 360px !important; /* Fix width back to 360px */
+            border-radius: 12px; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); 
+            /* Remove fixed width to let it auto-size or default */
+        }
+        .flatpickr-days { width: 360px !important; }
+        .dayContainer { width: 360px !important; min-width: 360px !important; max-width: 360px !important; }
+        .flatpickr-current-month .numInputWrapper { width: 70px !important; }
+        .flatpickr-day.selected { background: #4f46e5 !important; border-color: #4f46e5 !important; }
+
+        /* A4 Report Style */
+        .a4-paper { background: white; width: 210mm; min-height: 297mm; margin: 0 auto; padding: 15mm; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; color: black; box-sizing: border-box; transition: width 0.3s; }
+        .a4-paper.landscape { width: 297mm; min-height: 210mm; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 5px; }
+        .report-table th, .report-table td { border: 1px solid #000; padding: 8px; vertical-align: middle; }
+        .report-table thead th { background-color: #ffffff; text-align: center; font-weight: bold; border-bottom: 2px solid #000; }
+        .dept-title-row { font-weight: bold; font-size: 15px; background-color: #ffffff; border-top: 2px solid #000; }
+        .dept-total-row { background-color: #fff9db; font-weight: bold; border-top: 2px solid #000; }
+        .repeated-header th { background-color: #f8f9fa; border-bottom: 2px solid #000; font-weight: bold; font-size: 13px; }
+        
+        .swal2-container { z-index: 20000 !important; }
+        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
+        .clickable-row:hover { background-color: #e0e7ff !important; }
+        
+        /* Disabled Input Style in Modal - More Obvious */
+        .form-control:disabled, .form-select:disabled, .form-check-input:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            border: 1px solid #dee2e6;
+            opacity: 0.8;
+        }
+        
+        /* Highlight Editable Fields */
+        .edit-input:not(:disabled) {
+            background-color: #fff;
+            border: 2px solid #10b981; /* Green border for editable */
+            box-shadow: 0 0 5px rgba(16, 185, 129, 0.2);
+        }
+        
+        @media print { .header-bar, .nav-tabs, #loginPage, .navbar, .navbar-custom { display: none !important; } .a4-paper { box-shadow: none; margin: 0; width: 100%; } }
+    </style>
+</head>
+<body>
+
+    <!-- Login Page -->
+    <div id="loginPage">
+        <div class="login-card">
+            <div class="login-icon">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <h3 class="fw-bold mb-1" style="color: #4338ca;">ยินดีต้อนรับ</h3>
+            <p class="text-muted mb-4 small">ระบบติดตามแผนงานและครุภัณฑ์</p>
+            
+            <div id="loginFormContainer">
+                <div class="form-floating mb-3 text-start">
+                    <input type="text" class="form-control rounded-4" id="loginUser" placeholder="Username" required autocomplete="new-password">
+                    <label for="loginUser"><i class="fas fa-user me-2 text-muted"></i>ชื่อผู้ใช้งาน</label>
+                </div>
+                <div class="form-floating mb-4 text-start">
+                    <input type="password" class="form-control rounded-4" id="loginPass" placeholder="Password" required autocomplete="new-password">
+                    <label for="loginPass"><i class="fas fa-lock me-2 text-muted"></i>รหัสผ่าน</label>
+                </div>
+                <button type="button" id="btnLogin" class="btn btn-login-custom w-100 rounded-pill shadow-sm py-3" onclick="handleLogin()">
+                    <i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
+                </button>
+            </div>
+            
+            <div class="mt-4 text-muted small">
+                &copy; 2025 Plan Tracking System
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainContent">
+        <!-- Modern Navbar -->
+        <nav class="navbar navbar-custom d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px;">
+                    <i class="fas fa-chart-line fs-5"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold m-0" style="color: #4338ca;">ระบบติดตามงาน</h5>
+                    <small class="text-muted">Dashboard Management</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-profile-badge shadow-sm">
+                    <i class="fas fa-user-circle fs-5"></i>
+                    <span id="displayUserName">User</span>
+                </div>
+                <button onclick="checkDataStatus()" class="btn btn-light text-muted rounded-circle shadow-sm" style="width: 40px; height: 40px;" title="Check Status"><i class="fas fa-bug"></i></button>
+                <button onclick="handleLogout()" class="btn btn-outline-danger rounded-pill px-4 shadow-sm fw-bold">ออก</button>
+            </div>
+        </nav>
+
+        <!-- Modern Tabs -->
+        <div class="px-4">
+            <ul class="nav nav-tabs justify-content-start" id="mainTabs">
+                <li class="nav-item"><button class="nav-link active" onclick="switchTab('pending')"><i class="fas fa-clock tab-icon"></i>รายการรอดำเนินการ</button></li>
+                <li class="nav-item"><button class="nav-link" onclick="switchTab('plan')"><i class="fas fa-clipboard-list tab-icon"></i>แผนปฏิบัติการ</button></li>
+                <li class="nav-item"><button class="nav-link" onclick="switchTab('buy')"><i class="fas fa-cubes tab-icon"></i>เบิกจ่ายครุภัณฑ์</button></li>
+                <li class="nav-item"><button class="nav-link" onclick="switchTab('report')"><i class="fas fa-chart-pie tab-icon"></i>รายงานสรุปผล</button></li>
+                <li class="nav-item" id="nav-admin" style="display:none;"><button class="nav-link" onclick="switchTab('admin')"><i class="fas fa-users-cog tab-icon"></i>จัดการผู้ใช้งาน</button></li>
+            </ul>
+        </div>
+
+        <!-- Content Area -->
+        <div id="contentArea" class="px-4 pb-5 pt-2">
+
+            <!-- Search / List Page (Shared) -->
+            <div id="searchPage" class="page-section" style="display:block;"> 
+                <div class="header-bar">
+                    <div>
+                        <h4 class="fw-bold m-0" style="color: #1e293b;" id="pageTitle">รายการรอดำเนินการ</h4>
+                        <small class="text-muted">จัดการและติดตามสถานะโครงการ</small>
+                    </div>
+                    <button id="btnAddData" class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4 py-2" onclick="goToAddPage()" style="display:none;"><i class="fas fa-plus me-2"></i>เพิ่มข้อมูล</button>
+                </div>
+                
+                <div class="search-container">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label compact-label ms-1">ปีงบประมาณ</label>
+                            <input type="text" id="searchYear" class="form-control form-control-sm" placeholder="เช่น 68">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label compact-label ms-1">คำค้นหา</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="searchKeyword" class="form-control border-start-0" placeholder="ชื่อโครงการ, รหัส, หรือหน่วยงาน...">
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button onclick="triggerSearch()" id="btnSearch" class="btn btn-primary btn-sm w-100 fw-bold py-2 rounded-3 shadow-sm">ค้นหา</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pendingAlert" class="alert alert-warning border-0 shadow-sm rounded-3 d-flex align-items-center p-2 mb-3" style="display:block; background-color: #fffbeb; border-left: 5px solid #f59e0b;">
+                    <i class="fas fa-exclamation-triangle me-3 fs-5 text-warning"></i> 
+                    <div class="small">
+                        <strong>แจ้งเตือน:</strong> แสดงเฉพาะรายการที่ <span class="text-danger fw-bold">ยังไม่เสร็จสิ้น</span>
+                    </div>
+                </div>
+
+                <div id="resultArea">
+                    <div class="card table-card">
+                        <div class="table-responsive">
+                            <table class="table table-custom mb-0 align-middle">
+                                <thead><tr><th style="width:80px;">ปี</th><th id="th-id-col" style="width:120px;">รหัส</th><th>ชื่อรายการ</th><th style="width:200px;">หน่วยงาน</th><th class="text-center" style="width:150px;">สถานะ</th><th class="text-center" style="width:150px;">จัดการ</th></tr></thead>
+                                <tbody id="tableBody"><tr><td colspan="6" class="text-center py-5 text-muted">กำลังโหลดข้อมูล...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADD PAGE -->
+            <div id="addPage" class="page-section" style="display:none;">
+                <div class="header-bar"><div><button onclick="cancelAdd()" class="btn btn-light rounded-circle shadow-sm me-3"><i class="fas fa-arrow-left"></i></button><span class="fw-bold fs-5 text-success">เพิ่มข้อมูลใหม่</span></div></div>
+                <div class="add-form-wrapper pt-3">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2 text-primary"><i class="fas fa-edit me-2"></i>แบบฟอร์มบันทึกข้อมูล</h5>
+                    
+                    <!-- Container for Admin Plan Form (New Compact) -->
+                    <div id="adminPlanFormContainer" style="display:none;"></div>
+                    
+                    <!-- Container for Admin Buy Form -->
+                    <div id="adminBuyFormContainer" style="display:none;"></div>
+
+                    <!-- Container for Normal Add Form (Existing) -->
+                    <div id="normalAddFormContainer">
+                        <form id="addForm">
+                            <div class="row g-3">
+                                <div class="col-md-4"><label class="form-label compact-label">ปีงบประมาณ</label><input type="text" name="input_year" class="form-control form-control-sm role-common" required></div>
+                                <div class="col-md-4"><label class="form-label compact-label">รหัสแผน</label><input type="text" name="input_code" class="form-control form-control-sm role-common" required></div>
+                                <div class="col-md-4"><label class="form-label compact-label">หน่วยงาน</label><input type="text" name="input_dept" class="form-control form-control-sm role-common"></div>
+                                <div class="col-md-12"><label class="form-label compact-label">ยุทธศาสตร์</label><input type="text" name="input_strat" class="form-control form-control-sm role-common"></div>
+                                <div class="col-md-6"><label class="form-label compact-label">เริ่มโครงการ</label><input type="text" name="input_start" class="form-control form-control-sm text-center date-picker-thai role-plan" placeholder="วว/ดด/ปปปป"></div>
+                                <div class="col-md-6"><label class="form-label compact-label">สิ้นสุดโครงการ</label><input type="text" name="input_end" class="form-control form-control-sm text-center date-picker-thai role-plan" placeholder="วว/ดด/ปปปป"></div>
+                                <div class="col-12"><label class="form-label compact-label">ชื่อโครงการ</label><input type="text" name="input_name" class="form-control form-control-sm role-common" required></div>
+                                
+                                <div class="col-12"><hr class="my-1 text-muted"></div>
+                                <div class="col-md-4"><label class="form-label compact-label text-primary">งบ (แผน)</label><input type="number" name="input_budget_plan" class="form-control form-control-sm role-finance"></div>
+                                <div class="col-md-4"><label class="form-label compact-label text-primary">งบ (ผอ.)</label><input type="number" name="input_budget_approve" class="form-control form-control-sm role-finance"></div>
+                                <div class="col-md-4"><label class="form-label compact-label text-primary">งบ (โครงการ)</label><input type="number" name="input_budget_project" class="form-control form-control-sm role-finance"></div>
+                                <div class="col-md-6"><label class="form-label compact-label text-primary">หมวดเงิน</label><select class="form-select form-select-sm role-finance" name="input_cat"><option value="งบดำเนินงาน">งบดำเนินงาน</option><option value="งบลงทุน">งบลงทุน</option><option value="งบอุดหนุน">งบอุดหนุน</option><option value="วัสดุ">วัสดุ</option><option value="ครุภัณฑ์">ครุภัณฑ์</option></select></div>
+                                <div class="col-md-6"><label class="form-label compact-label text-primary">ชนิด</label><input type="text" name="input_type" class="form-control form-control-sm role-finance" value="ทั่วไป"></div>
+                                
+                                <div class="col-12 mt-4 text-center">
+                                    <button type="button" class="btn btn-light btn-sm px-4 me-3 rounded-pill shadow-sm" onclick="cancelAdd()">ยกเลิก</button>
+                                    <button type="button" class="btn btn-gradient btn-sm px-5 fw-bold rounded-pill shadow-lg" onclick="submitNewData()">บันทึกข้อมูล</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPORT PAGE -->
+            <div id="reportPage" class="page-section report-font" style="display:none;">
+                <div class="header-bar d-print-none">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="input-group shadow-sm" style="width: 450px;"> 
+                            <span class="input-group-text bg-white border-end-0"><i class="far fa-calendar-alt text-primary"></i></span>
+                            <input type="text" id="reportStartDate" class="form-control border-start-0 text-center date-picker-thai" placeholder="เริ่มต้น">
+                            <span class="input-group-text bg-white border-start-0 border-end-0 text-muted">ถึง</span>
+                            <input type="text" id="reportEndDate" class="form-control border-start-0 text-center date-picker-thai" placeholder="สิ้นสุด">
+                        </div>
+                        <button onclick="loadReportData(true)" class="btn btn-primary fw-bold px-3 rounded-pill shadow-sm"><i class="fas fa-search me-1"></i>ค้นหาข้อมูล</button>
+                        
+                        <select id="reportTypeSelector" class="form-select shadow-sm" style="width:160px; display:block;"> 
+                            <option value="plan">แผนปฏิบัติการ</option>
+                            <option value="buy">เบิกจ่ายครุภัณฑ์</option>
+                        </select>
+                        
+                        <div class="btn-group shadow-sm"><input type="radio" class="btn-check" name="paperOri" id="oriPortrait" checked onchange="setOrientation('portrait')"><label class="btn btn-outline-secondary" for="oriPortrait">แนวตั้ง</label><input type="radio" class="btn-check" name="paperOri" id="oriLandscape" onchange="setOrientation('landscape')"><label class="btn btn-outline-secondary" for="oriLandscape">แนวนอน</label></div>
+                    </div>
+                    <div>
+                        <button onclick="window.print()" class="btn btn-outline-dark px-4 rounded-pill shadow-sm" id="btnPrint" disabled><i class="fas fa-print me-2"></i>พิมพ์รายงาน</button>
+                    </div>
+                </div>
+                <div id="reportContent" style="display:none;">
+                    <div id="paperArea" class="a4-paper">
+                        <div class="d-flex justify-content-between mb-4 border-bottom pb-2"><div><h5 class="fw-bold m-0">รายงานสรุปผลการดำเนินงาน</h5><div class="text-muted small">ประเภท: <span id="reportPlanId">แผนปฏิบัติการ</span></div></div><div class="text-end"><div class="fw-bold text-danger" id="displayReportYear"></div><small class="text-muted">ข้อมูล ณ วันที่ <span id="currentDate"></span></small></div></div>
+                        
+                        <!-- Chart & Summary Table -->
+                        <div class="chart-box rounded-3">
+                            <div class="row">
+                                <div class="col-7">
+                                    <h6 class="text-center fw-bold mb-3">สรุปภาพรวมโครงการ</h6>
+                                    <table class="report-table text-center w-100">
+                                        <tbody>
+                                            <tr style="border-bottom: 2px solid black;">
+                                                <td style="width: 40%;">จำนวนทั้งหมด</td>
+                                                <td style="width: 30%;" id="sumTotal" class="fw-bold">0 โครงการ</td>
+                                                <td style="width: 30%;">ร้อยละ</td>
+                                            </tr>
+                                            <tr>
+                                                <td>ติดตามไตรมาส</td>
+                                                <td id="sumTrack">0 โครงการ</td>
+                                                <td>100.00</td>
+                                            </tr>
+                                            <!-- onclick events fixed -->
+                                            <tr onclick="showCategoryList('done')" class="clickable-row">
+                                                <td>ดำเนินการเสร็จ</td>
+                                                <td id="sumDone">0 โครงการ</td>
+                                                <td id="percDone">0.00</td>
+                                            </tr>
+                                            <tr onclick="showCategoryList('progress')" class="clickable-row">
+                                                <td>กำลังดำเนินการ</td>
+                                                <td id="sumProgress">0 โครงการ</td>
+                                                <td id="percProgress">0.00</td>
+                                            </tr>
+                                            <tr onclick="showCategoryList('not')" class="clickable-row">
+                                                <td>ยังไม่ได้ดำเนินการ</td>
+                                                <td id="sumNotStart">0 โครงการ</td>
+                                                <td id="percNotStart">0.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="mt-3 text-center p-3 bg-light rounded border">
+                                        <div class="small text-muted mb-1">ความก้าวหน้า (เสร็จ + กำลังทำ)</div>
+                                        <h2 class="fw-bold text-success m-0" id="sumActivePercent">0.00%</h2>
+                                    </div>
+                                </div>
+                                <div class="col-5 d-flex flex-column align-items-center justify-content-center border-start">
+                                    <h6 class="fw-bold mb-3">ผลการดำเนินการ</h6>
+                                    <div style="width: 250px; height: 250px; position: relative;">
+                                        <canvas id="summaryChart" width="250" height="250"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-2 fw-bold mt-4" style="font-size: 16px;">สรุปยอดรวมงบประมาณ</div><table class="report-table text-center w-100"><thead><tr><th rowspan="2" style="width:10%;">หมวดเงิน<br>(อุดหนุน)</th><th rowspan="2" style="width:10%;">ID PLAN</th><th rowspan="2" style="width:30%;">ชื่อโครงการ</th><th colspan="3">ดำเนินการโครงการ</th><th colspan="4">งบประมาณ</th></tr><tr><th>ยังไม่ได้<br>ดำเนินการ</th><th>กำลัง<br>ดำเนินการ</th><th>เสร็จสิ้น</th><th>ในแผน</th><th>ใน<br>โครงการ</th><th>ใช้จริง</th><th>คงเหลือ</th></tr></thead><tbody></tbody><tfoot id="summaryTableFooter" class="fw-bold bg-light"></tfoot></table>
+                        <div class="mb-2 mt-4 fw-bold" style="font-size: 16px;">รายละเอียดโครงการแยกตามหน่วยงาน</div><table class="report-table text-center w-100"><tbody id="detailedTableBody"></tbody></table>
+                        <div class="text-center mt-5 pt-5 text-muted small">เอกสารนี้สร้างจากระบบอัตโนมัติ</div>
+                    </div>
+                </div>
+                <!-- แสดงข้อความเมื่อยังไม่ได้ค้นหา -->
+                <div id="reportPlaceholder" class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">กรุณาเลือกช่วงวันที่และกดปุ่ม "ค้นหาข้อมูล"</h5>
+                </div>
+            </div>
+
+            <!-- ADMIN PAGE -->
+            <div id="adminPage" class="page-section" style="display:none;">
+                <div class="header-bar">
+                    <div>
+                        <h4 class="fw-bold m-0 text-primary"><i class="fas fa-users-cog me-2"></i>จัดการผู้ใช้งานระบบ</h4>
+                        <small class="text-muted">เพิ่ม ลบ แก้ไขสิทธิ์การเข้าใช้งาน</small>
+                    </div>
+                    <button class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4" onclick="openAdminModal('add')"><i class="fas fa-user-plus me-2"></i>เพิ่มผู้ใช้งาน</button>
+                </div>
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0 align-middle">
+                            <thead><tr><th style="width:60px;">#</th><th>Username</th><th>ชื่อ-นามสกุล</th><th class="text-center">สิทธิ์การใช้งาน (Role)</th><th class="text-center" style="width:150px;">จัดการ</th></tr></thead>
+                            <tbody id="adminTableBody"><tr><td colspan="5" class="text-center py-5 text-muted">กำลังโหลดข้อมูลผู้ใช้...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div> 
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="detailModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header"><h5 class="modal-title fw-bold" id="modalProjectName"></h5><div class="ms-auto"><button id="btnToggleEdit" class="btn btn-sm btn-outline-warning shadow-sm me-2" onclick="toggleEditMode()"><i class="fas fa-edit me-1"></i> แก้ไข</button><button id="btnSaveEdit" class="btn btn-sm btn-success shadow-sm me-2 d-none" onclick="saveChanges()"><i class="fas fa-save me-1"></i> บันทึก</button><button id="btnCancelEdit" class="btn btn-sm btn-light shadow-sm me-2 d-none" onclick="cancelEdit()">ยกเลิก</button></div><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-4"><div id="editFormContainer"></div></div></div></div></div>
+    <div class="modal fade" id="categoryModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content border-0 shadow-lg"><div class="modal-header text-white"><h5 class="modal-title fw-bold"><i class="fas fa-list-ul me-2"></i> รายการโครงการ: <span id="catModalTitle"></span></h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0"><div class="table-responsive"><table class="table table-striped mb-0 table-hover align-middle"><thead><tr><th>ID</th><th>โครงการ</th><th class="text-center">สถานะ</th></tr></thead><tbody id="catModalBody"></tbody></table></div></div></div></div></div>
+    
+    <!-- User Management Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="userModalTitle"><i class="fas fa-user-cog me-2"></i>เพิ่มผู้ใช้งาน</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="userEditRow">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Username</label>
+                            <input type="text" class="form-control" id="formUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">Password</label>
+                            <input type="password" class="form-control" id="formPassword" placeholder="เว้นว่างหากไม่เปลี่ยนรหัส">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">ชื่อ-นามสกุล</label>
+                            <input type="text" class="form-control" id="formName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted small">สิทธิ์การใช้งาน (Role)</label>
+                            <select class="form-select" id="formRole">
+                                <option value="admin">Admin (ผู้ดูแลระบบสูงสุด)</option>
+                                <option value="plan">Plan (งานแผน)</option>
+                                <option value="finance">Finance (การเงิน)</option>
+                                <option value="supply">Supply (พัสดุ)</option>
+                                <option value="user">User (ผู้ใช้ทั่วไป)</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveAdminUser()">บันทึกข้อมูล</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwVjGlI5xib-YaNLkU236Bg29vKLHQbwU2vrisOfRwkoV3VzRuawaCd4K3KRnoVpEtBJA/exec"; 
+
+        let allData = [], currentDisplayData = [], currentItemIndex = -1, currentSystemType = '', chartInstance = null, currentUserRole = '';
+        let currentTabMode = 'pending';
+        let reportDataCache = [];
+        let adminUsersCache = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            flatpickr(".date-picker-thai", {
+                locale: "th", dateFormat: "d F Y", disableMobile: "true",
+                onReady: (d, s, i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                onYearChange: (d, s, i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                onMonthChange: (d, s, i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                onOpen: (d, s, i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                parseDate: (d) => parseThaiFullDate(d),
+                formatDate: (d, f, l) => flatpickr.formatDate(d, f, l).replace(/\d{4}/, y => parseInt(y) + 543)
+            });
+            
+            if (typeof ChartDataLabels !== 'undefined' && Chart.plugins) {
+                if (Chart.version && parseInt(Chart.version.split('.')[0]) >= 3) {
+                     Chart.register(ChartDataLabels);
+                }
+            }
+        });
+
+        // --- Auth Logic Fixed ---
+        window.onload = function() {
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            const loginInputs = document.querySelectorAll('#loginPage input');
+            loginInputs.forEach(input => { input.addEventListener('keypress', function (e) { if (e.key === 'Enter') handleLogin(); }); });
+
+            const storedUser = localStorage.getItem('appUser'); 
+            const storedRole = localStorage.getItem('appRole');
+            
+            if(storedUser && storedRole) {
+                currentUserRole = storedRole; 
+                document.getElementById('loginPage').style.display = 'none'; 
+                document.getElementById('mainContent').style.display = 'block'; 
+                document.getElementById('displayUserName').innerText = storedUser;
+                if(currentUserRole === 'admin' || currentUserRole === 'plan' || currentUserRole === 'finance') document.getElementById('btnAddData').style.display = 'block';
+                if(currentUserRole === 'admin') document.getElementById('nav-admin').style.display = 'block';
+                const lastTab = localStorage.getItem('currentTab') || 'pending';
+                switchTab(lastTab);
+            } else {
+                document.getElementById('loginPage').style.display = 'flex'; 
+            }
+        };
+
+        function handleLogin() {
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value.trim();
+            if(!u || !p) { Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning'); return; }
+            if(p.length < 4) { Swal.fire('รหัสผ่านไม่ถูกต้อง', 'รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร', 'warning'); return; }
+
+            const btn = document.getElementById('btnLogin'); 
+            const originalText = btn.innerHTML; 
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังตรวจสอบ...'; btn.disabled = true;
+            
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'login', username: u, password: p }) }).then(res=>res.json()).then(data => {
+                if(data.status === 'success') { 
+                    localStorage.setItem('appUser', data.name); localStorage.setItem('appRole', data.role); 
+                    const loginPage = document.getElementById('loginPage');
+                    loginPage.style.opacity = '0';
+                    loginPage.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => { loginPage.style.display = 'none'; document.getElementById('mainContent').style.display = 'block'; }, 500);
+                    document.getElementById('displayUserName').innerText = data.name; currentUserRole = data.role; 
+                    if(currentUserRole === 'admin') { document.getElementById('btnAddData').style.display = 'block'; document.getElementById('nav-admin').style.display = 'block'; }
+                    switchTab('pending'); 
+                } else { Swal.fire('เข้าสู่ระบบไม่สำเร็จ', data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error'); btn.innerHTML = originalText; btn.disabled = false; }
+            }).catch(e => { Swal.fire('Error', 'ไม่สามารถเชื่อมต่อกับ Server ได้', 'error'); btn.disabled = false; btn.innerHTML = originalText; });
+        }
+        function handleLogout() { localStorage.clear(); location.reload(); }
+
+        function switchTab(tabName) {
+            currentTabMode = tabName;
+            localStorage.setItem('currentTab', tabName);
+            const navLinks = document.querySelectorAll('.nav-link'); 
+            navLinks.forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+            document.getElementById('searchYear').value = '';
+            document.getElementById('searchKeyword').value = '';
+            document.getElementById('tableBody').innerHTML = '';
+
+            if(tabName === 'pending') { if(navLinks[0]) navLinks[0].classList.add('active'); document.getElementById('searchPage').style.display = 'block'; document.getElementById('pageTitle').innerText = 'รายการรอดำเนินการ'; document.getElementById('pendingAlert').style.display = 'block'; document.getElementById('btnAddData').style.display = 'none'; loadDataList('plan', true); } 
+            else if(tabName === 'plan') { if(navLinks[1]) navLinks[1].classList.add('active'); document.getElementById('searchPage').style.display = 'block'; document.getElementById('pageTitle').innerText = 'แผนปฏิบัติการ (ทั้งหมด)'; document.getElementById('pendingAlert').style.display = 'none'; if(currentUserRole !== 'supply') document.getElementById('btnAddData').style.display = 'block'; loadDataList('plan', false); } 
+            else if(tabName === 'buy') { if(navLinks[2]) navLinks[2].classList.add('active'); document.getElementById('searchPage').style.display = 'block'; document.getElementById('pageTitle').innerText = 'ครุภัณฑ์ (ทั้งหมด)'; document.getElementById('pendingAlert').style.display = 'none'; if(currentUserRole !== 'finance') document.getElementById('btnAddData').style.display = 'block'; loadDataList('buy', false); } 
+            else if(tabName === 'report') {
+                if(navLinks[3]) navLinks[3].classList.add('active');
+                document.getElementById('reportPage').style.display = 'block';
+                document.getElementById('reportContent').style.display = 'none';
+                document.getElementById('reportPlaceholder').style.display = 'block';
+            } else if(tabName === 'admin') { if(navLinks[4]) navLinks[4].classList.add('active'); document.getElementById('adminPage').style.display = 'block'; loadAdminList(); }
+        }
+        
+        function triggerSearch() { loadDataList((currentTabMode === 'buy') ? 'buy' : 'plan', (currentTabMode === 'pending')); }
+
+        async function loadDataList(type, isPending) {
+            currentSystemType = type;
+            const year = document.getElementById('searchYear').value.trim();
+            const kw = document.getElementById('searchKeyword').value.trim().toLowerCase();
+            const tbody = document.getElementById('tableBody');
+            
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-primary me-2"></div>กำลังโหลดข้อมูลจาก Google Sheet...</td></tr>';
+            
+            try {
+                const res = await fetch(`${API_URL}?action=get_${type}`);
+                const json = await res.json();
+                
+                let data = [];
+                if (Array.isArray(json)) {
+                    data = json;
+                } else if (json && json.data && Array.isArray(json.data)) {
+                    data = json.data;
+                } else {
+                    console.error("Unknown Data Format:", json);
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-danger">รูปแบบข้อมูลไม่ถูกต้อง</td></tr>';
+                    return;
+                }
+                
+                if (data.length === 0) { 
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">ไม่พบข้อมูลในระบบ</td></tr>'; 
+                    return; 
+                }
+
+                allData = data;
+                
+                const filtered = data.filter(item => {
+                    if(isPending) { 
+                        const st = calculateStatus(item, type).text; 
+                        if(st.includes('เสร็จ') || st.includes('อนุมัติ')) return false; 
+                    }
+                    return true;
+                });
+                
+                renderTable(filtered, type);
+                document.getElementById('th-id-col').innerText = (type==='buy')?'เลขที่/รหัส':'รหัสแผน';
+
+            } catch (e) { 
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-5">โหลดข้อมูลไม่สำเร็จ</td></tr>'; 
+            }
+        }
+
+        function getKey(item, keys) {
+            for(let key of keys) {
+                if (item[key] !== undefined) return item[key];
+            }
+            const allKeys = Object.keys(item);
+            for(let searchKey of keys) {
+                const found = allKeys.find(k => k.replace(/\s/g, '') === searchKey.replace(/\s/g, ''));
+                if(found) return item[found];
+            }
+            for(let searchKey of keys) {
+                const found = allKeys.find(k => k.includes(searchKey));
+                if(found) return item[found];
+            }
+            return '-';
+        }
+
+        // --- NEW: Helper to check permission for a specific row ---
+        function canUserEdit(item) {
+            const role = localStorage.getItem('appRole') ? localStorage.getItem('appRole').toLowerCase() : '';
+            const user = localStorage.getItem('appUser');
+            const itemDept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน', 'Dept']);
+            
+            if (role === 'admin') return true;
+            if (['plan', 'finance', 'supply'].includes(role)) return true; 
+            if (role === 'user') {
+                if (itemDept && user && itemDept.trim() === user.trim()) return true;
+            }
+            return false;
+        }
+
+        function renderTable(data, type) {
+            currentDisplayData = data;
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            
+            if (data.length === 0) { 
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">ไม่พบรายการ</td></tr>'; 
+                return; 
+            }
+
+            data.forEach((item, index) => {
+                const name = getKey(item, ['ชื่อโครงการ', 'รายการ', 'ProjectName']);
+                const code = getKey(item, ['รหัสแผน', 'เลขที่', 'รหัส', 'ID']);
+                const dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน', 'Dept']);
+                const year = getKey(item, ['ปีงบประมาณ', 'Year']);
+                
+                const statusInfo = calculateStatus(item, type);
+                
+                // --- NEW: Action Button Logic ---
+                let actionBtn = '';
+                if (canUserEdit(item)) {
+                     // Show "Receive/Record" button for authorized users
+                     actionBtn = `<button class="btn btn-primary btn-sm shadow-sm fw-bold rounded-pill px-3" onclick="handleEditClick(event, ${index})"><i class="fas fa-file-signature me-1"></i> รับเรื่อง</button>`;
+                } else {
+                     // Show "View" button for others
+                     actionBtn = `<button class="btn btn-light btn-sm shadow-sm text-muted rounded-pill px-3" onclick="handleRowClick(${index})"><i class="fas fa-eye me-1"></i> ดูข้อมูล</button>`;
+                }
+                
+                tbody.innerHTML += `
+                    <tr onclick="handleRowClick(${index})">
+                        <td class="text-center"><span class="badge bg-light text-secondary border">${year}</span></td>
+                        <td class="text-primary fw-bold">${code}</td>
+                        <td>
+                            <div class="text-dark fw-bold" style="font-size: 0.95rem;">${name}</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px; min-width: 35px;">
+                                    <i class="fas fa-user-friends"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.85rem;">${dept}</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">กลุ่มงาน</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            ${statusInfo.badge}
+                            <div class="small text-primary fw-bold mt-1" style="font-size: 0.75rem;">${statusInfo.currentDept}</div>
+                        </td>
+                        <td class="text-center">${actionBtn}</td>
+                    </tr>`;
+            });
+        }
+
+        function checkDataStatus() { alert(`ข้อมูลในระบบ: ${allData.length} รายการ\nโหมด: ${currentTabMode}`); }
+        function handleRowClick(index) { openDetail(index, 'view'); }
+        
+        // --- NEW: Handle Edit Click directly opens edit mode ---
+        function handleEditClick(event, index) { 
+            event.stopPropagation(); 
+            openDetail(index, 'edit'); 
+        }
+
+        function openDetail(index, mode) {
+            currentItemIndex = index; const item = currentDisplayData[index]; if(!item) return;
+            document.getElementById('modalProjectName').innerText = getKey(item, ['ชื่อโครงการ', 'รายการ']) || 'ไม่มีชื่อ';
+            
+            // --- Permission Check ---
+            let canEdit = canUserEdit(item);
+
+            const btnEdit = document.getElementById('btnToggleEdit');
+            document.getElementById('btnToggleEdit').classList.remove('d-none'); 
+            document.getElementById('btnSaveEdit').classList.add('d-none'); 
+            document.getElementById('btnCancelEdit').classList.add('d-none');
+            
+            if (!canEdit) {
+                 btnEdit.style.display = 'none';
+            } else {
+                 btnEdit.style.display = 'inline-block';
+            }
+
+            renderDetailForm(item, currentSystemType, false);
+            new bootstrap.Modal(document.getElementById('detailModal')).show(); 
+            
+            // Auto toggle edit mode if requested and allowed
+            if(mode === 'edit' && canEdit) {
+                setTimeout(() => toggleEditMode(), 200); 
+            }
+        }
+
+        function toggleEditMode() { 
+             document.getElementById('btnToggleEdit').classList.add('d-none'); document.getElementById('btnSaveEdit').classList.remove('d-none'); document.getElementById('btnCancelEdit').classList.remove('d-none'); 
+             
+             const role = localStorage.getItem('appRole') ? localStorage.getItem('appRole').toLowerCase() : '';
+             
+             let firstEditableInput = null;
+
+             document.querySelectorAll('.edit-input').forEach(el => {
+                let isAllowed = false;
+                if (role === 'admin') isAllowed = true;
+                // Check if element has a class like role-finance, role-supply etc.
+                else if (el.classList.contains('role-' + role)) isAllowed = true;
+                
+                if (isAllowed) {
+                    el.disabled = false;
+                    el.classList.remove('bg-light');
+                    if(!firstEditableInput) firstEditableInput = el;
+                } else {
+                    el.disabled = true;
+                }
+             });
+
+             // --- NEW: Auto Focus and Scroll to first editable field ---
+             if (firstEditableInput) {
+                 setTimeout(() => {
+                     firstEditableInput.focus();
+                     firstEditableInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 }, 300);
+             }
+        }
+        function cancelEdit() { 
+             document.getElementById('btnToggleEdit').classList.remove('d-none'); document.getElementById('btnSaveEdit').classList.add('d-none'); document.getElementById('btnCancelEdit').classList.add('d-none'); 
+             renderDetailForm(currentDisplayData[currentItemIndex], currentSystemType, false);
+        }
+
+        // --- NEW: Render Full Detail Form in Modal ---
+        function renderDetailForm(item, type, editable) {
+            const container = document.getElementById('editFormContainer');
+            container.innerHTML = '';
+            
+            const val = (keys) => getKey(item, Array.isArray(keys) ? keys : [keys]);
+            
+            const createField = (label, key, roleClass, type='text', opts=[]) => {
+                let value = val(key);
+                if(value === '-') value = '';
+                
+                let inputHtml = '';
+                let commonClass = `form-control form-control-sm edit-input ${roleClass}`;
+                
+                if (type === 'select') {
+                    let optionsHtml = opts.map(o => `<option value="${o}" ${value === o ? 'selected' : ''}>${o}</option>`).join('');
+                    inputHtml = `<select class="form-select form-select-sm edit-input ${roleClass}" data-key="${key}" disabled>${optionsHtml}</select>`;
+                } else if (type === 'checkbox') {
+                    let checked = (value && value.toString().trim() !== '') ? 'checked' : '';
+                    inputHtml = `<div class="form-check mt-1"><input class="form-check-input edit-input ${roleClass}" type="checkbox" data-key="${key}" ${checked} disabled><label class="form-check-label small">${label}</label></div>`;
+                    return `<div class="col-md-6 mb-2">${inputHtml}</div>`;
+                } else if (type === 'date') {
+                    inputHtml = `<input type="text" class="${commonClass} text-center date-picker-thai" data-key="${key}" value="${value}" disabled>`;
+                } else {
+                    inputHtml = `<input type="${type}" class="${commonClass}" data-key="${key}" value="${value}" disabled>`;
+                }
+                
+                return `<div class="col-md-6 mb-2">
+                    <label class="text-muted small fw-bold">${label}</label>
+                    ${inputHtml}
+                </div>`;
+            };
+
+            let html = '<div class="row g-2">';
+            
+            // --- Section 1: Step 1 User/Admin Info ---
+            html += `<div class="col-12"><div class="card p-3 mb-2 bg-light border-0 rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">1. ข้อมูลทั่วไป (Step 1)</h6><div class="row">`;
+            html += createField('ปีงบประมาณ', 'ปีงบประมาณ', 'role-user');
+            html += createField('รหัสแผน', 'รหัสแผน', 'role-user');
+            html += createField('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'role-user');
+            html += createField('ยุทธศาสตร์', 'ยุทธศาสตร์', 'role-user');
+            html += createField('เริ่มโครงการ', 'กำหนดเริ่มโครงการ', 'role-user', 'date');
+            html += createField('สิ้นสุดโครงการ', 'กำหนดสิ้นสุดโครงการ', 'role-user', 'date');
+            html += createField('ชื่อโครงการ', 'ชื่อโครงการ', 'role-user', 'text'); 
+            html += createField('งบ (แผน)', 'งบประมาณที่ขอในแผน', 'role-user', 'number');
+            html += createField('งบ (ผอ.)', 'งบอนุมัติโดย ผอ.ศศค.', 'role-user', 'number');
+            html += createField('งบ (โครงการ)', 'งบประมาณที่ขอในโครงการ', 'role-user', 'number');
+            html += `</div></div></div>`;
+
+            // --- Section 2: Step 2 Plan (งานแผน) ---
+            html += `<div class="col-12"><div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">2. งานแผน (Step 2)</h6><div class="row">`;
+            html += createField('รับเอกสาร (แผน)', 'วันที่รับเอกสารครั้งแรก', 'role-plan', 'date');
+            html += createField('ตรวจสำเร็จ (แผน)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'role-plan', 'date');
+            html += `</div></div></div>`;
+
+            // --- Section 3: Step 3 Head (หน.งาน - Managed by Plan for now) ---
+            html += `<div class="col-12"><div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">3. หัวหน้างาน (Step 3)</h6><div class="row">`;
+            html += createField('ตรวจสำเร็จ (หน.)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'role-plan', 'date');
+            html += createField('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'role-plan', 'checkbox');
+            html += `</div></div></div>`;
+
+            // --- Section 4: Step 4 Saraban/Admin (ธุรการ - Managed by Plan/Admin) ---
+            html += `<div class="col-12"><div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">4. ธุรการ/ผอ. (Step 4)</h6><div class="row">`;
+            html += createField('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'role-plan', 'date');
+            html += createField('เลขที่บันทึก', 'เลขที่บันทึกข้อความ', 'role-plan');
+            html += `</div></div></div>`;
+
+            // --- Section 5: Step 5 Supply (พัสดุ) ---
+            html += `<div class="col-12"><div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">5. พัสดุ (Step 5)</h6><div class="row">`;
+            html += createField('รับเรื่อง (พัสดุ)', 'วันที่รับเรื่องเข้า', 'role-supply', 'date');
+            html += createField('ประเภท', 'ประเภท', 'role-supply');
+            html += createField('สถานะหลัก', 'สถานะหลัก', 'role-supply', 'select', ['กำลังดำเนินการโครงการ', 'เสร็จสิ้นโครงการ', 'ยกเลิกโครงการ']);
+            html += createField('รายการย่อย', 'รายการย่อย', 'role-supply');
+            html += createField('สั่งจ้าง/ซื้อ (บาท)', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'role-supply', 'number');
+            html += createField('งานสำเร็จ', 'วันที่งานสำเร็จ', 'role-supply', 'date');
+            html += `</div></div></div>`;
+
+            // --- Section 6: Step 6 Finance (การเงิน) ---
+            html += `<div class="col-12"><div class="card p-3 mb-2 bg-success bg-opacity-10 border-success rounded-3"><h6 class="text-success fw-bold border-bottom pb-2">6. การเงิน (Step 6)</h6><div class="row">`;
+            html += createField('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'role-finance', 'date');
+            html += createField('สถานะ', 'สถานะ', 'role-finance', 'select', ['อนุมัติ', 'ไม่อนุมัติ']);
+            html += createField('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'role-finance');
+            html += createField('ตรวจสอบแล้ว (รอง)', 'ตรวจสอบแล้ว', 'role-finance', 'checkbox');
+            html += `<div class="col-12"><hr class="text-success"></div>`;
+            html += createField('เลขที่เช็ค', 'เลขที่เช็ค', 'role-finance');
+            html += createField('วันที่จ่าย', 'วันที่จ่าย', 'role-finance', 'date');
+            html += createField('เงินคงเหลือ', 'เงินคงเหลือ', 'role-finance', 'number');
+            html += createField('หมายเหตุ', 'หมายเหตุ', 'role-finance');
+            html += `</div></div></div>`;
+            
+            // --- Section 7: Follow Up (User/Plan) ---
+             html += `<div class="col-12"><div class="card p-3 mb-2 bg-warning bg-opacity-10 border-warning rounded-3"><h6 class="text-dark fw-bold border-bottom pb-2">7. ติดตามผล</h6><div class="row">`;
+            html += createField('จัดโครงการเสร็จ', 'วันที่จัดโครงการเสร็จสิ้น', 'role-user', 'date'); // User
+            html += createField('ส่งสรุป (30 วัน)', 'กำหนดส่งสรุป(ภายใน 30 วัน)', 'role-plan', 'date');
+            html += createField('วันส่งสรุป', 'วันที่ส่งสรุปโครงการ', 'role-plan', 'date');
+             html += `</div></div></div>`;
+
+            html += `</div>`;
+            container.innerHTML = html;
+
+            initDatePickers();
+        }
+        
+        async function saveChanges() { 
+            const item = currentDisplayData[currentItemIndex]; const rowNum = item['_rowNum']; let updates = {}; 
+            
+            document.querySelectorAll('.edit-input').forEach(i => {
+                if (!i.disabled) {
+                     if(i.type === 'checkbox') updates[i.dataset.key] = i.checked ? '/' : '';
+                     else updates[i.dataset.key] = i.value;
+                }
+            }); 
+            
+            if (Object.keys(updates).length === 0) {
+                 Swal.fire('ไม่มีการเปลี่ยนแปลง', 'คุณไม่ได้แก้ไขข้อมูลใดๆ หรือไม่มีสิทธิ์แก้ไข', 'info');
+                 return;
+            }
+
+            Swal.fire({title:'Saving...', didOpen:()=>Swal.showLoading()}); 
+            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'edit', type: currentSystemType, rowNum: rowNum, updates: updates }) }); Swal.fire('สำเร็จ', 'บันทึกเรียบร้อย', 'success').then(()=> { bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); if(currentTabMode === 'pending') loadDataList('plan', true); else loadDataList(currentSystemType, false); }); } catch(e) { Swal.fire('Error', 'Save Failed', 'error'); } 
+        }
+
+        function goToAddPage() { 
+            document.getElementById('searchPage').style.display = 'none'; 
+            document.getElementById('addPage').style.display = 'block'; 
+            document.getElementById('addForm').reset(); 
+            
+            if(currentUserRole === 'admin') {
+                if (currentTabMode === 'plan') {
+                    document.getElementById('normalAddFormContainer').style.display = 'none';
+                    document.getElementById('adminPlanFormContainer').style.display = 'block';
+                    document.getElementById('adminBuyFormContainer').style.display = 'none';
+                    renderAdminAddForm(); 
+                } else if (currentTabMode === 'buy') {
+                    document.getElementById('normalAddFormContainer').style.display = 'none';
+                    document.getElementById('adminPlanFormContainer').style.display = 'none';
+                    document.getElementById('adminBuyFormContainer').style.display = 'block';
+                    renderAdminBuyAddForm(); 
+                }
+            } else {
+                document.getElementById('normalAddFormContainer').style.display = 'block';
+                document.getElementById('adminPlanFormContainer').style.display = 'none';
+                document.getElementById('adminBuyFormContainer').style.display = 'none';
+            }
+            setFieldPermissions(); 
+        }
+
+        function cancelAdd() { document.getElementById('addPage').style.display = 'none'; document.getElementById('searchPage').style.display = 'block'; }
+        
+        function setFieldPermissions() { 
+            const inputs = document.querySelectorAll('#addForm input, #addForm select'); 
+            const role = localStorage.getItem('appRole');
+            const user = localStorage.getItem('appUser');
+
+            inputs.forEach(i => { i.disabled = false; i.readOnly = false; i.classList.remove('bg-light'); });
+
+            if(role === 'admin') return; 
+            
+            if (role === 'user') {
+                 const deptInput = document.querySelector('input[name="input_dept"]');
+                 if(deptInput) { deptInput.value = user; deptInput.readOnly = true; deptInput.classList.add('bg-light'); }
+                 inputs.forEach(i => { if(i.classList.contains('role-finance') || i.classList.contains('role-plan')) { i.disabled = true; } });
+            } else if (role === 'finance') {
+                inputs.forEach(i => { if(!i.classList.contains('role-finance') && !i.classList.contains('role-common')) i.disabled = true; }); 
+            } else if (role === 'supply' || role === 'plan') {
+                inputs.forEach(i => { if(i.classList.contains('role-finance')) i.disabled = true; }); 
+            } 
+        }
+        
+        async function submitNewData() {
+            const form = document.getElementById('addForm'); const type = (currentTabMode === 'buy') ? 'buy' : 'plan'; const formData = new FormData(form); const dataObj = {}; formData.forEach((v, k) => dataObj[k] = v); const mapObj = {};
+            mapObj['ปีงบประมาณ']=dataObj['input_year']; mapObj['กลุ่มงาน/หน่วยงาน']=dataObj['input_dept']; mapObj['ยุทธศาสตร์']=dataObj['input_strat']; mapObj['กำหนดเริ่มโครงการ']=dataObj['input_start']; mapObj['กำหนด เริ่ม โครงการ']=dataObj['input_start']; mapObj['กำหนดสิ้นสุดโครงการ']=dataObj['input_end']; mapObj['กำหนด สิ้นสุด โครงการ']=dataObj['input_end'];
+            if(type==='buy'){ mapObj['รายการ']=dataObj['input_name']; mapObj['เลขที่']=dataObj['input_code']; mapObj['ราคา']=dataObj['input_budget_plan']; } else { mapObj['ชื่อโครงการ']=dataObj['input_name']; mapObj['รหัสแผน']=dataObj['input_code']; mapObj['งบประมาณที่ขอในแผน']=dataObj['input_budget_plan']; mapObj['งบประมาณ ที่ขอในแผน']=dataObj['input_budget_plan']; mapObj['งบอนุมัติโดย ผอ.ศศค.']=dataObj['input_budget_approve']; mapObj['งบอนุมัติ โดย ผอ.ศศค.']=dataObj['input_budget_approve']; mapObj['งบประมาณที่ขอในโครงการ']=dataObj['input_budget_project']; mapObj['งบประมาณ ที่ขอในโครงการ']=dataObj['input_budget_project']; } mapObj['หมวด']=dataObj['input_cat']; mapObj['ชนิด']=dataObj['input_type'];
+            Swal.fire({ title: 'กำลังเพิ่ม...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try { const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', type: type, data: mapObj }) }); const result = await response.json(); if (result.status === 'success') { Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเรียบร้อยแล้ว', 'success').then(() => { cancelAdd(); loadDataList(type, false); }); } else { throw new Error(result.message); } } catch (err) { Swal.fire('Error', 'เพิ่มข้อมูลไม่สำเร็จ', 'error'); }
+        }
+
+        async function submitAdminPlan() {
+            const form = document.getElementById('adminAddForm'); 
+            if(!form) return;
+            const type = (currentTabMode === 'buy') ? 'buy' : 'plan';
+            const formData = new FormData(form); 
+            const dataObj = {}; 
+            form.querySelectorAll('input[type="checkbox"]').forEach(cb => { dataObj[cb.name] = cb.checked ? '/' : ''; });
+            formData.forEach((v, k) => { if(!dataObj.hasOwnProperty(k)) dataObj[k] = v; });
+            Swal.fire({ title: 'กำลังบันทึก (Admin)...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try { 
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', type: type, data: dataObj }) }); 
+                const result = await response.json(); 
+                if (result.status === 'success') { Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเรียบร้อยแล้ว', 'success').then(() => { cancelAdd(); loadDataList(type, false); }); } else { throw new Error(result.message); } 
+            } catch (err) { Swal.fire('Error', 'เพิ่มข้อมูลไม่สำเร็จ', 'error'); }
+        }
+
+        function renderAdminAddForm() {
+            const container = document.getElementById('adminPlanFormContainer');
+            let html = '<form id="adminAddForm"><div class="row g-2">'; 
+            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                if(type === 'select') {
+                    input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
+                    opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
+                } else if(type === 'checkbox') {
+                    input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
+                    return `<div class="${col}">${input}</div>`;
+                } else if (type === 'date') {
+                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                } else {
+                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+                }
+                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
+            };
+
+            // 1. ข้อมูลทั่วไป
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป</div><div class="row g-2">`;
+            html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
+            html += createInput('ปีงบ', 'ปีงบประมาณ', 'text', 'col-md-2');
+            html += createInput('รหัสแผน', 'รหัสแผน', 'text', 'col-md-2');
+            html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'text', 'col-md-3');
+            html += createInput('ยุทธศาสตร์', 'ยุทธศาสตร์', 'text', 'col-md-4');
+            html += createInput('เริ่มโครงการ', 'กำหนดเริ่มโครงการ', 'date', 'col-md-2');
+            html += createInput('สิ้นสุดโครงการ', 'กำหนดสิ้นสุดโครงการ', 'date', 'col-md-2');
+            html += createInput('ชื่อโครงการ', 'ชื่อโครงการ', 'text', 'col-md-8');
+            html += createInput('งบ (แผน)', 'งบประมาณที่ขอในแผน', 'number', 'col-md-2');
+            html += createInput('งบ (ผอ.)', 'งบอนุมัติโดย ผอ.ศศค.', 'number', 'col-md-2');
+            html += createInput('งบ (โครงการ)', 'งบประมาณที่ขอในโครงการ', 'number', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 2. แผน & 3. หน.งาน
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
+            html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
+            html += createInput('ตรวจสำเร็จ', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-6');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">3. หน.งานแพทยศาสตร์</div><div class="row g-2">`;
+            html += createInput('ตรวจสำเร็จ (หน.)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'date', 'col-md-6');
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 4. ธุรการ & 5. ติดตามผล
+            html += `<div class="col-md-5"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
+            html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-6');
+            html += createInput('เลขที่บันทึก', 'เลขที่บันทึกข้อความ', 'text', 'col-md-6');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-7"><div class="card-form"><div class="form-group-title">5. ติดตามผล</div><div class="row g-2">`;
+            html += createInput('จัดโครงการเสร็จ', 'วันที่จัดโครงการเสร็จสิ้น', 'date', 'col-md-4');
+            html += createInput('ส่งสรุป (30 วัน)', 'กำหนดส่งสรุป(ภายใน 30 วัน)', 'date', 'col-md-4');
+            html += createInput('วันส่งสรุป', 'วันที่ส่งสรุปโครงการ', 'date', 'col-md-4');
+            html += `</div></div></div>`;
+
+            // 6. พัสดุ
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">6. พัสดุ/งานแผน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
+            html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
+            html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', ['กำลังดำเนินการโครงการ', 'เสร็จสิ้นโครงการ', 'ยกเลิกโครงการ']);
+            html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
+            html += createInput('สั่งจ้าง/ซื้อ (บาท)', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'number', 'col-md-2');
+            html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 7. การเงิน & 8. รอง ผอก.
+            html += `<div class="col-md-8"><div class="card-form"><div class="form-group-title">7. การเงิน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-4');
+            html += createInput('สถานะการเงิน', 'สถานะ', 'select', 'col-md-4', ['อนุมัติ', 'ไม่อนุมัติ']);
+            html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">8. รอง ผอก.</div><div class="row g-2">`;
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-12');
+            html += `</div></div></div>`;
+
+            // 9. การจ่ายเงิน
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">9. การจ่ายเงิน</div><div class="row g-2">`;
+            html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
+            html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
+            html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');
+            html += createInput('หมายเหตุ', 'หมายเหตุ', 'text', 'col-md-6');
+            html += `</div></div></div>`;
+
+            html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
+            container.innerHTML = html;
+            initDatePickers();
+        }
+        
+        function renderAdminBuyAddForm() {
+            const container = document.getElementById('adminBuyFormContainer');
+            let html = '<form id="adminAddForm"><div class="row g-2">';
+            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                if(type === 'select') {
+                    input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
+                    opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
+                } else if(type === 'checkbox') {
+                    input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
+                    return `<div class="${col}">${input}</div>`;
+                } else if (type === 'date') {
+                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                } else {
+                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+                }
+                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
+            };
+
+            // 1. ข้อมูลทั่วไป (ครุภัณฑ์)
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป (ครุภัณฑ์)</div><div class="row g-2">`;
+            html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
+            html += createInput('ปีงบ', 'ปีงบประมาณ', 'text', 'col-md-2');
+            html += createInput('รหัสแผน', 'เลขที่', 'text', 'col-md-2');
+            html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'text', 'col-md-3');
+            html += createInput('หมวด', 'หมวด', 'text', 'col-md-2');
+            html += createInput('ชนิด', 'ชนิด', 'text', 'col-md-2');
+            html += createInput('รายการ', 'รายการ', 'text', 'col-md-6');
+            html += createInput('สถานที่', 'สถานที่', 'text', 'col-md-3');
+            html += createInput('จำนวน', 'จำนวน', 'text', 'col-md-1');
+            html += createInput('ราคาในแผน', 'ราคา', 'number', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 2. แผน
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
+            html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
+            html += createInput('ตรวจสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 3. หน.งานแพทยศาสตร์
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">3. หน.งานแพทยศาสตร์</div><div class="row g-2">`;
+            html += createInput('ตรวจสำเร็จ (หน.)', 'ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'date', 'col-md-6');
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (หน.งาน)', 'checkbox', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 4. ธุรการ ศศค.
+            html += `<div class="col-md-12"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
+            html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-3');
+            html += createInput('เลขที่บันทึก', 'เลขที่บันทึก', 'text', 'col-md-3');
+            html += `</div></div></div>`;
+
+            // 5. พัสดุ
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">5. พัสดุ</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
+            html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
+            html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', ['กำลังดำเนินการ', 'เสร็จสิ้น', 'ยกเลิก']);
+            html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
+            html += createInput('สั่งจ้าง/ซื้อ', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'number', 'col-md-2');
+            html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 6. การเงิน
+            html += `<div class="col-md-8"><div class="card-form"><div class="form-group-title">6. การเงิน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-4');
+            html += createInput('สถานะ', 'สถานะ', 'select', 'col-md-4', ['อนุมัติ', 'ไม่อนุมัติ']);
+            html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
+            html += `</div></div></div>`;
+
+            // 7. รอง ผอก.
+            html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">7. รอง ผอก.</div><div class="row g-2">`;
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (รอง ผอก.)', 'checkbox', 'col-12');
+            html += `</div></div></div>`;
+
+            // 8. การเงิน (จ่าย)
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">8. การเงิน (จ่าย)</div><div class="row g-2">`;
+            html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
+            html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
+            html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');
+            html += createInput('หมายเหตุ', 'หมายเหตุ', 'text', 'col-md-4');
+            html += createInput('ยกเลิกแผน', 'ยกเลิกแผน', 'checkbox', 'col-md-2');
+            html += `</div></div></div>`;
+
+            html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
+            container.innerHTML = html;
+            initDatePickers();
+        }
+
+        function initDatePickers() {
+            setTimeout(() => {
+                flatpickr(".date-picker-thai", {
+                    locale: "th", dateFormat: "d F Y", disableMobile: "true",
+                    onReady: (d,s,i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                    onYearChange: (d,s,i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                    parseDate: (d) => parseThaiFullDate(d),
+                    formatDate: (d,f,l) => flatpickr.formatDate(d,f,l).replace(/\d{4}/, y => parseInt(y)+543)
+                });
+            }, 100);
+        }
+
+        function toggleEditMode() { 
+             document.getElementById('btnToggleEdit').classList.add('d-none'); document.getElementById('btnSaveEdit').classList.remove('d-none'); document.getElementById('btnCancelEdit').classList.remove('d-none'); 
+             
+             // Enable all inputs
+             document.querySelectorAll('.edit-input').forEach(el => el.disabled = false);
+        }
+        function cancelEdit() { 
+             document.getElementById('btnToggleEdit').classList.remove('d-none'); document.getElementById('btnSaveEdit').classList.add('d-none'); document.getElementById('btnCancelEdit').classList.add('d-none'); 
+             // Re-render to reset values and disable
+             if (currentUserRole === 'admin') {
+                 if (currentSystemType === 'plan') renderAdminForm(currentDisplayData[currentItemIndex]);
+                 else if (currentSystemType === 'buy') renderAdminBuyForm(currentDisplayData[currentItemIndex]);
+             } else {
+                 renderTimeline(currentDisplayData[currentItemIndex], currentSystemType, false);
+             }
+        }
+        function renderTimeline(item, type, editable) { 
+            const c = document.getElementById('timelineContainer'); c.innerHTML = ''; 
+            let s = (type==='plan')? [{key:'วันที่รับเอกสารครั้งแรก',label:'รับเอกสารเข้าระบบ'},{key:'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ',label:'ธุรการ ตรวจ/แก้ไข'},{key:'ตรวจสอบแล้ว',label:'ผ่านการตรวจสอบ'},{key:'วันที่ ผอ. เซ็นเอกสาร',label:'ผอ. อนุมัติ'},{key:'เลขที่บันทึกข้อความ',label:'ออกเลขที่บันทึก'},{key:'วันที่จัดโครงการ เสร็จสิ้น',label:'ดำเนินโครงการเสร็จ'},{key:'วันที่ส่งสรุปโครงการ',label:'ส่งสรุปโครงการ'}] : [{key:'วันที่รับเอกสาร ครั้งแรก',label:'รับเอกสารขอซื้อ/จ้าง'},{key:'ตรวจ/แก้ไขเอกสารสำเร็จ',label:'ตรวจสอบเอกสารเบื้องต้น'},{key:'ตรวจสอบแล้ว',label:'ผ่านการตรวจสอบ'},{key:'วันที่ ผอ. เซ็นเอกสาร',label:'ผอ. อนุมัติ'},{key:'เลขที่เช็ค',label:'ออกเช็ค/เลขที่'},{key:'วันที่จ่าย',label:'จ่ายเงินเรียบร้อย'}]; 
+            s.forEach((step, idx) => { 
+                let val = getKey(item, [step.key, step.key.replace(/\s/g, '')]); 
+                let done = (val && val !== '-' && val.toString().trim() !== ''); 
+                let h = ''; 
+                if(editable) { let isDisabled = false; if(currentUserRole !== 'admin' && idx > 0) { 
+                    let prevKey = s[idx-1].key; 
+                    let prevVal = getKey(item, [prevKey, prevKey.replace(/\s/g, '')]);
+                    if(!prevVal || prevVal === '-') isDisabled = true; 
+                } h = `<input type="text" class="form-control form-control-sm mt-1 edit-input" data-key="${step.key}" value="${val === '-' ? '' : val}" ${isDisabled?'disabled':''}>`; } else h = `<div class="text-muted small">${done ? val : '-'}</div>`; 
+                c.innerHTML += `<div class="timeline-item ${done && !editable ? 'active' : ''}"><div class="timeline-line"></div><div class="timeline-marker">${done ? '<i class="fas fa-check"></i>' : ''}</div><div class="timeline-content ms-3"><h6 class="${done ? 'text-dark' : 'text-muted'}">${step.label}</h6>${h}</div></div>`; 
+            }); 
+        }
+        
+        async function saveChanges() { 
+            const item = currentDisplayData[currentItemIndex]; const rowNum = item['_rowNum']; let updates = {}; 
+            document.querySelectorAll('.edit-input').forEach(i => {
+                if(i.type === 'checkbox') updates[i.dataset.key] = i.checked ? '/' : '';
+                else updates[i.dataset.key] = i.value;
+            }); 
+            Swal.fire({title:'Saving...', didOpen:()=>Swal.showLoading()}); 
+            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'edit', type: currentSystemType, rowNum: rowNum, updates: updates }) }); Swal.fire('สำเร็จ', 'บันทึกเรียบร้อย', 'success').then(()=> { bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); if(currentTabMode === 'pending') loadDataList('plan', true); else loadDataList(currentSystemType, false); }); } catch(e) { Swal.fire('Error', 'Save Failed', 'error'); } 
+        }
+
+        function goToAddPage() { 
+            document.getElementById('searchPage').style.display = 'none'; 
+            document.getElementById('addPage').style.display = 'block'; 
+            document.getElementById('addForm').reset(); 
+            
+            if(currentUserRole === 'admin') {
+                if (currentTabMode === 'plan') {
+                    document.getElementById('normalAddFormContainer').style.display = 'none';
+                    document.getElementById('adminPlanFormContainer').style.display = 'block';
+                    document.getElementById('adminBuyFormContainer').style.display = 'none';
+                    renderAdminAddForm(); 
+                } else if (currentTabMode === 'buy') {
+                    document.getElementById('normalAddFormContainer').style.display = 'none';
+                    document.getElementById('adminPlanFormContainer').style.display = 'none';
+                    document.getElementById('adminBuyFormContainer').style.display = 'block';
+                    renderAdminBuyAddForm(); 
+                }
+            } else {
+                document.getElementById('normalAddFormContainer').style.display = 'block';
+                document.getElementById('adminPlanFormContainer').style.display = 'none';
+                document.getElementById('adminBuyFormContainer').style.display = 'none';
+            }
+            setFieldPermissions(); 
+        }
+
+        function cancelAdd() { document.getElementById('addPage').style.display = 'none'; document.getElementById('searchPage').style.display = 'block'; }
+        function setFieldPermissions() { const inputs = document.querySelectorAll('#addForm input, #addForm select'); inputs.forEach(i => i.disabled = false); if(currentUserRole === 'admin') return; if(currentUserRole === 'finance') inputs.forEach(i => { if(!i.classList.contains('role-finance') && !i.classList.contains('role-common')) i.disabled = true; }); else if(currentUserRole === 'supply' || currentUserRole === 'plan') inputs.forEach(i => { if(i.classList.contains('role-finance')) i.disabled = true; }); }
+        
+        async function submitNewData() {
+            const form = document.getElementById('addForm'); const type = (currentTabMode === 'buy') ? 'buy' : 'plan'; const formData = new FormData(form); const dataObj = {}; formData.forEach((v, k) => dataObj[k] = v); const mapObj = {};
+            mapObj['ปีงบประมาณ']=dataObj['input_year']; mapObj['กลุ่มงาน/หน่วยงาน']=dataObj['input_dept']; mapObj['ยุทธศาสตร์']=dataObj['input_strat']; mapObj['กำหนดเริ่มโครงการ']=dataObj['input_start']; mapObj['กำหนด เริ่ม โครงการ']=dataObj['input_start']; mapObj['กำหนดสิ้นสุดโครงการ']=dataObj['input_end']; mapObj['กำหนด สิ้นสุด โครงการ']=dataObj['input_end'];
+            if(type==='buy'){ mapObj['รายการ']=dataObj['input_name']; mapObj['เลขที่']=dataObj['input_code']; mapObj['ราคา']=dataObj['input_budget_plan']; } else { mapObj['ชื่อโครงการ']=dataObj['input_name']; mapObj['รหัสแผน']=dataObj['input_code']; mapObj['งบประมาณที่ขอในแผน']=dataObj['input_budget_plan']; mapObj['งบประมาณ ที่ขอในแผน']=dataObj['input_budget_plan']; mapObj['งบอนุมัติโดย ผอ.ศศค.']=dataObj['input_budget_approve']; mapObj['งบอนุมัติ โดย ผอ.ศศค.']=dataObj['input_budget_approve']; mapObj['งบประมาณที่ขอในโครงการ']=dataObj['input_budget_project']; mapObj['งบประมาณ ที่ขอในโครงการ']=dataObj['input_budget_project']; } mapObj['หมวด']=dataObj['input_cat']; mapObj['ชนิด']=dataObj['input_type'];
+            Swal.fire({ title: 'กำลังเพิ่ม...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try { const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', type: type, data: mapObj }) }); const result = await response.json(); if (result.status === 'success') { Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเรียบร้อยแล้ว', 'success').then(() => { cancelAdd(); loadDataList(type, false); }); } else { throw new Error(result.message); } } catch (err) { Swal.fire('Error', 'เพิ่มข้อมูลไม่สำเร็จ', 'error'); }
+        }
+
+        // --- NEW: Submit Function for Admin Forms ---
+        async function submitAdminPlan() {
+            const form = document.getElementById('adminAddForm'); 
+            if(!form) return;
+            const type = (currentTabMode === 'buy') ? 'buy' : 'plan';
+            const formData = new FormData(form); 
+            const dataObj = {}; 
+            
+            // Handle checkboxes specifically
+            form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                dataObj[cb.name] = cb.checked ? '/' : '';
+            });
+            
+            formData.forEach((v, k) => {
+                if(!dataObj.hasOwnProperty(k)) dataObj[k] = v;
+            });
+            
+            Swal.fire({ title: 'กำลังบันทึก (Admin)...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            
+            try { 
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', type: type, data: dataObj }) }); 
+                const result = await response.json(); 
+                if (result.status === 'success') { 
+                    Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเรียบร้อยแล้ว', 'success').then(() => { cancelAdd(); loadDataList(type, false); }); 
+                } else { throw new Error(result.message); } 
+            } catch (err) { Swal.fire('Error', 'เพิ่มข้อมูลไม่สำเร็จ', 'error'); }
+        }
+
+        function renderAdminAddForm() {
+            const container = document.getElementById('adminPlanFormContainer');
+            let html = '<form id="adminAddForm"><div class="row g-2">'; 
+            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                if(type === 'select') {
+                    input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
+                    opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
+                } else if(type === 'checkbox') {
+                    input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
+                    return `<div class="${col}">${input}</div>`;
+                } else if (type === 'date') {
+                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                } else {
+                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+                }
+                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
+            };
+
+            // 1. ข้อมูลทั่วไป
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป</div><div class="row g-2">`;
+            html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
+            html += createInput('ปีงบ', 'ปีงบประมาณ', 'text', 'col-md-2');
+            html += createInput('รหัสแผน', 'รหัสแผน', 'text', 'col-md-2');
+            html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'text', 'col-md-3');
+            html += createInput('ยุทธศาสตร์', 'ยุทธศาสตร์', 'text', 'col-md-4');
+            html += createInput('เริ่มโครงการ', 'กำหนดเริ่มโครงการ', 'date', 'col-md-2');
+            html += createInput('สิ้นสุดโครงการ', 'กำหนดสิ้นสุดโครงการ', 'date', 'col-md-2');
+            html += createInput('ชื่อโครงการ', 'ชื่อโครงการ', 'text', 'col-md-8');
+            html += createInput('งบ (แผน)', 'งบประมาณที่ขอในแผน', 'number', 'col-md-2');
+            html += createInput('งบ (ผอ.)', 'งบอนุมัติโดย ผอ.ศศค.', 'number', 'col-md-2');
+            html += createInput('งบ (โครงการ)', 'งบประมาณที่ขอในโครงการ', 'number', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 2. แผน & 3. หน.งาน
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
+            html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
+            html += createInput('ตรวจสำเร็จ', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-6');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">3. หน.งานแพทยศาสตร์</div><div class="row g-2">`;
+            html += createInput('ตรวจสำเร็จ (หน.)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'date', 'col-md-6');
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 4. ธุรการ & 5. ติดตามผล
+            html += `<div class="col-md-5"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
+            html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-6');
+            html += createInput('เลขที่บันทึก', 'เลขที่บันทึกข้อความ', 'text', 'col-md-6');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-7"><div class="card-form"><div class="form-group-title">5. ติดตามผล</div><div class="row g-2">`;
+            html += createInput('จัดโครงการเสร็จ', 'วันที่จัดโครงการเสร็จสิ้น', 'date', 'col-md-4');
+            html += createInput('ส่งสรุป (30 วัน)', 'กำหนดส่งสรุป(ภายใน 30 วัน)', 'date', 'col-md-4');
+            html += createInput('วันส่งสรุป', 'วันที่ส่งสรุปโครงการ', 'date', 'col-md-4');
+            html += `</div></div></div>`;
+
+            // 6. พัสดุ
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">6. พัสดุ/งานแผน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
+            html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
+            html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', ['กำลังดำเนินการโครงการ', 'เสร็จสิ้นโครงการ', 'ยกเลิกโครงการ']);
+            html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
+            html += createInput('สั่งจ้าง/ซื้อ (บาท)', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'number', 'col-md-2');
+            html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 7. การเงิน & 8. รอง ผอก.
+            html += `<div class="col-md-8"><div class="card-form"><div class="form-group-title">7. การเงิน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-4');
+            html += createInput('สถานะการเงิน', 'สถานะ', 'select', 'col-md-4', ['อนุมัติ', 'ไม่อนุมัติ']);
+            html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">8. รอง ผอก.</div><div class="row g-2">`;
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-12');
+            html += `</div></div></div>`;
+
+            // 9. การจ่ายเงิน
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">9. การจ่ายเงิน</div><div class="row g-2">`;
+            html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
+            html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
+            html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');
+            html += createInput('หมายเหตุ', 'หมายเหตุ', 'text', 'col-md-6');
+            html += `</div></div></div>`;
+
+            html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
+            container.innerHTML = html;
+            initDatePickers();
+        }
+        
+        function renderAdminBuyAddForm() {
+            const container = document.getElementById('adminBuyFormContainer');
+            let html = '<form id="adminAddForm"><div class="row g-2">';
+            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                if(type === 'select') {
+                    input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
+                    opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
+                } else if(type === 'checkbox') {
+                    input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
+                    return `<div class="${col}">${input}</div>`;
+                } else if (type === 'date') {
+                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                } else {
+                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+                }
+                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
+            };
+
+            // 1. ข้อมูลทั่วไป (ครุภัณฑ์)
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป (ครุภัณฑ์)</div><div class="row g-2">`;
+            html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
+            html += createInput('ปีงบ', 'ปีงบประมาณ', 'text', 'col-md-2');
+            html += createInput('รหัสแผน', 'เลขที่', 'text', 'col-md-2');
+            html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'text', 'col-md-3');
+            html += createInput('หมวด', 'หมวด', 'text', 'col-md-2');
+            html += createInput('ชนิด', 'ชนิด', 'text', 'col-md-2');
+            html += createInput('รายการ', 'รายการ', 'text', 'col-md-6');
+            html += createInput('สถานที่', 'สถานที่', 'text', 'col-md-3');
+            html += createInput('จำนวน', 'จำนวน', 'text', 'col-md-1');
+            html += createInput('ราคาในแผน', 'ราคา', 'number', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 2. แผน
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
+            html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
+            html += createInput('ตรวจสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 3. หน.งานแพทยศาสตร์
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">3. หน.งานแพทยศาสตร์</div><div class="row g-2">`;
+            html += createInput('ตรวจสำเร็จ (หน.)', 'ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'date', 'col-md-6');
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (หน.งาน)', 'checkbox', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 4. ธุรการ ศศค.
+            html += `<div class="col-md-12"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
+            html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-3');
+            html += createInput('เลขที่บันทึก', 'เลขที่บันทึก', 'text', 'col-md-3');
+            html += `</div></div></div>`;
+
+            // 5. พัสดุ
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">5. พัสดุ</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
+            html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
+            html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', ['กำลังดำเนินการ', 'เสร็จสิ้น', 'ยกเลิก']);
+            html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
+            html += createInput('สั่งจ้าง/ซื้อ', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'number', 'col-md-2');
+            html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 6. การเงิน
+            html += `<div class="col-md-8"><div class="card-form"><div class="form-group-title">6. การเงิน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-4');
+            html += createInput('สถานะ', 'สถานะ', 'select', 'col-md-4', ['อนุมัติ', 'ไม่อนุมัติ']);
+            html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
+            html += `</div></div></div>`;
+
+            // 7. รอง ผอก.
+            html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">7. รอง ผอก.</div><div class="row g-2">`;
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (รอง ผอก.)', 'checkbox', 'col-12');
+            html += `</div></div></div>`;
+
+            // 8. การเงิน (จ่าย)
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">8. การเงิน (จ่าย)</div><div class="row g-2">`;
+            html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
+            html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
+            html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');
+            html += createInput('หมายเหตุ', 'หมายเหตุ', 'text', 'col-md-4');
+            html += createInput('ยกเลิกแผน', 'ยกเลิกแผน', 'checkbox', 'col-md-2');
+            html += `</div></div></div>`;
+
+            html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
+            container.innerHTML = html;
+            initDatePickers();
+        }
+
+        function initDatePickers() {
+            setTimeout(() => {
+                flatpickr(".date-picker-thai", {
+                    locale: "th", dateFormat: "d F Y", disableMobile: "true",
+                    onReady: (d,s,i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                    onYearChange: (d,s,i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                    parseDate: (d) => parseThaiFullDate(d),
+                    formatDate: (d,f,l) => flatpickr.formatDate(d,f,l).replace(/\d{4}/, y => parseInt(y)+543)
+                });
+            }, 100);
+        }
+
+        function toggleEditMode() { 
+             document.getElementById('btnToggleEdit').classList.add('d-none'); document.getElementById('btnSaveEdit').classList.remove('d-none'); document.getElementById('btnCancelEdit').classList.remove('d-none'); 
+             
+             // Enable all inputs
+             document.querySelectorAll('.edit-input').forEach(el => el.disabled = false);
+        }
+        function cancelEdit() { 
+             document.getElementById('btnToggleEdit').classList.remove('d-none'); document.getElementById('btnSaveEdit').classList.add('d-none'); document.getElementById('btnCancelEdit').classList.add('d-none'); 
+             renderDetailForm(currentDisplayData[currentItemIndex], currentSystemType, false);
+        }
+        function renderTimeline(item, type, editable) { 
+            const c = document.getElementById('timelineContainer'); c.innerHTML = ''; 
+            let s = (type==='plan')? [{key:'วันที่รับเอกสารครั้งแรก',label:'รับเอกสารเข้าระบบ'},{key:'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ',label:'ธุรการ ตรวจ/แก้ไข'},{key:'ตรวจสอบแล้ว',label:'ผ่านการตรวจสอบ'},{key:'วันที่ ผอ. เซ็นเอกสาร',label:'ผอ. อนุมัติ'},{key:'เลขที่บันทึกข้อความ',label:'ออกเลขที่บันทึก'},{key:'วันที่จัดโครงการ เสร็จสิ้น',label:'ดำเนินโครงการเสร็จ'},{key:'วันที่ส่งสรุปโครงการ',label:'ส่งสรุปโครงการ'}] : [{key:'วันที่รับเอกสาร ครั้งแรก',label:'รับเอกสารขอซื้อ/จ้าง'},{key:'ตรวจ/แก้ไขเอกสารสำเร็จ',label:'ตรวจสอบเอกสารเบื้องต้น'},{key:'ตรวจสอบแล้ว',label:'ผ่านการตรวจสอบ'},{key:'วันที่ ผอ. เซ็นเอกสาร',label:'ผอ. อนุมัติ'},{key:'เลขที่เช็ค',label:'ออกเช็ค/เลขที่'},{key:'วันที่จ่าย',label:'จ่ายเงินเรียบร้อย'}]; 
+            s.forEach((step, idx) => { 
+                let val = getKey(item, [step.key, step.key.replace(/\s/g, '')]); 
+                let done = (val && val !== '-' && val.toString().trim() !== ''); 
+                let h = ''; 
+                if(editable) { let isDisabled = false; if(currentUserRole !== 'admin' && idx > 0) { 
+                    let prevKey = s[idx-1].key; 
+                    let prevVal = getKey(item, [prevKey, prevKey.replace(/\s/g, '')]);
+                    if(!prevVal || prevVal === '-') isDisabled = true; 
+                } h = `<input type="text" class="form-control form-control-sm mt-1 edit-input" data-key="${step.key}" value="${val === '-' ? '' : val}" ${isDisabled?'disabled':''}>`; } else h = `<div class="text-muted small">${done ? val : '-'}</div>`; 
+                c.innerHTML += `<div class="timeline-item ${done && !editable ? 'active' : ''}"><div class="timeline-line"></div><div class="timeline-marker">${done ? '<i class="fas fa-check"></i>' : ''}</div><div class="timeline-content ms-3"><h6 class="${done ? 'text-dark' : 'text-muted'}">${step.label}</h6>${h}</div></div>`; 
+            }); 
+        }
+        
+        async function saveChanges() { 
+            const item = currentDisplayData[currentItemIndex]; const rowNum = item['_rowNum']; let updates = {}; 
+            document.querySelectorAll('.edit-input').forEach(i => {
+                if(i.type === 'checkbox') updates[i.dataset.key] = i.checked ? '/' : '';
+                else updates[i.dataset.key] = i.value;
+            }); 
+            Swal.fire({title:'Saving...', didOpen:()=>Swal.showLoading()}); 
+            try { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'edit', type: currentSystemType, rowNum: rowNum, updates: updates }) }); Swal.fire('สำเร็จ', 'บันทึกเรียบร้อย', 'success').then(()=> { bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide(); if(currentTabMode === 'pending') loadDataList('plan', true); else loadDataList(currentSystemType, false); }); } catch(e) { Swal.fire('Error', 'Save Failed', 'error'); } 
+        }
+
+        function goToAddPage() { 
+            document.getElementById('searchPage').style.display = 'none'; 
+            document.getElementById('addPage').style.display = 'block'; 
+            document.getElementById('addForm').reset(); 
+            
+            if(currentUserRole === 'admin') {
+                if (currentTabMode === 'plan') {
+                    document.getElementById('normalAddFormContainer').style.display = 'none';
+                    document.getElementById('adminPlanFormContainer').style.display = 'block';
+                    document.getElementById('adminBuyFormContainer').style.display = 'none';
+                    renderAdminAddForm(); 
+                } else if (currentTabMode === 'buy') {
+                    document.getElementById('normalAddFormContainer').style.display = 'none';
+                    document.getElementById('adminPlanFormContainer').style.display = 'none';
+                    document.getElementById('adminBuyFormContainer').style.display = 'block';
+                    renderAdminBuyAddForm(); 
+                }
+            } else {
+                document.getElementById('normalAddFormContainer').style.display = 'block';
+                document.getElementById('adminPlanFormContainer').style.display = 'none';
+                document.getElementById('adminBuyFormContainer').style.display = 'none';
+            }
+            setFieldPermissions(); 
+        }
+
+        function cancelAdd() { document.getElementById('addPage').style.display = 'none'; document.getElementById('searchPage').style.display = 'block'; }
+        function setFieldPermissions() { const inputs = document.querySelectorAll('#addForm input, #addForm select'); inputs.forEach(i => i.disabled = false); if(currentUserRole === 'admin') return; if(currentUserRole === 'finance') inputs.forEach(i => { if(!i.classList.contains('role-finance') && !i.classList.contains('role-common')) i.disabled = true; }); else if(currentUserRole === 'supply' || currentUserRole === 'plan') inputs.forEach(i => { if(i.classList.contains('role-finance')) i.disabled = true; }); }
+        
+        async function submitNewData() {
+            const form = document.getElementById('addForm'); const type = (currentTabMode === 'buy') ? 'buy' : 'plan'; const formData = new FormData(form); const dataObj = {}; formData.forEach((v, k) => dataObj[k] = v); const mapObj = {};
+            mapObj['ปีงบประมาณ']=dataObj['input_year']; mapObj['กลุ่มงาน/หน่วยงาน']=dataObj['input_dept']; mapObj['ยุทธศาสตร์']=dataObj['input_strat']; mapObj['กำหนดเริ่มโครงการ']=dataObj['input_start']; mapObj['กำหนด เริ่ม โครงการ']=dataObj['input_start']; mapObj['กำหนดสิ้นสุดโครงการ']=dataObj['input_end']; mapObj['กำหนด สิ้นสุด โครงการ']=dataObj['input_end'];
+            if(type==='buy'){ mapObj['รายการ']=dataObj['input_name']; mapObj['เลขที่']=dataObj['input_code']; mapObj['ราคา']=dataObj['input_budget_plan']; } else { mapObj['ชื่อโครงการ']=dataObj['input_name']; mapObj['รหัสแผน']=dataObj['input_code']; mapObj['งบประมาณที่ขอในแผน']=dataObj['input_budget_plan']; mapObj['งบประมาณ ที่ขอในแผน']=dataObj['input_budget_plan']; mapObj['งบอนุมัติโดย ผอ.ศศค.']=dataObj['input_budget_approve']; mapObj['งบอนุมัติ โดย ผอ.ศศค.']=dataObj['input_budget_approve']; mapObj['งบประมาณที่ขอในโครงการ']=dataObj['input_budget_project']; mapObj['งบประมาณ ที่ขอในโครงการ']=dataObj['input_budget_project']; } mapObj['หมวด']=dataObj['input_cat']; mapObj['ชนิด']=dataObj['input_type'];
+            Swal.fire({ title: 'กำลังเพิ่ม...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try { const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', type: type, data: mapObj }) }); const result = await response.json(); if (result.status === 'success') { Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเรียบร้อยแล้ว', 'success').then(() => { cancelAdd(); loadDataList(type, false); }); } else { throw new Error(result.message); } } catch (err) { Swal.fire('Error', 'เพิ่มข้อมูลไม่สำเร็จ', 'error'); }
+        }
+
+        // --- NEW: Submit Function for Admin Forms ---
+        async function submitAdminPlan() {
+            const form = document.getElementById('adminAddForm'); 
+            if(!form) return;
+            const type = (currentTabMode === 'buy') ? 'buy' : 'plan';
+            const formData = new FormData(form); 
+            const dataObj = {}; 
+            
+            // Handle checkboxes specifically
+            form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                dataObj[cb.name] = cb.checked ? '/' : '';
+            });
+            
+            formData.forEach((v, k) => {
+                if(!dataObj.hasOwnProperty(k)) dataObj[k] = v;
+            });
+            
+            Swal.fire({ title: 'กำลังบันทึก (Admin)...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            
+            try { 
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'add', type: type, data: dataObj }) }); 
+                const result = await response.json(); 
+                if (result.status === 'success') { 
+                    Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเรียบร้อยแล้ว', 'success').then(() => { cancelAdd(); loadDataList(type, false); }); 
+                } else { throw new Error(result.message); } 
+            } catch (err) { Swal.fire('Error', 'เพิ่มข้อมูลไม่สำเร็จ', 'error'); }
+        }
+
+        function renderAdminAddForm() {
+            const container = document.getElementById('adminPlanFormContainer');
+            let html = '<form id="adminAddForm"><div class="row g-2">'; 
+            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                if(type === 'select') {
+                    input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
+                    opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
+                } else if(type === 'checkbox') {
+                    input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
+                    return `<div class="${col}">${input}</div>`;
+                } else if (type === 'date') {
+                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                } else {
+                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+                }
+                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
+            };
+
+            // 1. ข้อมูลทั่วไป
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป</div><div class="row g-2">`;
+            html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
+            html += createInput('ปีงบ', 'ปีงบประมาณ', 'text', 'col-md-2');
+            html += createInput('รหัสแผน', 'รหัสแผน', 'text', 'col-md-2');
+            html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'text', 'col-md-3');
+            html += createInput('ยุทธศาสตร์', 'ยุทธศาสตร์', 'text', 'col-md-4');
+            html += createInput('เริ่มโครงการ', 'กำหนดเริ่มโครงการ', 'date', 'col-md-2');
+            html += createInput('สิ้นสุดโครงการ', 'กำหนดสิ้นสุดโครงการ', 'date', 'col-md-2');
+            html += createInput('ชื่อโครงการ', 'ชื่อโครงการ', 'text', 'col-md-8');
+            html += createInput('งบ (แผน)', 'งบประมาณที่ขอในแผน', 'number', 'col-md-2');
+            html += createInput('งบ (ผอ.)', 'งบอนุมัติโดย ผอ.ศศค.', 'number', 'col-md-2');
+            html += createInput('งบ (โครงการ)', 'งบประมาณที่ขอในโครงการ', 'number', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 2. แผน & 3. หน.งาน
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
+            html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
+            html += createInput('ตรวจสำเร็จ', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-6');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">3. หน.งานแพทยศาสตร์</div><div class="row g-2">`;
+            html += createInput('ตรวจสำเร็จ (หน.)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'date', 'col-md-6');
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 4. ธุรการ & 5. ติดตามผล
+            html += `<div class="col-md-5"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
+            html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-6');
+            html += createInput('เลขที่บันทึก', 'เลขที่บันทึกข้อความ', 'text', 'col-md-6');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-7"><div class="card-form"><div class="form-group-title">5. ติดตามผล</div><div class="row g-2">`;
+            html += createInput('จัดโครงการเสร็จ', 'วันที่จัดโครงการเสร็จสิ้น', 'date', 'col-md-4');
+            html += createInput('ส่งสรุป (30 วัน)', 'กำหนดส่งสรุป(ภายใน 30 วัน)', 'date', 'col-md-4');
+            html += createInput('วันส่งสรุป', 'วันที่ส่งสรุปโครงการ', 'date', 'col-md-4');
+            html += `</div></div></div>`;
+
+            // 6. พัสดุ
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">6. พัสดุ/งานแผน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
+            html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
+            html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', ['กำลังดำเนินการโครงการ', 'เสร็จสิ้นโครงการ', 'ยกเลิกโครงการ']);
+            html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
+            html += createInput('สั่งจ้าง/ซื้อ (บาท)', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'number', 'col-md-2');
+            html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 7. การเงิน & 8. รอง ผอก.
+            html += `<div class="col-md-8"><div class="card-form"><div class="form-group-title">7. การเงิน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-4');
+            html += createInput('สถานะการเงิน', 'สถานะ', 'select', 'col-md-4', ['อนุมัติ', 'ไม่อนุมัติ']);
+            html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
+            html += `</div></div></div>`;
+            html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">8. รอง ผอก.</div><div class="row g-2">`;
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-12');
+            html += `</div></div></div>`;
+
+            // 9. การจ่ายเงิน
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">9. การจ่ายเงิน</div><div class="row g-2">`;
+            html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
+            html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
+            html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');
+            html += createInput('หมายเหตุ', 'หมายเหตุ', 'text', 'col-md-6');
+            html += `</div></div></div>`;
+
+            html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
+            container.innerHTML = html;
+            initDatePickers();
+        }
+        
+        function renderAdminBuyAddForm() {
+            const container = document.getElementById('adminBuyFormContainer');
+            let html = '<form id="adminAddForm"><div class="row g-2">';
+            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                if(type === 'select') {
+                    input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
+                    opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
+                } else if(type === 'checkbox') {
+                    input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
+                    return `<div class="${col}">${input}</div>`;
+                } else if (type === 'date') {
+                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                } else {
+                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+                }
+                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
+            };
+
+            // 1. ข้อมูลทั่วไป (ครุภัณฑ์)
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป (ครุภัณฑ์)</div><div class="row g-2">`;
+            html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
+            html += createInput('ปีงบ', 'ปีงบประมาณ', 'text', 'col-md-2');
+            html += createInput('รหัสแผน', 'เลขที่', 'text', 'col-md-2');
+            html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'text', 'col-md-3');
+            html += createInput('หมวด', 'หมวด', 'text', 'col-md-2');
+            html += createInput('ชนิด', 'ชนิด', 'text', 'col-md-2');
+            html += createInput('รายการ', 'รายการ', 'text', 'col-md-6');
+            html += createInput('สถานที่', 'สถานที่', 'text', 'col-md-3');
+            html += createInput('จำนวน', 'จำนวน', 'text', 'col-md-1');
+            html += createInput('ราคาในแผน', 'ราคา', 'number', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 2. แผน
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
+            html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
+            html += createInput('ตรวจสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 3. หน.งานแพทยศาสตร์
+            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">3. หน.งานแพทยศาสตร์</div><div class="row g-2">`;
+            html += createInput('ตรวจสำเร็จ (หน.)', 'ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'date', 'col-md-6');
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (หน.งาน)', 'checkbox', 'col-md-6');
+            html += `</div></div></div>`;
+
+            // 4. ธุรการ ศศค.
+            html += `<div class="col-md-12"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
+            html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-3');
+            html += createInput('เลขที่บันทึก', 'เลขที่บันทึก', 'text', 'col-md-3');
+            html += `</div></div></div>`;
+
+            // 5. พัสดุ
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">5. พัสดุ</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
+            html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
+            html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', ['กำลังดำเนินการ', 'เสร็จสิ้น', 'ยกเลิก']);
+            html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
+            html += createInput('สั่งจ้าง/ซื้อ', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'number', 'col-md-2');
+            html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
+            html += `</div></div></div>`;
+
+            // 6. การเงิน
+            html += `<div class="col-md-8"><div class="card-form"><div class="form-group-title">6. การเงิน</div><div class="row g-2">`;
+            html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-4');
+            html += createInput('สถานะ', 'สถานะ', 'select', 'col-md-4', ['อนุมัติ', 'ไม่อนุมัติ']);
+            html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
+            html += `</div></div></div>`;
+
+            // 7. รอง ผอก.
+            html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">7. รอง ผอก.</div><div class="row g-2">`;
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (รอง ผอก.)', 'checkbox', 'col-12');
+            html += `</div></div></div>`;
+
+            // 8. การเงิน (จ่าย)
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">8. การเงิน (จ่าย)</div><div class="row g-2">`;
+            html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
+            html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
+            html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');
+            html += createInput('หมายเหตุ', 'หมายเหตุ', 'text', 'col-md-4');
+            html += createInput('ยกเลิกแผน', 'ยกเลิกแผน', 'checkbox', 'col-md-2');
+            html += `</div></div></div>`;
+
+            html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
+            container.innerHTML = html;
+            initDatePickers();
+        }
+
+        function initDatePickers() {
+            setTimeout(() => {
+                flatpickr(".date-picker-thai", {
+                    locale: "th", dateFormat: "d F Y", disableMobile: "true",
+                    onReady: (d,s,i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                    onYearChange: (d,s,i) => { i.calendarContainer.querySelector(".cur-year").value = parseInt(i.currentYear) + 543; },
+                    parseDate: (d) => parseThaiFullDate(d),
+                    formatDate: (d,f,l) => flatpickr.formatDate(d,f,l).replace(/\d{4}/, y => parseInt(y)+543)
+                });
+            }, 100);
+        }
+
+        // --- Report Logic --- (Improved with getKey)
+        async function loadReportData(isManualSearch = false) {
+            if (!isManualSearch) return;
+
+            allData = []; 
+            document.getElementById('detailedTableBody').innerHTML = '';
+            document.getElementById('reportPlaceholder').style.display = 'none'; 
+            
+            const type = document.getElementById('reportTypeSelector').value;
+            const startVal = document.getElementById('reportStartDate').value; 
+            const endVal = document.getElementById('reportEndDate').value;    
+            
+            if(!startVal || !endVal) { Swal.fire('แจ้งเตือน', 'กรุณาระบุช่วงวันที่ให้ครบถ้วน', 'warning'); return; }
+
+            document.getElementById('reportPlanId').innerText = (type === 'plan' ? 'แผนปฏิบัติการ' : 'เบิกจ่ายครุภัณฑ์');
+            document.getElementById('displayReportYear').innerText = ` (${startVal} - ${endVal})`;
+
+            Swal.fire({title: 'กำลังค้นหาข้อมูล...', didOpen: () => Swal.showLoading()});
+            try {
+                const response = await fetch(`${API_URL}?action=get_${type}`); const json = await response.json();
+                const data = (json && json.data && Array.isArray(json.data)) ? json.data : (Array.isArray(json) ? json : []);
+                
+                reportDataCache = data.filter(item => {
+                    let dateKeys = (type === 'plan') ? ['กำหนดเริ่มโครงการ', 'เริ่มโครงการ', 'Start', 'วันที่เริ่ม', 'ระยะเวลา', 'วันเดือนปี'] : ['วันที่รับเอกสารครั้งแรก', 'วันที่รับเอกสาร', 'ReceivedDate'];
+                    let rawDate = getKey(item, dateKeys);
+
+                    if(!rawDate || rawDate === '-') {
+                         rawDate = Object.values(item).find(v => v && typeof v === 'string' && v.match(/\d{1,2}[\/ -][\d\w]+[\/ -]\d{2,4}/));
+                    }
+                    if (rawDate && typeof rawDate === 'string' && (rawDate.includes('-') || rawDate.includes('ถึง'))) {
+                        rawDate = rawDate.split(/[-ถึง]/)[0].trim();
+                    }
+
+                    let iD = parseThaiFullDate(rawDate);
+                    let sD = parseThaiFullDate(startVal);
+                    let eD = parseThaiFullDate(endVal);
+
+                    if (!iD) {
+                        const fiscalYear = getKey(item, ['ปีงบประมาณ', 'Year']);
+                        if (fiscalYear && fiscalYear !== '-') {
+                            const fYear = parseInt(fiscalYear);
+                            const sYear = sD ? sD.getFullYear() + 543 : 0;
+                            const eYear = eD ? eD.getFullYear() + 543 : 9999;
+                            if (fYear >= sYear && fYear <= eYear) return true;
+                        }
+                    }
+
+                    if (iD && sD && eD) { 
+                        sD.setHours(0,0,0,0); eD.setHours(23,59,59,999); 
+                        return iD >= sD && iD <= eD; 
+                    } 
+                    return false; 
+                });
+                
+                if(reportDataCache.length === 0) {
+                    Swal.fire('ไม่พบข้อมูล', 'ไม่มีรายการในช่วงวันที่ที่เลือก', 'info');
+                    document.getElementById('reportContent').style.display = 'none';
+                    document.getElementById('reportPlaceholder').style.display = 'block';
+                    document.getElementById('btnPrint').disabled = true;
+                    return;
+                }
+                
+                document.getElementById('reportContent').style.display = 'block';
+
+                let stats = { total: 0, notStart: 0, progress: 0, done: 0 };
+                let grand = { plan:0, proj:0, act:0, rem:0 };
+                let deptMap = {}; 
+
+                reportDataCache.forEach(item => {
+                    let bPlan = parseFloat((getKey(item, ['งบประมาณที่ขอในแผน', 'งบประมาณ', 'ราคาในแผน', 'ราคา']) || '0').toString().replace(/,/g,'')) || 0;
+                    let bProj = parseFloat((getKey(item, ['งบประมาณที่ขอในโครงการ', 'งบโครงการ']) || '0').toString().replace(/,/g,'')) || 0;
+                    let bAct  = parseFloat((getKey(item, ['จำนวนเงินที่สั่งจ้าง/ซื้อ', 'จำนวนเงินที่สั่งจ้าง', 'จำนวนเงิน']) || '0').toString().replace(/,/g,'')) || 0;
+                    let bRem  = (bProj > 0 ? bProj : bPlan) - bAct;
+
+                    let status = calculateStatus(item, type).text;
+                    stats.total++; 
+                    if (status.includes('เสร็จ') || status.includes('อนุมัติ')) stats.done++;
+                    else if (status.includes('กำลัง')) stats.progress++;
+                    else stats.notStart++; 
+
+                    grand.plan += bPlan; grand.proj += bProj; grand.act += bAct; grand.rem += bRem;
+                    
+                    let dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']) || 'ไม่ระบุ';
+                    if (!deptMap[dept]) deptMap[dept] = { sPlan: 0, sProj: 0, sAct: 0, sRem: 0, items: [] };
+                    let d = deptMap[dept];
+                    d.sPlan += bPlan; d.sProj += bProj; d.sAct += bAct; d.sRem += bRem;
+                    
+                    let c1 = (status.includes('รอ') || status.includes('ยังไม่')) ? '✓' : '';
+                    let c2 = status.includes('กำลัง') ? '✓' : '';
+                    let c3 = (status.includes('เสร็จ') || status.includes('อนุมัติ')) ? '✓' : '';
+                    d.items.push({ 
+                        cat: getKey(item, ['หมวด', 'ชนิด']) || '-', 
+                        id: getKey(item, ['รหัสแผน', 'เลขที่']) || '-', 
+                        name: getKey(item, ['ชื่อโครงการ', 'รายการ']) || '-', 
+                        c1, c2, c3, bPlan, bProj, bAct, bRem 
+                    });
+                });
+
+                document.getElementById('sumTotal').innerText = stats.total + " โครงการ";
+                document.getElementById('sumTrack').innerText = stats.total + " โครงการ"; 
+                document.getElementById('sumDone').innerText = stats.done + " โครงการ";
+                document.getElementById('percDone').innerText = (stats.total ? stats.done/stats.total*100 : 0).toFixed(2);
+                document.getElementById('sumProgress').innerText = stats.progress + " โครงการ";
+                document.getElementById('percProgress').innerText = (stats.total ? stats.progress/stats.total*100 : 0).toFixed(2);
+                document.getElementById('sumNotStart').innerText = stats.notStart + " โครงการ";
+                document.getElementById('percNotStart').innerText = (stats.total ? stats.notStart/stats.total*100 : 0).toFixed(2);
+                document.getElementById('sumActivePercent').innerText = (stats.total ? ((stats.done+stats.progress)/stats.total*100).toFixed(2) : '0.00') + "%";
+
+                setTimeout(() => { renderChart(stats); }, 100);
+
+                document.getElementById('summaryTableFooter').innerHTML = `<tr class="table-secondary"><td colspan="3" class="text-center">รวมทั้งสิ้น</td><td>${stats.notStart}</td><td>${stats.progress}</td><td>${stats.done}</td><td class="text-end">${grand.plan.toLocaleString()}</td><td class="text-end">${grand.proj.toLocaleString()}</td><td class="text-end">${grand.act.toLocaleString()}</td><td class="text-end">${grand.rem.toLocaleString()}</td></tr>`;
+
+                let detailBody = document.getElementById('detailedTableBody'); 
+                detailBody.innerHTML = ''; 
+                
+                let first = true;
+                for (let dept in deptMap) {
+                    let d = deptMap[dept];
+                    let cleanDept = dept.replace(/^\d+\.\s*/, ''); 
+                    
+                    if (!first) {
+                        detailBody.innerHTML += `<tr><td colspan="10" style="height:30px; border-left:none; border-right:none; border-bottom:none;"></td></tr>`;
+                    }
+                    first = false;
+
+                    // --- Dynamic Header Construction with Dept Name in the Empty Slot ---
+                    let groupHeader = `
+                    <tr class="repeated-header">
+                        <th style="width:10%;">หมวดเงิน</th>
+                        <th style="width:10%;">ID/รหัส</th>
+                        <th style="width:30%;">ชื่อโครงการ</th>
+                        <th colspan="3">สถานะ (ยัง/กำลัง/เสร็จ)</th>
+                        <th colspan="4">งบประมาณ</th>
+                    </tr>
+                    <tr class="text-center fw-bold bg-light" style="border-bottom: 2px solid black;">
+                        <th style="background-color: #fff;"></th>
+                        <th style="background-color: #fff;"></th>
+                        <th class="text-start text-primary ps-3" style="font-size:16px; background-color: #f0f2f5;">${cleanDept}</th>
+                        <th>ยังไม่ทำ</th>
+                        <th>กำลังทำ</th>
+                        <th>เสร็จ</th>
+                        <th>ในแผน</th>
+                        <th>ในโครงการ</th>
+                        <th>ใช้จริง</th>
+                        <th>คงเหลือ</th>
+                    </tr>`;
+                    
+                    detailBody.innerHTML += groupHeader;
+                    
+                    d.items.forEach(p => {
+                       detailBody.innerHTML += `<tr><td>${p.cat}</td><td>${p.id}</td><td class="text-start ps-4">- ${p.name}</td><td>${p.c1}</td><td>${p.c2}</td><td>${p.c3}</td><td class="text-end">${p.bPlan.toLocaleString()}</td><td class="text-end">${p.bProj.toLocaleString()}</td><td class="text-end">${p.bAct.toLocaleString()}</td><td class="text-end">${p.bRem.toLocaleString()}</td></tr>`; 
+                    });
+                    
+                    detailBody.innerHTML += `<tr class="dept-total-row"><td colspan="3" class="text-end">รวม ${cleanDept}</td><td></td><td></td><td></td><td class="text-end">${d.sPlan.toLocaleString()}</td><td class="text-end">${d.sProj.toLocaleString()}</td><td class="text-end">${d.sAct.toLocaleString()}</td><td class="text-end">${d.sRem.toLocaleString()}</td></tr>`;
+                }
+                
+                document.getElementById('currentDate').innerText = new Date().toLocaleDateString('th-TH');
+                document.getElementById('btnPrint').disabled = false;
+                Swal.close();
+            } catch(e) { console.error(e); Swal.close(); }
+        }
+
+        function parseThaiFullDate(dateStr) { 
+            if (!dateStr) return null;
+            if (dateStr instanceof Date) return dateStr; 
+            dateStr = dateStr.toString().trim();
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) { let parts = dateStr.split('-'); let y = parseInt(parts[0]); if (y > 2400) y -= 543; return new Date(y, parseInt(parts[1])-1, parseInt(parts[2])); } 
+            
+            const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"]; 
+            const shortMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]; 
+            
+            let parts = null; 
+            parts = dateStr.split(/[\/\-\.]/); 
+            if (parts && parts.length === 3 && !isNaN(parts[0])) { let d = parseInt(parts[0]); let m = parseInt(parts[1]); let y = parseInt(parts[2]); if (y > 2400) y -= 543; else if (y < 100) y += 1957; return new Date(y, m - 1, d); } 
+            
+            parts = dateStr.split(/[\s]+/); 
+            if (parts.length >= 3) { let d = parseInt(parts[0]); let mName = parts[1]; let y = parseInt(parts[2]); let mIdx = months.indexOf(mName); if(mIdx === -1) mIdx = shortMonths.indexOf(mName); if(mIdx !== -1) { if (y > 2400) y -= 543; else if (y < 100) y += 1957; return new Date(y, mIdx, d); } } 
+            return null; 
+        }
+
+        function setOrientation(mode) { const paper = document.getElementById('paperArea'); const style = document.getElementById('print-style'); if(mode === 'landscape') { paper.classList.add('landscape'); style.innerHTML = '@page { size: landscape; margin: 0; }'; } else { paper.classList.remove('landscape'); style.innerHTML = '@page { size: portrait; margin: 0; }'; } }
+        
+        function showCategoryList(statusType) {
+            const tableBody = document.getElementById('catModalBody');
+            const title = document.getElementById('catModalTitle');
+            tableBody.innerHTML = '';
+            
+            let filtered = [];
+            let statusText = '';
+            const type = document.getElementById('reportTypeSelector').value;
+
+            if (statusType === 'done') {
+                statusText = 'ดำเนินการเสร็จสิ้น';
+                filtered = reportDataCache.filter(item => {
+                   const s = calculateStatus(item, type).text;
+                   return s.includes('เสร็จ') || s.includes('อนุมัติ');
+                });
+            } else if (statusType === 'progress') {
+                statusText = 'กำลังดำเนินการ';
+                filtered = reportDataCache.filter(item => {
+                   const s = calculateStatus(item, type).text;
+                   return s.includes('กำลัง');
+                });
+            } else if (statusType === 'not') {
+                statusText = 'ยังไม่ได้ดำเนินการ';
+                filtered = reportDataCache.filter(item => {
+                   const s = calculateStatus(item, type).text;
+                   return s.includes('รอ');
+                });
+            }
+
+            title.innerText = statusText + ` (${filtered.length})`;
+
+            if (filtered.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">ไม่มีรายการ</td></tr>';
+            } else {
+                filtered.forEach(item => {
+                    const id = getKey(item, ['รหัสแผน', 'เลขที่', 'รหัส', 'ID']) || '-';
+                    const name = getKey(item, ['ชื่อโครงการ', 'รายการ', 'ProjectName']) || '-';
+                    const st = calculateStatus(item, type);
+                    tableBody.innerHTML += `<tr><td>${id}</td><td>${name}</td><td class="text-center">${st.badge}</td></tr>`;
+                });
+            }
+
+            new bootstrap.Modal(document.getElementById('categoryModal')).show();
+        }
+
+        function renderChart(stats) {
+            const canvas = document.getElementById('summaryChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if(chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            
+            const total = stats.total || 1; 
+            
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ยังไม่ทำ', 'กำลังทำ', 'เสร็จสิ้น'],
+                    datasets: [{
+                        data: [stats.notStart, stats.progress, stats.done],
+                        backgroundColor: ['#e2e8f0', '#3b82f6', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    plugins: {
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            formatter: (value, ctx) => {
+                                if(value === 0) return '';
+                                let percentage = (value * 100 / total).toFixed(0) + "%";
+                                return percentage;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function calculateStatus(item, type) {
+            const has = (k) => {
+                const v = getKey(item, Array.isArray(k) ? k : [k]);
+                return v && v !== '-' && v.toString().trim() !== '';
+            };
+
+            let dept = 'ยังไม่ระบุ';
+            let status = 'รอรับเรื่อง';
+            let badgeClass = 'status-wait';
+
+            if (type === 'plan') {
+                if (has(['วันที่ส่งสรุปโครงการ'])) {
+                    return { text: 'เสร็จสิ้น', badge: '<span class="status-badge status-success">เสร็จสิ้นโครงการ</span>', currentDept: 'แผนติดตามการส่งสรุปโครงการ' };
+                }
+                if (has(['วันที่จัดโครงการเสร็จสิ้น'])) {
+                    return { text: 'รอดำเนินการ', badge: '<span class="status-badge status-pending">รอส่งสรุป</span>', currentDept: 'ผู้รับผิดชอบโครงการ' };
+                }
+                if (has(['เลขที่บันทึกข้อความ'])) {
+                    return { text: 'อนุมัติแล้ว', badge: '<span class="status-badge status-success">อนุมัติแล้ว</span>', currentDept: 'ธุรการ ศศค. (ออกเลข)' };
+                }
+                if (has(['วันที่ ผอ. เซ็นเอกสาร'])) {
+                    return { text: 'รอเลขที่', badge: '<span class="status-badge status-pending">รอเลขที่</span>', currentDept: 'ธุรการ ศศค.' };
+                }
+                if (has(['ตรวจสอบแล้ว', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)'])) {
+                     return { text: 'เสนอ ผอ.', badge: '<span class="status-badge status-pending">เสนอ ผอ.</span>', currentDept: 'ผอก. ศศค.' };
+                }
+                if (has(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ'])) {
+                     return { text: 'รอ หน. ตรวจ', badge: '<span class="status-badge status-pending">รอตรวจสอบ</span>', currentDept: 'หน.งานแพทยศาสตร์' };
+                }
+                if (has(['วันที่รับเอกสารครั้งแรก'])) {
+                     return { text: 'กำลังตรวจสอบ', badge: '<span class="status-badge status-pending">กำลังตรวจสอบ</span>', currentDept: 'รายการติดตามสถานะแผนปฏิบัติการโครงการ---แผน' };
+                }
+                
+                dept = 'ผู้ขอโครงการ'; 
+            } else {
+                if (has(['วันที่จ่าย', 'เลขที่เช็ค'])) {
+                     return { text: 'จ่ายเงินแล้ว', badge: '<span class="status-badge status-success">จ่ายเงินแล้ว</span>', currentDept: 'งบประมาณการเงิน' };
+                }
+                if (has(['สถานะ']) && getKey(item, ['สถานะ']) === 'อนุมัติ') {
+                     return { text: 'การเงินอนุมัติ', badge: '<span class="status-badge status-success">รอจ่ายเงิน</span>', currentDept: 'การเงินรอง' };
+                }
+                if (has(['วันที่รับเรื่องเข้า (การเงิน)'])) {
+                     return { text: 'กำลังตรวจสอบ', badge: '<span class="status-badge status-pending">ตรวจสอบการเงิน</span>', currentDept: 'งบประมาณการเงิน' };
+                }
+                if (has(['วันที่งานสำเร็จ'])) {
+                     return { text: 'ส่งเบิก', badge: '<span class="status-badge status-pending">ส่งเบิกจ่าย</span>', currentDept: 'พัสดุ/งานแผน' };
+                }
+                if (has(['วันที่รับเรื่องเข้า'])) {
+                     return { text: 'ดำเนินการซื้อ/จ้าง', badge: '<span class="status-badge status-pending">ซื้อ/จ้าง</span>', currentDept: 'พัสดุ/งานแผน' };
+                }
+                if (has(['วันที่ ผอ. เซ็นเอกสาร'])) {
+                     return { text: 'ผอ.อนุมัติ', badge: '<span class="status-badge status-success">ส่งพัสดุ</span>', currentDept: 'ผอก. ศศค.' };
+                }
+                if (has(['ตรวจสอบแล้ว', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)'])) {
+                     return { text: 'เสนอ ผอ.', badge: '<span class="status-badge status-pending">เสนอ ผอ.</span>', currentDept: 'ผอก. ศศค.' };
+                }
+                if (has(['ตรวจ/แก้ไขเอกสารสำเร็จ'])) {
+                     return { text: 'รอ หน. ตรวจ', badge: '<span class="status-badge status-pending">รอตรวจสอบ</span>', currentDept: 'หน.งานแพทยศาสตร์' };
+                }
+                if (has(['วันที่รับเอกสาร ครั้งแรก', 'วันที่รับเอกสารครั้งแรก'])) {
+                     return { text: 'กำลังตรวจสอบ', badge: '<span class="status-badge status-pending">กำลังตรวจสอบ</span>', currentDept: 'รายการติดตามสถานะแผนปฏิบัติการโครงการ---แผน' };
+                }
+                
+                dept = 'ผู้ขอซื้อ/จ้าง';
+            }
+
+            return { text: status, badge: `<span class="status-badge ${badgeClass}">${status}</span>`, currentDept: dept };
+        }
+
+        async function loadAdminList() { /* ... same ... */ }
+        function openAdminModal(mode, index = -1) { /* ... same ... */ }
+        async function saveAdminUser() { /* ... same ... */ }
+        async function deleteAdminUser(index) { /* ... same ... */ }
+    </script>
+</body>
+</html>

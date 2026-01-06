@@ -313,109 +313,101 @@
             box-shadow: 0 0 5px rgba(16, 185, 129, 0.2);
         }
 
-        /* --- Timeline View CSS (FIXED & CONNECTED) --- */
+        /* --- Timeline View CSS (UPDATED) --- */
         .timeline-container {
-            padding: 20px 20px 20px 0;
+            padding: 20px;
         }
         .timeline { 
-            border-left: none; /* Removed static border */
-            margin-left: 20px; 
-            padding-left: 35px; 
+            margin-left: 10px; 
+            padding-left: 0; 
             position: relative; 
         }
         .timeline-item { 
-            margin-bottom: 0;
-            padding-bottom: 35px; /* Spacing handled by padding to allow line continuity */
+            padding-left: 45px; /* Increased padding */
+            padding-bottom: 35px; 
             position: relative; 
+            border-left: 3px solid #e2e8f0; /* Default Gray Line */
         }
-        .timeline-item:last-child { padding-bottom: 0; }
-        
-        /* The Connector Line (Vertical) */
-        .timeline-item::before { 
-            content: '';
-            position: absolute;
-            left: -37px; /* Adjusted to center with the dot */
-            top: 0;
-            height: 100%;
-            width: 4px; /* Thicker line */
-            background: #e2e8f0; /* Default Gray */
-            z-index: 1;
+        .timeline-item:last-child { 
+            border-left: 3px solid transparent; 
+            padding-bottom: 0;
         }
-        
-        /* Hide line above the first item */
-        .timeline-item:first-child::before { display: none; }
-        
+
+        /* Line Colors based on status */
+        .timeline-item.success { border-left-color: #10b981; } /* Completed: Green Line */
+        .timeline-item.warning { border-left-color: #cbd5e1; } /* Current: Gray Line connects to next (Future) */
+        .timeline-item.pending { border-left-color: #e2e8f0; } 
+
         .timeline-dot { 
-            width: 22px; height: 22px; 
+            width: 26px; height: 26px; 
             background: #fff; 
             border: 4px solid #cbd5e1; 
             border-radius: 50%; 
             position: absolute; 
-            left: -46px; 
+            left: -14.5px; 
             top: 0px; 
             z-index: 2;
             transition: all 0.3s ease;
         }
         
-        /* --- STATUS COLORING --- */
-        
-        /* SUCCESS (Completed): Green Dot, Green Line Entering */
-        .timeline-item.status-success .timeline-dot { 
+        /* Dot Colors */
+        .timeline-item.success .timeline-dot { 
             border-color: #10b981; 
             background: #10b981; 
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
         }
-        .timeline-item.status-success::before {
-            background: #10b981; /* Green line connecting from previous step */
-        }
-        .timeline-item.status-success .timeline-date { color: #10b981; }
-
-        /* WARNING (Current): Yellow Dot, Green Line Entering (Path traveled so far is green) */
-        .timeline-item.status-warning .timeline-dot { 
+        .timeline-item.warning .timeline-dot { 
             border-color: #f59e0b; 
-            background: #f59e0b;
+            background: #f59e0b; 
             box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
         }
-        .timeline-item.status-warning::before {
-            background: #10b981; /* Line leading TO this step is completed */
+        .timeline-item.pending .timeline-dot { 
+            border-color: #e2e8f0; 
+            background: #fff; 
         }
-        .timeline-item.status-warning .timeline-date { color: #f59e0b; }
-        .timeline-item.status-warning .timeline-title { color: #d97706; }
 
-        /* PENDING (Future): Gray Dot, Gray Line Entering */
-        .timeline-item.status-pending .timeline-dot { 
-            border-color: #cbd5e1; 
-            background: #fff;
-        }
-        .timeline-item.status-pending::before {
-            background: #e2e8f0; /* Line leading to this step is pending */
-        }
-        .timeline-item.status-pending .timeline-date { display: none; } /* Hide empty date */
-        
-        /* Text Styles */
+        /* Text Styling */
         .timeline-date { 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            margin-bottom: 4px;
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            margin-bottom: 2px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
         }
+        .timeline-item.success .timeline-date { color: #059669; }
+        .timeline-item.warning .timeline-date { color: #d97706; }
+
         .timeline-title { 
             font-weight: 700; 
-            color: #1e293b; 
             margin-bottom: 4px; 
-            font-size: 1.05rem;
+            font-size: 1.1rem;
         }
+        .timeline-item.success .timeline-title { color: #1e293b; }
+        .timeline-item.warning .timeline-title { color: #b45309; }
+        .timeline-item.pending .timeline-title { color: #94a3b8; }
+
         .timeline-desc { 
             font-size: 0.9rem; 
             color: #475569; 
             background: #f8fafc; 
-            padding: 12px; 
+            padding: 10px 15px; 
             border-radius: 8px; 
             border: 1px solid #f1f5f9; 
-            display: inline-block;
-            min-width: 200px;
+            display: inline-block; 
+            min-width: 250px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .timeline-item.status-pending .timeline-title { color: #94a3b8; }
-        .timeline-item.status-pending .timeline-desc { color: #cbd5e1; background: #f9fafb; border-style: dashed; }
+        .timeline-item.warning .timeline-desc {
+            border-color: #fcd34d;
+            background: #fffbeb;
+            color: #92400e;
+        }
+        .timeline-item.success .timeline-desc {
+            border-color: #a7f3d0;
+            background: #ecfdf5;
+            color: #064e3b;
+        }
         
         @media print { .header-bar, .nav-tabs, #loginPage, .navbar, .navbar-custom { display: none !important; } .a4-paper { box-shadow: none; margin: 0; width: 100%; } }
     </style>
@@ -1302,7 +1294,7 @@
             myModal.show();
         }
 
-        // *** NEW FUNCTION: Render Timeline ***
+        // *** UPDATED RENDER TIMELINE FUNCTION (Green Line Logic & Date) ***
         function renderTimeline(item) {
             const container = document.getElementById('editFormContainer');
             
@@ -1320,7 +1312,7 @@
                 title: "เริ่มโครงการ", 
                 date: getVal(['กำหนดเริ่มโครงการ', 'เริ่มโครงการ', 'Start']), 
                 desc: "บันทึกข้อมูลเข้าระบบ",
-                status: "done"
+                isDone: true // Always true if data exists
             });
 
             if (currentSystemType === 'plan') {
@@ -1329,7 +1321,7 @@
                     title: "งานแผน (ตรวจสอบ)",
                     date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ']),
                     desc: "งานแผนตรวจสอบความถูกต้อง",
-                    status: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ']) ? "done" : "pending"
+                    isDone: !!getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ'])
                 });
 
                 // 3. Head Check
@@ -1337,7 +1329,7 @@
                     title: "หน.งาน ตรวจสอบ",
                     date: getVal(['วันที่ตรวจ (หน.งาน)', 'ตรวจ (หน.งาน)']),
                     desc: "หัวหน้างานอนุมัติ/ตรวจสอบ",
-                    status: getVal(['วันที่ตรวจ (หน.งาน)', 'ตรวจ (หน.งาน)']) ? "done" : "pending"
+                    isDone: !!getVal(['วันที่ตรวจ (หน.งาน)', 'ตรวจ (หน.งาน)'])
                 });
 
                 // 4. Admin / Director
@@ -1345,7 +1337,7 @@
                     title: "ธุรการ / ผอ.อนุมัติ",
                     date: getVal(['วันที่ ผอ. เซ็นเอกสาร']),
                     desc: "ผอ.ลงนามอนุมัติ (ออกเลข)",
-                    status: getVal(['วันที่ ผอ. เซ็นเอกสาร']) ? "done" : "pending"
+                    isDone: !!getVal(['วันที่ ผอ. เซ็นเอกสาร'])
                 });
 
                 // 5. Submit Summary (Execution)
@@ -1353,7 +1345,7 @@
                     title: "ส่งสรุปผล (30 วัน)",
                     date: getVal(['วันที่ส่งสรุปโครงการ']),
                     desc: "ดำเนินการจัดโครงการและส่งสรุป",
-                    status: getVal(['วันที่ส่งสรุปโครงการ']) ? "done" : "pending"
+                    isDone: !!getVal(['วันที่ส่งสรุปโครงการ'])
                 });
 
             } else {
@@ -1363,7 +1355,7 @@
                     title: "งานแผน (ตรวจสอบ)",
                     date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ']),
                     desc: "งานแผนตรวจสอบเอกสาร",
-                    status: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ']) ? "done" : "pending"
+                    isDone: !!getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ'])
                 });
 
                 // 3. Supply
@@ -1371,7 +1363,7 @@
                     title: "งานพัสดุ",
                     date: getVal(['วันที่รับเรื่องเข้า']),
                     desc: "รับเรื่อง/ดำเนินการจัดซื้อจัดจ้าง",
-                    status: getVal(['วันที่รับเรื่องเข้า']) ? "done" : "pending"
+                    isDone: !!getVal(['วันที่รับเรื่องเข้า'])
                 });
                 
                 // 4. Supply Finish
@@ -1379,7 +1371,7 @@
                     title: "ดำเนินการสำเร็จ",
                     date: getVal(['วันที่งานสำเร็จ']),
                     desc: "พัสดุดำเนินการเสร็จสิ้น",
-                    status: getVal(['วันที่งานสำเร็จ']) ? "done" : "pending"
+                    isDone: !!getVal(['วันที่งานสำเร็จ'])
                 });
             }
             
@@ -1388,34 +1380,47 @@
                 title: "การเงิน (จ่ายเงิน)",
                 date: getVal(['วันที่จ่าย']),
                 desc: "อนุมัติและสั่งจ่ายเช็ค",
-                status: getVal(['วันที่จ่าย']) ? "done" : "pending"
+                isDone: !!getVal(['วันที่จ่าย'])
+            });
+
+            // *** NEW LOGIC: FILL THE GREEN LINE ***
+            // Find the last step that is truly done
+            let lastDoneIndex = 0;
+            steps.forEach((s, i) => {
+                if(s.isDone) lastDoneIndex = i;
+            });
+
+            // Mark all steps up to lastDoneIndex as visually done (Green Line)
+            // This fixes the issue where missing dates in between break the green line
+            steps.forEach((s, i) => {
+                if (i <= lastDoneIndex) {
+                    s.visualStatus = 'success';
+                } else if (i === lastDoneIndex + 1) {
+                    s.visualStatus = 'warning'; // Current Step
+                } else {
+                    s.visualStatus = 'pending'; // Future Step
+                }
             });
 
             let html = '<div class="timeline-container"><div class="timeline">';
-            
-            let foundCurrent = false;
 
             steps.forEach(step => {
-                let statusClass = 'status-pending';
-                const isDone = step.status === 'done' || (step.date && step.date !== '-' && step.date !== null);
-
-                if (isDone) {
-                    statusClass = 'status-success';
+                let statusClass = step.visualStatus;
+                
+                // Format Date nicely
+                let dateHtml = '';
+                if(step.date) {
+                    dateHtml = `<i class="far fa-clock me-1"></i> ${step.date}`;
                 } else {
-                    if (!foundCurrent) {
-                        statusClass = 'status-warning'; // This is the first undone step = Current
-                        foundCurrent = true;
-                    } else {
-                        statusClass = 'status-pending';
-                    }
+                    if (statusClass === 'success') dateHtml = '<i class="fas fa-check me-1"></i> ผ่านแล้ว';
+                    else if (statusClass === 'warning') dateHtml = '<i class="fas fa-spinner fa-spin me-1"></i> กำลังดำเนินการ';
+                    else dateHtml = '...';
                 }
-                
-                const dateText = step.date ? step.date : '';
-                
+
                 html += `
                     <div class="timeline-item ${statusClass}">
                         <div class="timeline-dot"></div>
-                        <div class="timeline-date">${dateText}</div>
+                        <div class="timeline-date">${dateHtml}</div>
                         <div class="timeline-title">${step.title}</div>
                         <div class="timeline-desc">${step.desc}</div>
                     </div>
@@ -2020,7 +2025,7 @@
             html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
             html += `</div></div></div>`;
             html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">8. รอง ผอก.</div><div class="row g-2">`;
-            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-12');
+            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (รอง ผอก.)', 'checkbox', 'col-12');
             html += `</div></div></div>`;
             html += `<div class="col-12"><div class="card-form"><div class="form-group-title">9. การจ่ายเงิน</div><div class="row g-2">`;
             html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
@@ -2298,7 +2303,7 @@
             return null; 
         }
 
-        function setOrientation(mode) { const paper = document.getElementById('paperArea'); const style = document.getElementById('print-style'); if(mode === 'landscape') { paper.classList.add('landscape'); style.innerHTML = '@page { size: landscape; margin: 0; }'; } else { paper.classList.remove('landscape'); style.innerHTML = '@page { size: portrait; margin: 0; }'; } }
+        function setOrientation(mode) { const paper = document.getElementById('paperArea'); const style = document.getElementById('print-style'); if(mode === 'landscape') { paper.classList.add('landscape'); if(style) style.innerHTML = '@page { size: landscape; margin: 0; }'; } else { paper.classList.remove('landscape'); if(style) style.innerHTML = '@page { size: portrait; margin: 0; }'; } }
         
         function showCategoryList(statusType) {
             const tableBody = document.getElementById('catModalBody');
@@ -2473,7 +2478,7 @@
                         password: password,
                         name: name,
                         role: role,
-                        row: rowMode // Note: row param is repurposed as username identifier in edit logic if needed, but username is primary
+                        row: rowMode 
                     })
                 });
                 const json = await res.json();

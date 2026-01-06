@@ -823,11 +823,11 @@
                 } else if (Array.isArray(json)) {
                     data = json;
                 } else if (json.status === 'error') {
-                     tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-danger">Error: ${json.message}</td></tr>`;
-                     return;
+                      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-danger">Error: ${json.message}</td></tr>`;
+                      return;
                 } else {
-                     // Fallback
-                     data = json.data || [];
+                      // Fallback
+                      data = json.data || [];
                 }
                 
                 if (data.length === 0) { 
@@ -990,13 +990,15 @@
                 
                 // --- ADMIN LOGIC: ALWAYS SHOW EDIT BUTTON ---
                 if (currentUserRole === 'admin') {
-                     actionBtn = `<button class="btn btn-warning shadow-sm rounded-pill px-3 fw-bold text-dark" onclick="handleEditClick(event, ${index})"><i class="fas fa-edit me-1"></i> แก้ไขข้อมูล</button>`;
+                     // *** FIXED: ADDED btn-sm ***
+                     actionBtn = `<button class="btn btn-warning btn-sm shadow-sm rounded-pill px-3 fw-bold text-dark" onclick="handleEditClick(event, ${index})"><i class="fas fa-edit me-1"></i> แก้ไขข้อมูล</button>`;
                 }
                 // --- USER LOGIC ---
                 else if (isActionRequired(item, statusInfo)) {
                     let btnLabel = 'บันทึกผล'; // Default to "Add Data"
                     let btnIcon = 'fa-pen-to-square';
-                    let btnClass = 'btn-warning shadow-sm rounded-pill px-3 fw-bold text-dark'; 
+                    // *** FIXED: ADDED btn-sm ***
+                    let btnClass = 'btn-warning btn-sm shadow-sm rounded-pill px-3 fw-bold text-dark'; 
 
                     const stText = statusInfo.text;
 
@@ -1015,13 +1017,15 @@
                     if (showReceive) {
                          btnLabel = 'รับเรื่อง';
                          btnIcon = 'fa-file-signature';
-                         btnClass = 'btn-success shadow-sm rounded-pill px-3 fw-bold text-white';
+                         // *** FIXED: ADDED btn-sm ***
+                         btnClass = 'btn-success btn-sm shadow-sm rounded-pill px-3 fw-bold text-white';
                          actionBtn = `<button class="btn ${btnClass}" onclick="confirmReceiveTask(event, ${index})"><i class="fas ${btnIcon} me-1"></i> ${btnLabel}</button>`;
                     } else {
                         // "บันทึกผล" (Record Result / Edit Data)
                         btnLabel = 'บันทึกผล';
                         btnIcon = 'fa-pen-to-square';
-                        btnClass = 'btn-warning shadow-sm rounded-pill px-3 fw-bold text-dark';
+                        // *** FIXED: ADDED btn-sm ***
+                        btnClass = 'btn-warning btn-sm shadow-sm rounded-pill px-3 fw-bold text-dark';
                         actionBtn = `<button class="btn ${btnClass}" onclick="handleEditClick(event, ${index})"><i class="fas ${btnIcon} me-1"></i> ${btnLabel}</button>`;
                     }
                 } else {
@@ -1122,8 +1126,8 @@
                 await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'edit', type: type, rowNum: rowNum, updates: updates }) });
                 // SUCCESS HANDLER
                 Swal.fire('สำเร็จ', 'รับเรื่องเรียบร้อยแล้ว', 'success').then(()=> {
-                     // Force switch to My Tasks as requested
-                     switchTab('mytasks');
+                      // Force switch to My Tasks as requested
+                      switchTab('mytasks');
                 });
             } catch(e) {
                 // ERROR HANDLER: Extract message from error object or default
@@ -1532,7 +1536,7 @@
                 }
 
                 if (headDateSet && !headChecked) {
-                     return { 
+                      return { 
                           text: 'กำลังตรวจสอบ', 
                           badge: '<span class="status-badge status-warning text-dark">กำลังตรวจสอบ</span>', 
                           currentDept: 'หน.งานแพทยศาสตร์' 
@@ -1569,9 +1573,9 @@
                 
                 // Allow users to edit their own task fields if it's currently assigned to them
                 if (role === 'user' && el.classList.contains('role-user')) {
-                     // We check if the item is in 'mytasks' mode effectively via isActionRequired logic during render
-                     // But strictly speaking, fields marked 'role-user' are usually editble by user.
-                     allow = true; 
+                      // We check if the item is in 'mytasks' mode effectively via isActionRequired logic during render
+                      // But strictly speaking, fields marked 'role-user' are usually editble by user.
+                      allow = true; 
                 }
                 
                 if(allow) {

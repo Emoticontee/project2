@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบติดตามแผนงานและครุภัณฑ์ (Debug Version)</title>
+    <title>ระบบติดตามแผนงานและครุภัณฑ์ (Updated Timeline)</title>
     
     <!-- Libraries CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -312,6 +312,110 @@
             border: 2px solid #10b981; 
             box-shadow: 0 0 5px rgba(16, 185, 129, 0.2);
         }
+
+        /* --- Timeline View CSS (FIXED & CONNECTED) --- */
+        .timeline-container {
+            padding: 20px 20px 20px 0;
+        }
+        .timeline { 
+            border-left: none; /* Removed static border */
+            margin-left: 20px; 
+            padding-left: 35px; 
+            position: relative; 
+        }
+        .timeline-item { 
+            margin-bottom: 0;
+            padding-bottom: 35px; /* Spacing handled by padding to allow line continuity */
+            position: relative; 
+        }
+        .timeline-item:last-child { padding-bottom: 0; }
+        
+        /* The Connector Line (Vertical) */
+        .timeline-item::before { 
+            content: '';
+            position: absolute;
+            left: -37px; /* Adjusted to center with the dot */
+            top: 0;
+            height: 100%;
+            width: 4px; /* Thicker line */
+            background: #e2e8f0; /* Default Gray */
+            z-index: 1;
+        }
+        
+        /* Hide line above the first item */
+        .timeline-item:first-child::before { display: none; }
+        
+        .timeline-dot { 
+            width: 22px; height: 22px; 
+            background: #fff; 
+            border: 4px solid #cbd5e1; 
+            border-radius: 50%; 
+            position: absolute; 
+            left: -46px; 
+            top: 0px; 
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        
+        /* --- STATUS COLORING --- */
+        
+        /* SUCCESS (Completed): Green Dot, Green Line Entering */
+        .timeline-item.status-success .timeline-dot { 
+            border-color: #10b981; 
+            background: #10b981; 
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+        .timeline-item.status-success::before {
+            background: #10b981; /* Green line connecting from previous step */
+        }
+        .timeline-item.status-success .timeline-date { color: #10b981; }
+
+        /* WARNING (Current): Yellow Dot, Green Line Entering (Path traveled so far is green) */
+        .timeline-item.status-warning .timeline-dot { 
+            border-color: #f59e0b; 
+            background: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+        }
+        .timeline-item.status-warning::before {
+            background: #10b981; /* Line leading TO this step is completed */
+        }
+        .timeline-item.status-warning .timeline-date { color: #f59e0b; }
+        .timeline-item.status-warning .timeline-title { color: #d97706; }
+
+        /* PENDING (Future): Gray Dot, Gray Line Entering */
+        .timeline-item.status-pending .timeline-dot { 
+            border-color: #cbd5e1; 
+            background: #fff;
+        }
+        .timeline-item.status-pending::before {
+            background: #e2e8f0; /* Line leading to this step is pending */
+        }
+        .timeline-item.status-pending .timeline-date { display: none; } /* Hide empty date */
+        
+        /* Text Styles */
+        .timeline-date { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            margin-bottom: 4px;
+        }
+        .timeline-title { 
+            font-weight: 700; 
+            color: #1e293b; 
+            margin-bottom: 4px; 
+            font-size: 1.05rem;
+        }
+        .timeline-desc { 
+            font-size: 0.9rem; 
+            color: #475569; 
+            background: #f8fafc; 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid #f1f5f9; 
+            display: inline-block;
+            min-width: 200px;
+        }
+        .timeline-item.status-pending .timeline-title { color: #94a3b8; }
+        .timeline-item.status-pending .timeline-desc { color: #cbd5e1; background: #f9fafb; border-style: dashed; }
         
         @media print { .header-bar, .nav-tabs, #loginPage, .navbar, .navbar-custom { display: none !important; } .a4-paper { box-shadow: none; margin: 0; width: 100%; } }
     </style>
@@ -691,7 +795,7 @@
             
             if (typeof ChartDataLabels !== 'undefined' && Chart.plugins) {
                 if (Chart.version && parseInt(Chart.version.split('.')[0]) >= 3) {
-                     Chart.register(ChartDataLabels);
+                      Chart.register(ChartDataLabels);
                 }
             }
         });
@@ -990,8 +1094,8 @@
                 
                 // --- ADMIN LOGIC: ALWAYS SHOW EDIT BUTTON ---
                 if (currentUserRole === 'admin') {
-                     // *** FIXED: ADDED btn-sm ***
-                     actionBtn = `<button class="btn btn-warning btn-sm shadow-sm rounded-pill px-3 fw-bold text-dark" onclick="handleEditClick(event, ${index})"><i class="fas fa-edit me-1"></i> แก้ไขข้อมูล</button>`;
+                      // *** FIXED: ADDED btn-sm ***
+                      actionBtn = `<button class="btn btn-warning btn-sm shadow-sm rounded-pill px-3 fw-bold text-dark" onclick="handleEditClick(event, ${index})"><i class="fas fa-edit me-1"></i> แก้ไขข้อมูล</button>`;
                 }
                 // --- USER LOGIC ---
                 else if (isActionRequired(item, statusInfo)) {
@@ -1179,17 +1283,147 @@
                 btnEdit.style.display = 'inline-block';
             }
 
-            renderDetailForm(item, currentSystemType, false);
+            // *** CHANGED: Use new logic for View vs Edit ***
+            if (mode === 'view') {
+                renderTimeline(item);
+                // Hide Edit toggle in View mode to keep it "Only Sequence" as requested
+                btnEdit.style.display = 'none';
+            } else {
+                renderDetailForm(item, currentSystemType, false);
+                if(mode === 'edit' && canEdit) {
+                    setTimeout(() => toggleEditMode(), 200); 
+                }
+            }
             
             // --- FIX: Use Singleton Pattern for Modal ---
             const modalEl = document.getElementById('detailModal');
             let myModal = bootstrap.Modal.getInstance(modalEl);
             if (!myModal) myModal = new bootstrap.Modal(modalEl);
             myModal.show();
+        }
+
+        // *** NEW FUNCTION: Render Timeline ***
+        function renderTimeline(item) {
+            const container = document.getElementById('editFormContainer');
             
-            if(mode === 'edit' && canEdit) {
-                setTimeout(() => toggleEditMode(), 200); 
+            // Helper to get date string
+            const getVal = (keys) => {
+                let v = getKey(item, Array.isArray(keys) ? keys : [keys]);
+                if (!v || v === '-' || v === '') return null;
+                return v;
+            };
+
+            const steps = [];
+
+            // 1. Initial / Created
+            steps.push({ 
+                title: "เริ่มโครงการ", 
+                date: getVal(['กำหนดเริ่มโครงการ', 'เริ่มโครงการ', 'Start']), 
+                desc: "บันทึกข้อมูลเข้าระบบ",
+                status: "done"
+            });
+
+            if (currentSystemType === 'plan') {
+                // 2. Plan Check
+                steps.push({
+                    title: "งานแผน (ตรวจสอบ)",
+                    date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ']),
+                    desc: "งานแผนตรวจสอบความถูกต้อง",
+                    status: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ']) ? "done" : "pending"
+                });
+
+                // 3. Head Check
+                steps.push({
+                    title: "หน.งาน ตรวจสอบ",
+                    date: getVal(['วันที่ตรวจ (หน.งาน)', 'ตรวจ (หน.งาน)']),
+                    desc: "หัวหน้างานอนุมัติ/ตรวจสอบ",
+                    status: getVal(['วันที่ตรวจ (หน.งาน)', 'ตรวจ (หน.งาน)']) ? "done" : "pending"
+                });
+
+                // 4. Admin / Director
+                steps.push({
+                    title: "ธุรการ / ผอ.อนุมัติ",
+                    date: getVal(['วันที่ ผอ. เซ็นเอกสาร']),
+                    desc: "ผอ.ลงนามอนุมัติ (ออกเลข)",
+                    status: getVal(['วันที่ ผอ. เซ็นเอกสาร']) ? "done" : "pending"
+                });
+
+                // 5. Submit Summary (Execution)
+                steps.push({
+                    title: "ส่งสรุปผล (30 วัน)",
+                    date: getVal(['วันที่ส่งสรุปโครงการ']),
+                    desc: "ดำเนินการจัดโครงการและส่งสรุป",
+                    status: getVal(['วันที่ส่งสรุปโครงการ']) ? "done" : "pending"
+                });
+
+            } else {
+                // BUY FLOW
+                // 2. Plan Check
+                steps.push({
+                    title: "งานแผน (ตรวจสอบ)",
+                    date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ']),
+                    desc: "งานแผนตรวจสอบเอกสาร",
+                    status: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ']) ? "done" : "pending"
+                });
+
+                // 3. Supply
+                steps.push({
+                    title: "งานพัสดุ",
+                    date: getVal(['วันที่รับเรื่องเข้า']),
+                    desc: "รับเรื่อง/ดำเนินการจัดซื้อจัดจ้าง",
+                    status: getVal(['วันที่รับเรื่องเข้า']) ? "done" : "pending"
+                });
+                
+                // 4. Supply Finish
+                steps.push({
+                    title: "ดำเนินการสำเร็จ",
+                    date: getVal(['วันที่งานสำเร็จ']),
+                    desc: "พัสดุดำเนินการเสร็จสิ้น",
+                    status: getVal(['วันที่งานสำเร็จ']) ? "done" : "pending"
+                });
             }
+            
+            // Common Last Step: Finance
+            steps.push({
+                title: "การเงิน (จ่ายเงิน)",
+                date: getVal(['วันที่จ่าย']),
+                desc: "อนุมัติและสั่งจ่ายเช็ค",
+                status: getVal(['วันที่จ่าย']) ? "done" : "pending"
+            });
+
+            let html = '<div class="timeline-container"><div class="timeline">';
+            
+            let foundCurrent = false;
+
+            steps.forEach(step => {
+                let statusClass = 'status-pending';
+                const isDone = step.status === 'done' || (step.date && step.date !== '-' && step.date !== null);
+
+                if (isDone) {
+                    statusClass = 'status-success';
+                } else {
+                    if (!foundCurrent) {
+                        statusClass = 'status-warning'; // This is the first undone step = Current
+                        foundCurrent = true;
+                    } else {
+                        statusClass = 'status-pending';
+                    }
+                }
+                
+                const dateText = step.date ? step.date : '';
+                
+                html += `
+                    <div class="timeline-item ${statusClass}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-date">${dateText}</div>
+                        <div class="timeline-title">${step.title}</div>
+                        <div class="timeline-desc">${step.desc}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div></div>';
+            container.innerHTML = html;
         }
 
         function renderDetailForm(item, type, editable) {
@@ -1736,7 +1970,7 @@
                     input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
                     return `<div class="${col}">${input}</div>`;
                 } else if (type === 'date') {
-                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                      input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
                 } else {
                     input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
                 }
@@ -1813,7 +2047,7 @@
                     input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
                     return `<div class="${col}">${input}</div>`;
                 } else if (type === 'date') {
-                     input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                      input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
                 } else {
                     input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
                 }
@@ -1859,7 +2093,7 @@
             html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">7. รอง ผอก.</div><div class="row g-2">`;
             html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (รอง ผอก.)', 'checkbox', 'col-12');
             html += `</div></div></div>`;
-            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">8. การเงิน (จ่าย)</div><div class="row g-2">`;
+            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">8. การจ่ายเงิน</div><div class="row g-2">`;
             html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
             html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
             html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');

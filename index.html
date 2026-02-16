@@ -1789,9 +1789,8 @@ function toggleEditMode() {
     } else if (role === 'head_med') {
         isAccepted = !!getVal(['head_check', 'วันที่ตรวจ (หน.งาน)']);
     } else if (role === 'supply') {
-    // ใช้ getKey เพื่อหาคอลัมน์ "วันที่รับเรื่องเข้า" ไม่ว่าจะอยู่ที่คอลัมน์ไหนหรือมีช่องว่างเท่าไหร่
-    isReceived = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']);
-} else if (role === 'finance' || role === 'deputy') {
+    isAccepted = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']);
+    } else if (role === 'finance' || role === 'deputy') {
         isAccepted = !!getVal(['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)']);
     }
 

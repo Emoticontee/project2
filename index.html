@@ -1595,11 +1595,13 @@ html += `</div></div>`;
                 html += `</div></div>`;
 
                 html += `<div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">6. พัสดุ (Step 6)</h6><div class="row">`;
-                html += createField('รับเรื่อง (พัสดุ)', ['supply_receive', 'วันที่รับเรื่องเข้า'], 'role-supply', 'date');
+                
+                html += createField('รับเรื่อง (พัสดุ)', ['supply_receive', 'วันที่รับเรื่องเข้า'], 'role-supply', 'date'); 
                 html += createField('ประเภท', ['supply_type', 'ประเภท'], 'role-supply', 'select', masterRefs.categories);
                 html += createField('สถานะหลัก', ['supply_status', 'สถานะหลัก'], 'role-supply', 'select', masterRefs.statuses);
                 html += createField('รายการย่อย', ['supply_sub', 'รายการย่อย'], 'role-supply');
-                html += createField('สั่งจ้าง/ซื้อ (บาท)', ['supply_money', 'จำนวนเงินที่สั่งจ้าง / ซื้อ'], 'role-supply', 'text');
+                
+                html += createField('สั่งจ้าง/ซื้อ (บาท)', ['supply_money', 'จำนวนเงินที่สั่งจ้าง/ซื้อ'], 'role-supply', 'text');
                 html += createField('งานสำเร็จ', ['supply_done', 'วันที่งานสำเร็จ'], 'role-supply', 'date');
                 html += `</div></div>`;
 
@@ -1652,7 +1654,7 @@ async function saveChanges(isSubmit = true) {
         'plan': ['plan_check', 'summary_send'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 3 หรือ 6
         'head_med': ['head_status'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 4
         'ssk_admin': ['admin_number'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 5
-        'supply': ['supply_done'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 7
+       'supply': ['supply_done'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 7
         'finance': ['finance_status', 'finance_pay'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 8 หรือ 10
         'deputy': ['finance_check'] // ช่องที่ถ้ากรอกแล้วงานจะจบสเต็ป 8
     };
@@ -1787,8 +1789,9 @@ function toggleEditMode() {
     } else if (role === 'head_med') {
         isAccepted = !!getVal(['head_check', 'วันที่ตรวจ (หน.งาน)']);
     } else if (role === 'supply') {
-        isAccepted = !!getVal(['supply_receive', 'วันที่รับเรื่องเข้า']);
-    } else if (role === 'finance' || role === 'deputy') {
+    // ใช้ getKey เพื่อหาคอลัมน์ "วันที่รับเรื่องเข้า" ไม่ว่าจะอยู่ที่คอลัมน์ไหนหรือมีช่องว่างเท่าไหร่
+    isReceived = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']);
+} else if (role === 'finance' || role === 'deputy') {
         isAccepted = !!getVal(['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)']);
     }
 

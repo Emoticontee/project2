@@ -503,7 +503,7 @@
                 <li class="nav-item"><button class="nav-link" onclick="switchTab('mytasks')"><i class="fas fa-briefcase tab-icon"></i>งานของฉัน</button></li>
                 <li class="nav-item"><button class="nav-link active" onclick="switchTab('pending')"><i class="fas fa-clock tab-icon"></i>รายการรอดำเนินการ</button></li>
                 <li class="nav-item"><button class="nav-link" onclick="switchTab('plan')"><i class="fas fa-clipboard-list tab-icon"></i>แผนปฏิบัติการ</button></li>
-                <li class="nav-item"><button class="nav-link" onclick="switchTab('buy')"><i class="fas fa-cubes tab-icon"></i>เบิกจ่ายครุภัณฑ์</button></li>
+                <li class="nav-item"><button class="nav-link" onclick="switchTab('buy')"><i class="fas fa-cubes tab-icon"></i>แผนครุภัณฑ์</button></li>
                 <li class="nav-item"><button class="nav-link" onclick="switchTab('report')"><i class="fas fa-chart-pie tab-icon"></i>รายงานสรุปผล</button></li>
                 <li class="nav-item" id="nav-admin" style="display:none;"><button class="nav-link" onclick="switchTab('admin')"><i class="fas fa-users-cog tab-icon"></i>จัดการผู้ใช้งาน</button></li>
             </ul>
@@ -551,8 +551,18 @@
                         <h4 class="fw-bold m-0" style="color: #1e293b;" id="pageTitle">รายการรอดำเนินการ</h4>
                         <small class="text-muted">จัดการและติดตามสถานะโครงการ</small>
                     </div>
-                    <button id="btnAddData" class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4 py-2" onclick="goToAddPage()" style="display:none;"><i class="fas fa-plus me-2"></i>เพิ่มข้อมูล</button>
-                </div>
+                    
+                    <div id="pendingToggleArea" style="display:none; margin-right: 15px;">
+                        <div class="btn-group shadow-sm">
+                            <button class="btn btn-sm btn-outline-primary active" id="btnPendingPlan" onclick="togglePendingType('plan')">แผนปฏิบัติการ</button>
+                            <button class="btn btn-sm btn-outline-primary" id="btnPendingBuy" onclick="togglePendingType('buy')">ครุภัณฑ์</button>
+                        </div>
+                    </div>
+
+                   <button id="btnAddData" class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4" onclick="goToAddPage()" style="display:none;"><i class="fas fa-plus-circle me-2"></i>เพิ่มข้อมูล</button>
+             </div>
+           
+            
                 
                 <div class="search-container">
                     <div class="row g-3">
@@ -653,7 +663,7 @@
                         
                         <select id="reportTypeSelector" class="form-select shadow-sm" style="width:160px; display:block;"> 
                             <option value="plan">แผนปฏิบัติการ</option>
-                            <option value="buy">เบิกจ่ายครุภัณฑ์</option>
+                            <option value="buy">แผนครุภัณฑ์</option>
                         </select>
                         
                         <div class="btn-group shadow-sm"><input type="radio" class="btn-check" name="paperOri" id="oriPortrait" checked onchange="setOrientation('portrait')"><label class="btn btn-outline-secondary" for="oriPortrait">แนวตั้ง</label><input type="radio" class="btn-check" name="paperOri" id="oriLandscape" onchange="setOrientation('landscape')"><label class="btn btn-outline-secondary" for="oriLandscape">แนวนอน</label></div>
@@ -839,6 +849,8 @@
             itemTypes: [], 
             statuses: [], 
             companies: [] 
+        
+        
         };
 
 
@@ -866,7 +878,19 @@
     }
 }
 
-// เรียกใช้งานฟังก์ชันทันที
+const findVal = (item, searchKey) => {
+    if (!item) return null;
+    const allKeys = Object.keys(item);
+  
+    const foundKey = allKeys.find(k => k.replace(/\s/g, '') === searchKey.replace(/\s/g, ''));
+    return foundKey ? item[foundKey] : null;
+};
+
+const hasValue = (item, searchKey) => {
+    const v = findVal(item, searchKey);
+    return (v && v !== '-' && v.toString().trim() !== '');
+};
+
 loadMasterRefs();
 
 
@@ -945,32 +969,68 @@ loadMasterRefs();
             const navLinks = document.querySelectorAll('.nav-link'); 
             navLinks.forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
-            document.getElementById('searchYear').value = '';
-            document.getElementById('searchKeyword').value = '';
+            
+            // ล้างค่าการค้นหาและตารางเดิม
+            if(document.getElementById('searchYear')) document.getElementById('searchYear').value = '';
+            if(document.getElementById('searchKeyword')) document.getElementById('searchKeyword').value = '';
             document.getElementById('tableBody').innerHTML = '';
             document.getElementById('myTaskTableBody').innerHTML = '';
 
-            // Default type for MyTasks should be Plan if not set
             const typeToLoad = currentSystemType || 'plan';
 
             if(tabName === 'mytasks') { 
                 if(navLinks[0]) navLinks[0].classList.add('active'); 
                 document.getElementById('myTaskPage').style.display = 'block'; 
-                // Toggle Button State
                 updateTaskTypeToggle(typeToLoad);
                 loadDataList(typeToLoad, 'mytasks'); 
             }
-            else if(tabName === 'pending') { if(navLinks[1]) navLinks[1].classList.add('active'); document.getElementById('searchPage').style.display = 'block'; document.getElementById('pageTitle').innerText = 'รายการรอดำเนินการ'; document.getElementById('pendingAlert').style.display = 'block'; document.getElementById('btnAddData').style.display = 'none'; loadDataList('plan', 'pending'); } 
-            else if(tabName === 'plan') { if(navLinks[2]) navLinks[2].classList.add('active'); document.getElementById('searchPage').style.display = 'block'; document.getElementById('pageTitle').innerText = 'แผนปฏิบัติการ (ทั้งหมด)'; document.getElementById('pendingAlert').style.display = 'none'; if(currentUserRole !== 'supply') document.getElementById('btnAddData').style.display = 'block'; loadDataList('plan', 'all'); } 
-            else if(tabName === 'buy') { if(navLinks[3]) navLinks[3].classList.add('active'); document.getElementById('searchPage').style.display = 'block'; document.getElementById('pageTitle').innerText = 'ครุภัณฑ์ (ทั้งหมด)'; document.getElementById('pendingAlert').style.display = 'none'; if(currentUserRole !== 'finance') document.getElementById('btnAddData').style.display = 'block'; loadDataList('buy', 'all'); } 
+            else if(tabName === 'pending') { 
+                if(navLinks[1]) navLinks[1].classList.add('active'); 
+                document.getElementById('searchPage').style.display = 'block'; 
+                document.getElementById('pageTitle').innerText = 'รายการรอดำเนินการ'; 
+                document.getElementById('pendingAlert').style.display = 'block'; 
+                document.getElementById('btnAddData').style.display = 'none'; 
+                
+                // ✅ แสดงปุ่มสลับประเภทงาน
+                if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'block';
+                
+                loadDataList(currentSystemType || 'plan', 'pending'); 
+            } 
+            else if(tabName === 'plan') { 
+                // ✅ ซ่อนปุ่มสลับประเภทเมื่อไปหน้าอื่น
+                if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'none';
+                
+                if(navLinks[2]) navLinks[2].classList.add('active'); 
+                document.getElementById('searchPage').style.display = 'block'; 
+                document.getElementById('pageTitle').innerText = 'แผนปฏิบัติการ (ทั้งหมด)'; 
+                document.getElementById('pendingAlert').style.display = 'none'; 
+                if(currentUserRole !== 'supply') document.getElementById('btnAddData').style.display = 'block'; 
+                loadDataList('plan', 'all'); 
+            }
+            else if(tabName === 'buy') { 
+                // ✅ ซ่อนปุ่มสลับประเภทเมื่อไปหน้าอื่น
+                if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'none';
+                
+                if(navLinks[3]) navLinks[3].classList.add('active'); 
+                document.getElementById('searchPage').style.display = 'block'; 
+                document.getElementById('pageTitle').innerText = 'ครุภัณฑ์ (ทั้งหมด)'; 
+                document.getElementById('pendingAlert').style.display = 'none'; 
+                if(currentUserRole !== 'finance') document.getElementById('btnAddData').style.display = 'block'; 
+                loadDataList('buy', 'all'); 
+            }
             else if(tabName === 'report') {
                 if(navLinks[4]) navLinks[4].classList.add('active');
                 document.getElementById('reportPage').style.display = 'block';
                 document.getElementById('reportContent').style.display = 'none';
                 document.getElementById('reportPlaceholder').style.display = 'block';
-            } else if(tabName === 'admin') { if(navLinks[5]) navLinks[5].classList.add('active'); document.getElementById('adminPage').style.display = 'block'; loadAdminList(); }
+            } 
+            else if(tabName === 'admin') { 
+                if(navLinks[5]) navLinks[5].classList.add('active'); 
+                document.getElementById('adminPage').style.display = 'block'; 
+                loadAdminList(); 
+            }
         }
-        
+    
         function updateTaskTypeToggle(type) {
             currentSystemType = type;
             const btnPlan = document.getElementById('btnTaskPlan');
@@ -989,6 +1049,22 @@ loadMasterRefs();
             loadDataList(type, 'mytasks');
         }
         
+// เพิ่มฟังก์ชันใหม่นี้ไว้ใกล้ๆ กับ toggleTaskType
+function togglePendingType(type) {
+    currentSystemType = type;
+    const btnPlan = document.getElementById('btnPendingPlan');
+    const btnBuy = document.getElementById('btnPendingBuy');
+    if(type === 'plan') {
+        btnPlan.classList.add('active');
+        btnBuy.classList.remove('active');
+    } else {
+        btnPlan.classList.remove('active');
+        btnBuy.classList.add('active');
+    }
+    loadDataList(type, 'pending');
+}
+
+
         function triggerSearch() { 
             const filterMode = (currentTabMode === 'pending') ? 'pending' : (currentTabMode === 'mytasks' ? 'mytasks' : 'all');
             loadDataList((currentTabMode === 'buy') ? 'buy' : 'plan', filterMode); 
@@ -1035,53 +1111,70 @@ loadMasterRefs();
                 const filtered = data.filter(item => {
                     const statusInfo = calculateStatus(item, type);
                     const isMyTurn = isActionRequired(item, statusInfo);
-                    //const role = (localStorage.getItem('appRole') || '').toLowerCase();
-                    const stText = statusInfo.text;
-                    //const dept = statusInfo.currentDept;
 
-                   // แก้ไขบรรทัด 857 เป็นต้นไป (เช็คจุด llet และ Logic)
+                // --- เริ่มต้นส่วนที่วางทับจุดที่ 1 (แทนที่บรรทัด 745 - 784) ---
+                    const stText = statusInfo.text;
+                    const currentDept = statusInfo.currentDept || ''; 
                     let isReceived = false;
                     const role = localStorage.getItem('appRole');
-                    const dept = statusInfo.currentDept;
 
-                    if (role === 'admin') isReceived = true;
-                    else if (role === 'plan' || role === 'ssk_admin') {
-                        if (dept.includes('ธุรการ')) isReceived = !!getKey(item, ['admin_sign', 'วันที่ ผอ. เซ็นเอกสาร']);
-                        else if (dept.includes('สรุป')) isReceived = !!getKey(item, ['project_done', 'วันที่จัดโครงการเสร็จสิ้น']);
-                        else isReceived = !!getKey(item, ['plan_receive', 'วันที่รับเอกสารครั้งแรก']);
-                    } else if (role === 'head_med') {
-                        isReceived = !!getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)']);
-                    } else if (role === 'supply') {
-                        isReceived = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']);
-                    } else if (role === 'finance') {
-                        if (dept.includes('จ่าย')) isReceived = !!getKey(item, ['finance_pay', 'วันที่จ่าย']);
-                        else isReceived = !!getKey(item, ['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)']);
-                    } else if (role === 'deputy') {
-                        isReceived = (item['ตรวจสอบแล้ว'] === '/' || item['ตรวจสอบแล้ว'] === '✅');
+                    if (currentDept === 'สิ้นสุดขั้นตอน' || stText.includes('ปิดโครงการ') || stText.includes('จ่ายเงินแล้ว')) {
+                        if (filterMode === 'pending' || filterMode === 'mytasks') return false;
                     }
 
-                    // --- แยกหน้า Pending vs My Tasks ---
-                    if(filterMode === 'pending') { 
-                        if(stText.includes('เสร็จ') || stText.includes('อนุมัติแล้ว')) {
-                             // ถ้างานถึงขั้นอนุมัติแล้ว ต้องไม่ใช่ธุรการถึงจะหายไปจาก Pending
-                             if(!(role === 'ssk_admin' || role === 'plan')) return false;
+                    if (role === 'admin') {
+                        isReceived = true;
+                    } else if (role === 'plan' || role === 'ssk_admin') {
+                        if (currentDept.includes('ธุรการ')) isReceived = !!getKey(item, ['admin_sign', 'วันที่ ผอ. เซ็นเอกสาร']);
+                        else if (currentDept.includes('สรุป')) isReceived = !!getKey(item, ['project_done', 'วันที่จัดโครงการเสร็จสิ้น']);
+                        else isReceived = !!getKey(item, ['plan_receive', 'วันที่รับเอกสารครั้งแรก']);
+                    } else if (role === 'head_med') {
+                        // ✅ แก้ไข: เช็คการรับเรื่องจากคีย์ที่ หน.งาน บันทึกจริง (Step 3)
+                        const headDate = getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)']);
+                        isReceived = (headDate && headDate.toString().trim() !== '' && headDate !== '-');
+                    }else if (role === 'supply') {
+                        isReceived = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']);
+                    } else if (role === 'finance') {
+                        // ✅ คงส่วนของครุภัณฑ์ (Step 8) ไว้ตามเดิม
+                        if (currentDept.includes('จ่ายเงิน')) {
+                            const chequeVal = findVal(item, 'เลขที่เช็ค');
+                            isReceived = (chequeVal && chequeVal.toString().trim() !== '');
+                        } else {
+                            isReceived = !!getKey(item, ['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)']);
                         }
+                    } else if (role && role.toLowerCase() === 'deputy') {
+                        const deputyVal = findVal(item, 'ตรวจสอบแล้ว (รอง)');
+                        isReceived = (deputyVal && deputyVal.toString().trim() !== '');
+                    }
+                    // --- สิ้นสุดส่วนที่วางทับจุดที่ 1 ---
+
+                    // --- จบส่วนที่วางทับจุดที่ 1 ---
+                    // --- สิ้นสุดส่วนที่วางทับ ---
+                    if(filterMode === 'pending') { 
+                        // ✅ แก้ไข: ลบเงื่อนไขเช็ค 'อนุมัติแล้ว' ออก 
+                        // เพื่อให้ พัสดุ/การเงิน มองเห็นงานที่ส่งต่อมาจากธุรการได้ในหน้า Pending
+                        if(stText.includes('เสร็จสิ้น') || stText.includes('จ่ายเงินแล้ว')) return false;
+                        
                         // แสดงเฉพาะงานที่ "เป็นคิวเรา" และ "ยังไม่ได้กดรับ"
                         return (isMyTurn && !isReceived); 
                     }
                     
+                    // --- 2. กรองหน้า "งานของฉัน" (My Tasks) ---
                     if(filterMode === 'mytasks') {
                         // แสดงเฉพาะงานที่ "เป็นคิวเรา" และ "กดรับแล้ว"
                         return (isMyTurn && isReceived);
                     }
                     
-                    // หน้าปกติ (แผน/ครุภัณฑ์) กรองคำค้นหาตามเดิม
-                    if (kw) {
-                         const searchStr = Object.values(item).join(' ').toLowerCase();
-                         if (!searchStr.includes(kw)) return false;
-                    }
-                    return true;
-                });
+                    // ค้นหาบรรทัด 818 ในฟังก์ชัน loadDataList
+                        if (filterMode === 'all') {
+                            // ❌ ลบส่วน if (!stText.includes...) 3 บรรทัดนี้ทิ้งเลยครับ
+                            if (kw) {
+                                const searchStr = Object.values(item).join(' ').toLowerCase();
+                                if (!searchStr.includes(kw)) return false;
+                            }
+                            return true;
+                        }
+                   });
                 
                 // Pagination Logic (Client Side)
                 let dataToRender = filtered;
@@ -1178,31 +1271,42 @@ function renderTable(data, type, tableId = 'tableBody') {
                 const isMyTask = isActionRequired(item, statusInfo);
                 
                 
-// ค้นหาใน renderTable (ประมาณบรรทัดที่ 843) ลบเงื่อนไขเช็ค role เดิมออก และวางชุดนี้แทน:
+// --- เริ่มต้นส่วนที่วางทับจุดที่ 2 (แทนที่บรรทัด 862 - 885) ---
                 if (isMyTask) {
                     let isReceived = false;
-const role = localStorage.getItem('appRole');
-const dept = statusInfo.currentDept;
+                    const role = localStorage.getItem('appRole');
+                    const currentDept = statusInfo.currentDept;
 
-if (role === 'admin') isReceived = true;
-else if (role === 'plan' || role === 'ssk_admin') {
-    if (dept.includes('ธุรการ')) isReceived = !!item['วันที่ ผอ. เซ็นเอกสาร'];
-    else if (dept.includes('สรุป')) isReceived = !!item['วันที่จัดโครงการเสร็จสิ้น'];
-    else isReceived = !!item['วันที่รับเอกสารครั้งแรก'];
-} else if (role === 'head_med') {
-    isReceived = !!item['วันที่ตรวจ (หน.งาน)'];
-} else if (role === 'supply') {
-    isReceived = !!item['วันที่รับเรื่องเข้า'];
-} else if (role === 'finance') {
-    if (dept.includes('จ่ายเงิน')) isReceived = !!item['วันที่จ่าย'];
-    else isReceived = !!item['วันที่รับเรื่องเข้า (การเงิน)'];
-} else if (role === 'deputy') {
-    isReceived = (item['ตรวจสอบแล้ว'] === '/' || item['ตรวจสอบแล้ว'] === '✅');
-}
-
-                    if (isReceived) {
+                    if (role === 'admin') {
+                        isReceived = true;
+                    } else if (role === 'plan' || role === 'ssk_admin') {
+                        if (currentDept.includes('ธุรการ')) isReceived = !!getKey(item, ['admin_sign', 'วันที่ ผอ. เซ็นเอกสาร']);
+                        else if (currentDept.includes('สรุป')) isReceived = !!getKey(item, ['project_done', 'วันที่จัดโครงการเสร็จสิ้น']);
+                        else isReceived = !!getKey(item, ['plan_receive', 'วันที่รับเอกสารครั้งแรก']);
+                    } else if (role === 'head_med') {
+                        // ✅ แก้ไข: เช็คข้อมูลวันที่รับเรื่องเพื่อให้ปุ่มเปลี่ยนเป็น "จัดการงาน"
+                        const headDate = getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)']);
+                        isReceived = (headDate && headDate.toString().trim() !== '' && headDate !== '-');
+                    } else if (role === 'supply') {
+                        isReceived = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']);
+                    } else if (role === 'finance') {
+                        if (currentDept.includes('จ่ายเงิน')) {
+                            const val = findVal(item, 'เลขที่เช็ค');
+                            isReceived = (val && val.toString().trim() !== '');
+                        } else {
+                            isReceived = !!getKey(item, ['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)']);
+                        }
+                    } else if (role && role.toLowerCase() === 'deputy') {
+                        const val = findVal(item, 'ตรวจสอบแล้ว (รอง)');
+                        isReceived = (val && val.toString().trim() !== '');
+                    }
+                // --- สิ้นสุดส่วนที่วางทับจุดที่ 2 ---
+                   
+                if (isReceived) {
+                       // แสดงปุ่มจัดการงานในหน้า "งานของฉัน"
                        actionBtn = `<button class="btn-manage" onclick="event.stopPropagation(); openManageModal(${index})"><i class="fas fa-cog me-1"></i> จัดการงาน</button>`;
                     } else {
+                        // แสดงปุ่มรับเรื่องในหน้า "รายการรอดำเนินการ"
                         actionBtn = `<button class="btn-accept" onclick="confirmReceiveTask(event, ${index})"><i class="fas fa-check-circle me-1"></i> รับเรื่อง</button>`;
                     }
                 }
@@ -1252,41 +1356,36 @@ async function performReceive(index) {
     const today = new Date();
     const thaiDate = today.getDate() + ' ' + ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"][today.getMonth()] + ' ' + (today.getFullYear() + 543);
     
-    // ดึงสถานะปัจจุบันเพื่อดูว่างานอยู่ที่ขั้นตอนไหน
     const statusInfo = calculateStatus(item, type);
     const dept = statusInfo.currentDept;
 
     if (role === 'admin') {
-        Swal.fire('Admin', 'ผู้ดูแลระบบไม่ต้องกดรับเรื่อง สามารถจัดการงานได้ทันที', 'info');
+        Swal.fire('Admin', 'ผู้ดูแลระบบไม่ต้องกดรับเรื่อง', 'info');
         return;
     } 
     
-    // --- Logic การบันทึกวันที่รับเรื่องแยกตามบทบาท ---
+    // --- จุดที่ 3: Logic การบันทึกแยกคอลัมน์ตามรูปที่คุณแจ้ง ---
+    // --- เริ่มต้นส่วนที่วางทับ (แทนที่บรรทัด 990 - 1017) ---
     if (role === 'plan' || role === 'ssk_admin') { 
-        if (dept.includes('ผอ') || dept.includes('ธุรการ') || dept.includes('เลข')) {
-            updates['วันที่ ผอ. เซ็นเอกสาร'] = '-'; // Step 4: ธุรการรับเรื่อง
-        } else if (dept.includes('สรุป')) {
-            updates['วันที่จัดโครงการเสร็จสิ้น'] = '-'; // Step 5: แผนรับเรื่องตามสรุป
-        } else {
-            updates['วันที่รับเอกสารครั้งแรก'] = thaiDate; // Step 2: แผนรับเรื่องครั้งแรก
-        }
+        if (dept.includes('ธุรการ') || dept.includes('ผอ')) updates['วันที่ ผอ. เซ็นเอกสาร'] = '-';
+        else if (dept.includes('สรุป')) updates['วันที่จัดโครงการเสร็จสิ้น'] = '-';
+        else updates['วันที่รับเอกสารครั้งแรก'] = thaiDate;
     } else if (role === 'head_med') { 
-        // Step 3: หน.งานรับเรื่อง
-        updates['วันที่ตรวจ (หน.งาน)'] = thaiDate; 
+        // ✅ บันทึกลงคีย์ 'head_check' เพื่อให้ GS แมปลงคอลัมน์ที่ 14 (Plan) หรือ 13 (Buy) ได้อัตโนมัติ
+        updates['head_check'] = thaiDate; 
+    
     } else if (role === 'supply') {
-        // Step 6: พัสดุรับเรื่อง
-        updates['วันที่รับเรื่องเข้า'] = thaiDate;
+        updates['วันที่รับเรื่องเข้า'] = thaiDate; 
     } else if (role === 'finance') {
-        if (dept.includes('จ่าย')) {
-            updates['วันที่จ่าย'] = thaiDate; // Step 9: การเงินรับเรื่องจ่ายเงิน
+        if (dept && dept.includes('จ่ายเงิน')) { 
+            updates['เลขที่เช็ค'] = '-'; 
         } else {
-            updates['วันที่รับเรื่องเข้า (การเงิน)'] = thaiDate; // Step 7: การเงินรับเรื่องตรวจเบิก
+            updates['วันที่รับเรื่องเข้า (การเงิน)'] = thaiDate; 
         }
-    } else if (role === 'deputy') {
-        // Step 8: รอง ผอก.รับเรื่อง (ใช้เครื่องหมาย / เพื่อมาร์คว่ารับแล้ว)
-        updates['ตรวจสอบแล้ว (รอง ผอก.)'] = '/';
+    } else if (role && role.toLowerCase() === 'deputy') {
+        updates['ตรวจสอบแล้ว (รอง)'] = '-'; 
     }
-
+    // --- สิ้นสุดส่วนที่วางทับจุดที่ 1 ---
     if(Object.keys(updates).length === 0) {
         Swal.fire('แจ้งเตือน', 'คุณไม่มีสิทธิ์รับเรื่องในขั้นตอนปัจจุบัน', 'info');
         return;
@@ -1301,14 +1400,11 @@ async function performReceive(index) {
         const result = await response.json();
         if (result.status === 'success') {
             Swal.fire('สำเร็จ', 'รับเรื่องเรียบร้อยแล้ว', 'success').then(() => {
-                // โหลดข้อมูลใหม่ และย้ายไปหน้า "งานของฉัน" อัตโนมัติ
                 loadDataList(type, 'mytasks');
                 switchTab('mytasks');
             });
-        } else { throw new Error(result.message); }
-    } catch(e) {
-        Swal.fire('เกิดข้อผิดพลาด', 'บันทึกไม่สำเร็จ: ' + e.message, 'error');
-    }
+        }
+    } catch(e) { Swal.fire('เกิดข้อผิดพลาด', e.message, 'error'); }
 }
         
 
@@ -1517,29 +1613,29 @@ function renderDetailForm(item, type, editable) {
             };
             
            
-// แก้ไขฟังก์ชัน createField ใน renderDetailForm
 const createField = (label, keys, roleClass, inputType='text', opts=[]) => {
     let value = val(keys);
     const primaryKey = Array.isArray(keys) ? keys[0] : keys; 
-    // ดึงชื่อหัวคอลัมน์จริงจาก Array ตัวที่สอง (ถ้ามี) เพื่อใช้บันทึกลง Sheet
     const headerName = Array.isArray(keys) && keys.length > 1 ? keys[1] : primaryKey;
     
     let inputHtml = '';
-    let commonClass = `form-control form-control-sm edit-input ${roleClass}`;
-   // ค้นหาในฟังก์ชัน renderDetailForm (ประมาณบรรทัดที่ 1094)
-if (inputType === 'select') {
-    let displayVal = value;
-    if (value === '/' || value === '✅' || value === 'อนุมัติ') displayVal = 'อนุมัติ';
+    // ✅ เพิ่มการตรวจสอบ: ถ้า inputType คือ 'date' ให้ใส่คลาส date-picker-thai ลงไปด้วย
+    let dateClass = (inputType === 'date') ? 'date-picker-thai text-center' : '';
+    let commonClass = `form-control form-control-sm edit-input ${roleClass} ${dateClass}`;
     
-    // สร้าง Options โดยดึงจากรายการที่ส่งมา (opts)
-    let optionsHtml = `<option value="">-- เลือกรายการ --</option>`;
-    if (opts && opts.length > 0) {
-        optionsHtml += opts.map(o => `<option value="${o}" ${value === o ? 'selected' : ''}>${o}</option>`).join('');
-    }
-
-    inputHtml = `<select class="form-select form-select-sm edit-input ${roleClass}" data-key="${primaryKey}" data-header="${headerName}" disabled>${optionsHtml}</select>`;
-} else {
-        inputHtml = `<input type="text" class="${commonClass}" data-key="${primaryKey}" data-header="${headerName}" value="${value}" disabled>`;
+    if (inputType === 'select') {
+        let displayVal = value;
+        if (value === '/' || value === '✅' || value === 'อนุมัติ') displayVal = 'อนุมัติ';
+        
+        let optionsHtml = `<option value="">-- เลือกรายการ --</option>`;
+        if (opts && opts.length > 0) {
+            // ใช้ displayVal (ตัวแปรที่แปลงค่าแล้ว) แทน value เพื่อให้เปรียบเทียบกับคำว่า "อนุมัติ" ได้ถูกต้อง
+optionsHtml += opts.map(o => `<option value="${o}" ${displayVal === o ? 'selected' : ''}>${o}</option>`).join('');
+        }
+        inputHtml = `<select class="form-select form-select-sm edit-input ${roleClass}" data-key="${primaryKey}" data-header="${headerName}" disabled>${optionsHtml}</select>`;
+    } else {
+        // ✅ ตรงนี้ระบบจะใช้คลาสที่รวม date-picker-thai ไว้แล้ว ปฏิทินจะกลับมาแสดงครับ
+        inputHtml = `<input type="text" class="${commonClass}" data-key="${primaryKey}" data-header="${headerName}" value="${value}" disabled placeholder="${inputType === 'date' ? 'วว/ดด/ปปปป' : ''}">`;
     }
     
     return `<div class="col-md-6 mb-2">
@@ -1574,18 +1670,22 @@ if (inputType === 'select') {
                 html += createField('ตรวจสำเร็จ (แผน)', ['plan_check', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ'], 'role-plan', 'date');
                 html += `</div></div>`;
 
+               // --- ค้นหาช่วงบรรทัด 1245 - 1248 ---
                 html += `<div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">3. หัวหน้างาน (Step 3)</h6><div class="row">`;
-                html += createField('ตรวจสำเร็จ (หน.)', ['head_check', 'วันที่ตรวจ (หน.งาน)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)'], 'role-head', 'date');
+                
+                // ✅ เพิ่มบรรทัดนี้เข้าไปเพื่อให้ช่องวันที่แสดงผลที่หน้าบ้านครับ
+                html += createField('วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', ['head_check', 'วันที่ตรวจ (หน.งาน)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ'], 'role-head', 'date');
+                
                 html += createField('สถานะการตรวจสอบ', ['head_status', 'ตรวจสอบแล้ว'], 'role-head', 'select', ['รอตรวจสอบ', 'อนุมัติ', 'ไม่อนุมัติ']);
                 html += `</div></div>`;
 
              html += `<div class="card p-3 mb-2 border-light rounded-3">
-    <h6 class="text-primary fw-bold border-bottom pb-2">4. ธุรการ/ผอ. (Step 4)</h6>
-    <div class="row">`;
-    // ระบุชื่อหัวคอลัมน์ภาษาไทยในพารามิเตอร์ที่ 2
-    html += createField('ผอ. เซ็น', ['admin_sign', 'วันที่ ผอ. เซ็นเอกสาร'], 'role-admin-sign', 'date');
-    html += createField('เลขที่บันทึก', ['admin_number', 'เลขที่บันทึกข้อความ'], 'role-admin-sign');
-html += `</div></div>`;
+                <h6 class="text-primary fw-bold border-bottom pb-2">4. ธุรการ/ผอ. (Step 4)</h6>
+                <div class="row">`;
+                // ระบุชื่อหัวคอลัมน์ภาษาไทยในพารามิเตอร์ที่ 2
+                html += createField('ผอ. เซ็น', ['admin_sign', 'วันที่ ผอ. เซ็นเอกสาร'], 'role-admin-sign', 'date');
+                html += createField('เลขที่บันทึก', ['admin_number', 'เลขที่บันทึกข้อความ'], 'role-admin-sign');
+                html += `</div></div>`;
 
                 html += `<div class="card p-3 mb-2 bg-warning bg-opacity-10 border-warning rounded-3"><h6 class="text-dark fw-bold border-bottom pb-2">5. ติดตามผล (Step 5)</h6><div class="row">`;
                html += createField('จัดโครงการเสร็จ', ['project_done', 'วันที่จัดโครงการเสร็จสิ้น'], 'role-plan', 'date');
@@ -1597,11 +1697,12 @@ html += `</div></div>`;
                 html += `<div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">6. พัสดุ (Step 6)</h6><div class="row">`;
                 
                 html += createField('รับเรื่อง (พัสดุ)', ['supply_receive', 'วันที่รับเรื่องเข้า'], 'role-supply', 'date'); 
+                // ส่วนของพัสดุ (Step 6)
                 html += createField('ประเภท', ['supply_type', 'ประเภท'], 'role-supply', 'select', masterRefs.categories);
                 html += createField('สถานะหลัก', ['supply_status', 'สถานะหลัก'], 'role-supply', 'select', masterRefs.statuses);
                 html += createField('รายการย่อย', ['supply_sub', 'รายการย่อย'], 'role-supply');
                 
-                html += createField('สั่งจ้าง/ซื้อ (บาท)', ['supply_money', 'จำนวนเงินที่สั่งจ้าง/ซื้อ'], 'role-supply', 'text');
+                html += createField('สั่งจ้าง/ซื้อ (บาท)', ['supply_money', 'จำนวนเงินที่สั่งจ้าง / ซื้อ'], 'role-supply', 'text');
                 html += createField('งานสำเร็จ', ['supply_done', 'วันที่งานสำเร็จ'], 'role-supply', 'date');
                 html += `</div></div>`;
 
@@ -1609,7 +1710,7 @@ html += `</div></div>`;
                 html += createField('รับเรื่อง (การเงิน)', ['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)'], 'role-finance', 'date');
                 html += createField('สถานะ', ['finance_status', 'สถานะ'], 'role-finance', 'select', ['อนุมัติ', 'ไม่อนุมัติ']);
                 html += createField('ส่งแก้ไขพัสดุ', ['finance_fix', 'ส่งแก้ไขพัสดุ'], 'role-finance');
-                html += createField('ตรวจสอบแล้ว (รอง)', ['finance_check', 'ตรวจสอบแล้ว (รอง)'], 'role-finance', 'checkbox');
+                html += createField('ตรวจสอบแล้ว (รอง)', ['finance_check', 'ตรวจสอบแล้ว (รอง)'], 'role-deputy', 'checkbox');
                 
                 html += `<div class="col-12"><hr class="text-success"></div>`;
                 html += createField('เลขที่เช็ค', ['finance_cheque', 'เลขที่เช็ค'], 'role-finance');
@@ -1618,21 +1719,81 @@ html += `</div></div>`;
                 html += createField('หมายเหตุ', ['finance_note', 'หมายเหตุ'], 'role-finance');
                 html += `</div></div>`;
 
-            } else {
-                // BUY (ครุภัณฑ์) - ใช้ Structure เดียวกับ Plan
+           } else {
+                // ==========================================
+                // BUY (ครุภัณฑ์) - แยก 9 Step ตามคอลัมน์ A-AG
+                // ==========================================
+                
+                // Step 1: ข้อมูลทั่วไป (คอลัมน์ A-J)
                 html += `<div class="card p-3 mb-2 bg-light border-0 rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">1. ข้อมูลทั่วไป (Step 1)</h6><div class="row">`;
                 html += createField('ปีงบประมาณ', ['input_year', 'ปีงบประมาณ'], 'role-user');
                 html += createField('เลขที่/รหัส', ['input_code_buy', 'เลขที่', 'รหัสแผน'], 'role-user');
                 html += createField('หน่วยงาน', ['input_dept', 'กลุ่มงาน/หน่วยงาน'], 'role-user');
-                html += createField('หมวด', ['input_cat', 'หมวด'], 'role-user');
-                html += createField('ชนิด', ['input_type', 'ชนิด'], 'role-user');
-                html += createField('รายการ', ['input_project', 'รายการ', 'ชื่อโครงการ'], 'role-user'); 
+                html += createField('หมวด', ['input_cat', 'หมวด'], 'role-user', 'select', masterRefs.categories);
+                html += createField('ชนิด', ['input_type', 'ชนิด'], 'role-user', 'select', masterRefs.kinds);
+                html += createField('รายการ', ['input_project', 'รายการ'], 'role-user'); 
                 html += createField('สถานที่', ['input_place', 'สถานที่'], 'role-user');
                 html += createField('จำนวน', ['input_qty', 'จำนวน'], 'role-user');
-                html += createField('ราคา', ['input_budget_plan', 'ราคา', 'ราคาในแผน'], 'role-user', 'text');
+                html += createField('ราคาในแผน', ['input_budget_plan', 'ราคา'], 'role-user', 'text');
                 html += `</div></div>`;
                 
-                html += `<div class="alert alert-info">ใช้โครงสร้างฟอร์มเดียวกับแผนปฏิบัติการสำหรับส่วนที่เหลือ</div>`;
+                // Step 2: งานแผน (K-L)
+                html += `<div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">2. งานแผน (Step 2)</h6><div class="row">`;
+                html += createField('รับเอกสาร (แผน)', ['plan_receive', 'วันที่รับเอกสารครั้งแรก'], 'role-plan', 'date');
+                html += createField('ตรวจสำเร็จ (แผน)', ['plan_check', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ'], 'role-plan', 'date');
+                html += `</div></div>`;
+
+                // Step 3: หน.งานแพทยศาสตร์ (M-N)
+                html += `<div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">3. หน.งานแพทยศาสตร์ (Step 3)</h6><div class="row">`;
+                html += createField('ตรวจสำเร็จ (หน.)', ['head_check', 'วันที่ตรวจ (หน.งาน)'], 'role-head', 'date');
+                html += createField('ตรวจสอบแล้ว (หน.)', ['head_status', 'ตรวจสอบแล้ว'], 'role-head', 'select', ['รอตรวจสอบ', 'อนุมัติ', 'ไม่อนุมัติ']);
+                html += `</div></div>`;
+
+                // Step 4: ธุรการ ศศค. (คอลัมน์ O-P)
+                html += `<div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">4. ธุรการ ศศค. (Step 4)</h6><div class="row">`;
+                html += createField('ผอ. เซ็น', ['admin_sign', 'วันที่ ผอ. เซ็นเอกสาร'], 'role-admin-sign', 'date');
+                html += createField('เลขที่บันทึก', ['admin_number', 'เลขที่บันทึก'], 'role-admin-sign');
+                html += `</div></div>`;
+
+                // Step 5: พัสดุ (คอลัมน์ Q-V)
+                html += `<div class="card p-3 mb-2 border-light rounded-3"><h6 class="text-primary fw-bold border-bottom pb-2">5. พัสดุ (Step 5)</h6><div class="row">`;
+                html += createField('รับเรื่อง (พัสดุ)', ['supply_receive', 'วันที่รับเรื่องเข้า'], 'role-supply', 'date'); 
+                html += createField('ประเภท', ['supply_type', 'ประเภท'], 'role-supply', 'select', masterRefs.categories);
+                html += createField('สถานะหลัก', ['supply_status', 'สถานะหลัก'], 'role-supply', 'select', masterRefs.statuses);
+                html += createField('รายการย่อย', ['supply_sub', 'รายการย่อย'], 'role-supply');
+                html += createField('สั่งจ้าง/ซื้อ (บาท)', ['supply_money', 'จำนวนเงินที่สั่งจ้าง / ซื้อ'], 'role-supply', 'text');
+                html += createField('งานสำเร็จ', ['supply_done', 'วันที่งานสำเร็จ'], 'role-supply', 'date');
+                html += `</div></div>`;
+
+                // Step 6: การเงิน - รับเรื่อง (คอลัมน์ W-Y)
+                html += `<div class="card p-3 mb-2 bg-success bg-opacity-10 border-success rounded-3"><h6 class="text-success fw-bold border-bottom pb-2">6. การเงิน - รับเรื่อง (Step 6)</h6><div class="row">`;
+                html += createField('รับเรื่อง (การเงิน)', ['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)'], 'role-finance', 'date');
+                html += createField('สถานะ', ['finance_status', 'สถานะ'], 'role-finance', 'select', ['อนุมัติ', 'ไม่อนุมัติ']);
+                html += createField('ส่งแก้ไขพัสดุ', ['finance_fix', 'ส่งแก้ไขพัสดุ'], 'role-finance');
+                html += `</div></div>`;
+
+                // Step 7: รอง ผอก. ตรวจสอบ (คอลัมน์ Z)
+                html += `<div class="card p-3 mb-2 border-info rounded-3"><h6 class="text-info fw-bold border-bottom pb-2">7. รอง ผอก. (Step 7)</h6><div class="row">`;
+                
+                // เปลี่ยนเป็น select และใส่ตัวเลือก อนุมัติ/ไม่อนุมัติ
+                html += createField('ตรวจสอบแล้ว (รอง)', ['finance_check', 'ตรวจสอบแล้ว (รอง)'], 'role-deputy', 'select', ['อนุมัติ', 'ไม่อนุมัติ']);
+              
+
+                // Step 8: การเงิน - จ่ายเงิน (คอลัมน์ AA-AC)
+                html += `<div class="card p-3 mb-2 bg-success bg-opacity-10 border-success rounded-3"><h6 class="text-success fw-bold border-bottom pb-2">8. การเงิน - จ่ายเงิน (Step 8)</h6><div class="row">`;
+                // ✅ เปลี่ยนเป็น role-finance-pay
+                html += createField('เลขที่เช็ค', ['finance_cheque', 'เลขที่เช็ค'], 'role-finance-pay');
+                html += createField('วันที่จ่าย', ['finance_pay', 'วันที่จ่าย'], 'role-finance-pay', 'date');
+                html += createField('หมายเหตุ', ['finance_note', 'หมายเหตุ'], 'role-finance-pay');
+                html += `</div></div>`;
+
+                // Step 9: สรุปผล/ยกเลิก (ล็อกให้ Admin กรอกได้คนเดียว)
+                html += `<div class="card p-3 mb-2 bg-dark bg-opacity-10 border-secondary rounded-3"><h6 class="text-secondary fw-bold border-bottom pb-2">9. สรุปผล/หมายเหตุ (Step 9)</h6><div class="row">`;
+                html += createField('เงินคงเหลือ', ['finance_remain', 'เงินคงเหลือ'], 'role-admin-only', 'text');
+                html += createField('ยกเลิกแผน', ['plan_cancel', 'ยกเลิกแผน'], 'role-admin-only', 'checkbox');
+                html += createField('หมายเหตุเพิ่มเติม', ['final_note', 'หมายเหตุสรุป'], 'role-admin-only');
+                html += `</div></div>`;
+            
             }
 
             container.innerHTML = html;
@@ -1649,42 +1810,48 @@ async function saveChanges(isSubmit = true) {
     
     let updates = {};
     
-    // 1. นิยาม "ฟิลด์สั่งจบงาน" ของแต่ละแผนก (ห้ามส่งฟิลด์เหล่านี้ถ้าบันทึกชั่วคราว)
+    // รายการคอลัมน์ที่จะ "ข้าม" ไม่บันทึกเมื่อกด "บันทึกชั่วคราว" (เพื่อไม่ให้งานไหล)
     const statusTriggers = {
-        'plan': ['plan_check', 'summary_send'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 3 หรือ 6
-        'head_med': ['head_status'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 4
-        'ssk_admin': ['admin_number'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 5
-       'supply': ['supply_done'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 7
-        'finance': ['finance_status', 'finance_pay'], // ช่องที่ถ้ากรอกแล้วงานจะไป Step 8 หรือ 10
-        'deputy': ['finance_check'] // ช่องที่ถ้ากรอกแล้วงานจะจบสเต็ป 8
+        'plan': ['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'วันที่จัดโครงการเสร็จสิ้น', 'วันที่ส่งสรุปโครงการ'],
+        'head_med': ['ตรวจสอบแล้ว', 'วันที่ตรวจ (หน.งาน)'],
+        'ssk_admin': ['วันที่ ผอ. เซ็นเอกสาร', 'เลขที่บันทึกข้อความ', 'เลขที่บันทึก'],
+        'supply': ['วันที่งานสำเร็จ'], // ✅ เอา 'สถานะหลัก' ออกเพื่อให้เซฟร่างได้
+        'finance': ['สถานะ', 'วันที่จ่าย', 'เลขที่เช็ค'],
+        'deputy': ['ตรวจสอบแล้ว (รอง)'],
+        'admin': ['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'วันที่ตรวจ (หน.งาน)', 'ตรวจสอบแล้ว', 'วันที่ ผอ. เซ็นเอกสาร', 'เลขที่บันทึก', 'วันที่งานสำเร็จ', 'สถานะ', 'วันที่จ่าย', 'เลขที่เช็ค', 'ตรวจสอบแล้ว (รอง)', 'หมายเหตุสรุป', 'ยกเลิกแผน'] // ✅ เพิ่ม Admin
     };
 
-   const myTriggers = statusTriggers[role] || [];
+    const myTriggers = statusTriggers[role] || statusTriggers['admin'];
 
     document.querySelectorAll('.edit-input').forEach(i => {
         if (!i.disabled) {
             const key = i.dataset.header || i.dataset.key;
-            const dataKey = i.dataset.key;
-            let val = i.value;
+            if (!key) return;
 
-            // --- ถ้ากด "บันทึกชั่วคราว" ห้ามส่งฟิลด์ที่เป็นตัวสั่งขยับสเต็ป ---
-            if (!isSubmit && myTriggers.includes(dataKey)) {
+            let val = i.value;
+            if (val === 'อนุมัติ') val = '/';
+            else if (val === 'ไม่อนุมัติ') val = '';
+            if (i.type === 'checkbox') val = i.checked ? '/' : '';
+
+            // ✅ ถ้าบันทึกชั่วคราว ให้ข้ามช่องที่เป็นตัวส่งงานต่อ
+            if (!isSubmit && myTriggers.includes(key)) {
                 return; 
             }
-            // ... Logic จัดการค่า checkbox และ select เดิม ...
-            if(key) updates[key] = val;
+
+            updates[key] = val;
         }
     });
 
-    // ตรวจสอบว่ามีข้อมูลอื่นให้บันทึกไหม (ถ้ากดบันทึกชั่วคราวแต่กรอกแค่ช่องวันที่ จะบันทึกไม่ได้)
-    if (Object.keys(updates).length === 0 && !isSubmit) { 
-        Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลส่วนอื่นเพื่อบันทึกชั่วคราว (ระบบจะไม่บันทึกช่องวันที่/สถานะเพื่อป้องกันงานขยับ Step)', 'info'); 
+    if (Object.keys(updates).length === 0) { 
+        Swal.fire('แจ้งเตือน', 'ไม่มีข้อมูลใหม่สำหรับบันทึกชั่วคราว', 'info'); 
         return; 
     }
 
-    // ... ส่วนของ Swal.fire และ fetch(API_URL) ด้านล่างคงเดิม ...
-
-    Swal.fire({title: isSubmit ? 'กำลังส่งงานต่อ...' : 'กำลังบันทึกชั่วคราว...', allowOutsideClick: false, didOpen:()=>Swal.showLoading()});
+    Swal.fire({
+        title: isSubmit ? 'กำลังส่งงานต่อ...' : 'กำลังบันทึกชั่วคราว...', 
+        allowOutsideClick: false, 
+        didOpen: () => Swal.showLoading()
+    });
     
     try { 
         const response = await fetch(API_URL, { 
@@ -1693,7 +1860,7 @@ async function saveChanges(isSubmit = true) {
         });
         const result = await response.json(); 
         if (result.status === 'success') {
-            Swal.fire('สำเร็จ', isSubmit ? 'ส่งงานต่อเรียบร้อยแล้ว' : 'บันทึกข้อมูลชั่วคราวแล้ว', 'success').then(()=> { 
+            Swal.fire('สำเร็จ', isSubmit ? 'ส่งงานต่อเรียบร้อยแล้ว' : 'บันทึกข้อมูลชั่วคราวแล้ว', 'success').then(() => { 
                 bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
                 loadDataList(currentSystemType, currentTabMode === 'mytasks' ? 'mytasks' : 'all'); 
             });
@@ -1705,52 +1872,68 @@ async function saveChanges(isSubmit = true) {
 
 
 function calculateStatus(item, type) {
-    const has = (keys) => {
-        const keyList = Array.isArray(keys) ? keys : [keys];
-        for (let k of keyList) {
-            let v = item[k];
-            if (v && v !== '-' && v.toString().trim() !== '') return true;
-        }
-        return false;
-    };
+    if (!item) return { text: 'รอดำเนินการ', badge: '', currentDept: '' };
+    
+    // --- ทุกบรรทัดต้องมี item, อยู่ข้างหน้าเสมอ ---
 
-    // 9. การเงิน (จ่ายเงิน) - ขวาสุดตามรูป
-    if (has(['วันที่จ่าย', 'เลขที่เช็ค'])) {
+    // 9. ปิดโครงการสมบูรณ์ (เช็คจากหมายเหตุสรุปใน Step 9)
+   if (hasValue(item, 'หมายเหตุสรุป') || findVal(item, 'ยกเลิกแผน') === '/') {
+        return { text: 'ปิดโครงการสมบูรณ์', badge: '<span class="status-badge status-success">ปิดโครงการแล้ว</span>', currentDept: 'สิ้นสุดขั้นตอน' };
+    }
+
+    // 8. เสร็จสิ้นการจ่ายเงิน
+    if (hasValue(item, 'วันที่จ่าย') || hasValue(item, 'เลขที่เช็ค')) {
         return { text: 'เสร็จสิ้น', badge: '<span class="status-badge status-success">จ่ายเงินแล้ว</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
     }
-    // 8. รอง ผอก. (ตรวจสอบ)
-    if (item['ตรวจสอบแล้ว'] === '/' || item['ตรวจสอบแล้ว'] === '✅') {
-        return { text: 'รอจ่ายเงิน', badge: '<span class="status-badge status-pending">รอการเงินจ่ายเงิน</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
-    }
-    // 7. การเงิน (รับเรื่อง/สถานะ)
-    if (has(['สถานะ']) && (item['สถานะ'] === 'อนุมัติ' || item['สถานะ'] === '✅')) {
+
+    // 7. การเงิน (ใส่สถานะ)
+   const financeStatus = findVal(item, 'สถานะ');
+    const deputyStatus = findVal(item, 'ตรวจสอบแล้ว (รอง)');
+
+    if (financeStatus === 'อนุมัติ' || financeStatus === '✅' || financeStatus === '/') {
+        // ✅ จุดสำคัญ: ถ้าท่านรองลงผลอนุมัติแล้ว (เป็น / หรือ อนุมัติ) ให้ส่งงานไปสเต็ปจ่ายเงิน
+        if (deputyStatus === '/' || deputyStatus === 'อนุมัติ' || deputyStatus === '✅') {
+            return { text: 'รอการเงินจ่ายเงิน', badge: '<span class="status-badge status-pending">รอการเงินจ่ายเงิน</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
+        }
+        // ถ้าท่านรองยังไม่ลงผล ให้ค้างที่หน้าท่านรองเหมือนเดิม
         return { text: 'รอรอง ผอก.ตรวจ', badge: '<span class="status-badge status-pending">รอรอง ผอก.</span>', currentDept: 'รอง ผอก. ศศค. งบประมาณ' };
     }
-    // 6. พัสดุ/งานแผน (ดำเนินการสำเร็จ)
-    if (has(['วันที่งานสำเร็จ'])) {
+
+    // 6. พัสดุ (งานสำเร็จ)
+    if (hasValue(item, 'วันที่งานสำเร็จ')) {
         return { text: 'ส่งเบิกการเงิน', badge: '<span class="status-badge status-pending">รอการเงินรับเรื่อง</span>', currentDept: 'การเงิน' };
     }
-    // 5. แผนติดตามการส่งสรุป (ส่งสรุปสำเร็จ)
-    if (has(['วันที่ส่งสรุปโครงการ'])) {
+
+    // --- 5. แผนติดตามสรุป (เฉพาะ Plan) ---
+    if (type === 'plan' && hasValue(item, 'วันที่ส่งสรุปโครงการ')) {
         return { text: 'ส่งพัสดุ', badge: '<span class="status-badge status-pending">รอพัสดุรับเรื่อง</span>', currentDept: 'พัสดุ/งานแผน' };
     }
-    // 4. ธุรการ ศศค. (ออกเลขแล้ว)
-    if (has(['เลขที่บันทึกข้อความ'])) {
-        return { text: 'อนุมัติแล้ว', badge: '<span class="status-badge status-success">รอแผนตามสรุป</span>', currentDept: 'แผนติดตามการส่งสรุปโครงการ' };
-    }
-    // 3. หน.งานแพทยศาสตร์ (ตรวจสอบแล้ว)
-    if (item['ตรวจสอบแล้ว'] === '/' || item['ตรวจสอบแล้ว'] === 'อนุมัติ' || item['ตรวจสอบแล้ว'] === '✅') {
-        return { text: 'เสนอ ผอ.', badge: '<span class="status-badge status-pending">รอธุรการ (เสนอ ผอ.)</span>', currentDept: 'ธุรการ ศศค.' };
-    }
-    // 2. แผน (ตรวจสำเร็จ)
-    if (has(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ'])) {
-        return { text: 'รอ หน.งานตรวจ', badge: '<span class="status-badge status-pending">รอ หน.งานแพทยศาสตร์</span>', currentDept: 'หน.งานแพทยศาสตร์' };
-    }
-    // 1. เริ่มต้น (ถ้ามีวันที่รับครั้งแรก)
-    if (has(['วันที่รับเอกสารครั้งแรก'])) {
-        return { text: 'แผนตรวจสอบ', badge: '<span class="status-badge status-pending">รอแผนตรวจเอกสาร</span>', currentDept: 'แผน (ต้องผ่านทุกเอกสาร)' };
+
+    // --- 4. ธุรการ/ผอ. (ออกเลขแล้ว) ---
+    if (hasValue(item, 'เลขที่บันทึกข้อความ') || hasValue(item, 'เลขที่บันทึก')) {
+        const nextDept = (type === 'buy') ? 'พัสดุ' : 'แผนติดตามการส่งสรุปโครงการ';
+        return { text: 'อนุมัติแล้ว', badge: `<span class="status-badge status-success">รอ${nextDept}</span>`, currentDept: nextDept };
     }
 
+    // --- 3. หน.งาน (ตรวจสอบแล้ว) (บรรทัด 1319) ---
+    // ✅ แก้ไข: งานจะไปถึง ธุรการ/ผอ. (Step 4) ก็ต่อเมื่อ หน.งาน ติ๊กถูก "และ" บันทึกวันที่รับเรื่องแล้วเท่านั้น
+    const headApprove = (findVal(item, 'ตรวจสอบแล้ว') === '/' || findVal(item, 'ตรวจสอบแล้ว') === 'อนุมัติ' || findVal(item, 'ตรวจสอบแล้ว') === '✅');
+    const headReceiveDate = getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)']);
+    
+    if (headApprove && headReceiveDate && headReceiveDate !== '-') {
+        const nextDept = (type === 'buy') ? 'พัสดุ' : 'ธุรการ ศศค.';
+        return { text: 'เสนอ ผอ.', badge: '<span class="status-badge status-pending">รอธุรการ (เสนอ ผอ.)</span>', currentDept: nextDept };
+    }
+
+    // --- 2. แผน (ตรวจสำเร็จ) ---
+    if (hasValue(item, 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ') || hasValue(item, 'ตรวจ/แก้ไขเอกสารสำเร็จ')) {
+        return { text: 'รอ หน.งานตรวจ', badge: '<span class="status-badge status-pending">รอ หน.งานแพทยศาสตร์</span>', currentDept: 'หน.งานแพทยศาสตร์' };
+    }
+
+    // --- 1. เริ่มต้น ---
+    if (hasValue(item, 'วันที่รับเอกสารครั้งแรก')) {
+        return { text: 'แผนตรวจสอบ', badge: '<span class="status-badge status-pending">รอแผนตรวจเอกสาร</span>', currentDept: 'แผน (ต้องผ่านทุกเอกสาร)' };
+    }
     return { text: 'รอดำเนินการ', badge: '<span class="status-badge status-wait">รอแผนรับเรื่อง</span>', currentDept: 'แผน (ต้องผ่านทุกเอกสาร)' };
 }
 
@@ -1770,74 +1953,57 @@ function toggleEditMode() {
     if(!item && role !== 'admin') return;
 
     const statusInfo = calculateStatus(item, currentSystemType);
+    const isLastStep = (statusInfo.text.includes('จ่ายเงินแล้ว') || statusInfo.currentDept.includes('สิ้นสุด'));
     const isMyTurn = isActionRequired(item, statusInfo);
     const currentDept = (statusInfo.currentDept || '');
 
-    // 1. ตรวจสอบการรับเรื่อง (isAccepted)
-    const getVal = (k) => getKey(item, Array.isArray(k) ? k : [k]);
-    let isAccepted = false;
+   let isAccepted = false;
     
     if (role === 'admin') {
         isAccepted = true;
     } else if (role === 'plan' || role === 'ssk_admin') {
-        // ถ้าเป็นขั้นตอน ผอ. หรือ ออกเลข ให้ผ่านได้เลย (สำหรับบันทึกชั่วคราว)
-        if (statusInfo.text.includes('ผอ') || statusInfo.text.includes('เลข') || statusInfo.text.includes('อนุมัติ')) {
-            isAccepted = true; 
-        } else {
-            isAccepted = !!getVal(['plan_receive', 'วันที่รับเอกสารครั้งแรก']);
-        }
-    } else if (role === 'head_med') {
-        isAccepted = !!getVal(['head_check', 'วันที่ตรวจ (หน.งาน)']);
+        isAccepted = !!getKey(item, ['plan_receive', 'วันที่รับเอกสารครั้งแรก']) || statusInfo.text.includes('อนุมัติ');
+    } else if (role === 'head_med') { 
+        isAccepted = !!getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)']);
     } else if (role === 'supply') {
-    isAccepted = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']);
-    } else if (role === 'finance' || role === 'deputy') {
-        isAccepted = !!getVal(['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)']);
+        isAccepted = !!getKey(item, ['supply_receive', 'วันที่รับเรื่องเข้า']); 
+ } else if (role === 'finance') {
+        const currentDept = statusInfo.currentDept || '';
+        if (currentDept.includes('จ่ายเงิน')) {
+            const cheque = findVal(item, 'เลขที่เช็ค');
+            // ✅ แก้ไข: ขอแค่มีข้อมูลในช่อง (เช่น - หรือ เลขเช็คจริง) ก็ให้เริ่มกรอกข้อมูลได้เลย
+            isAccepted = (cheque && cheque.toString().trim() !== ''); 
+        } else {
+            isAccepted = !!getKey(item, ['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)']);
+        }
+                                
+    } else if (role && role.toLowerCase() === 'deputy') {
+        // ✅ แก้ไข: เปลี่ยนจากการใช้ updates (ที่ไม่มีอยู่จริง) เป็นการตั้งค่า isAccepted
+        const val = findVal(item, 'ตรวจสอบแล้ว (รอง)');
+        isAccepted = (val && val.toString().trim() !== '');
     }
 
-    // 2. เริ่มการปลดล็อกช่อง (Loop เช็คทีละช่อง)
     document.querySelectorAll('.edit-input').forEach(el => {
         let allow = false;
-        const currentDept = statusInfo.currentDept;
-
-        if (role === 'admin') {
-            allow = true; // แอดมินแก้ได้หมดทุกช่อง
-        } else if (isMyTurn && isAccepted) {
-            if (role === 'plan' && currentDept.includes('แผน') && el.classList.contains('role-plan')) {
-                allow = true;
-            } else if (role === 'ssk_admin' && (currentDept.includes('ผอ') || currentDept.includes('ธุรการ')) && el.classList.contains('role-admin-sign')) {
-                allow = true;
-            } else if (role === 'head_med' && currentDept.includes('หน.งาน') && el.classList.contains('role-head')) {
-                allow = true;
-            } else if (role === 'supply' && currentDept.includes('พัสดุ') && el.classList.contains('role-supply')) {
-                allow = true;
-            } else if ((role === 'finance' || role === 'deputy') && (currentDept.includes('การเงิน') || currentDept.includes('จ่ายเงิน') || currentDept.includes('รอง')) && el.classList.contains('role-finance')) {
-                allow = true;
+        if (role === 'admin') allow = true; 
+        else if (isMyTurn && isAccepted) {
+            // ✅ ตรวจสอบ Class และ Role แบบ 1 ต่อ 1
+            if (role === 'plan' && currentDept.includes('แผน') && el.classList.contains('role-plan')) allow = true;
+            else if (role === 'ssk_admin' && (currentDept.includes('ผอ') || currentDept.includes('ธุรการ')) && el.classList.contains('role-admin-sign')) allow = true;
+            else if (role === 'head_med' && currentDept.includes('หน.งาน') && el.classList.contains('role-head')) allow = true;
+            else if (role === 'supply' && currentDept.includes('พัสดุ') && el.classList.contains('role-supply')) allow = true;
+            else if (role === 'finance') {
+                if (currentDept === 'การเงิน' && el.classList.contains('role-finance')) allow = true;
+                else if (currentDept.includes('จ่ายเงิน') && el.classList.contains('role-finance-pay')) allow = true;
             }
+            else if (role === 'deputy' && currentDept.includes('รอง') && el.classList.contains('role-deputy')) allow = true;
         }
-
         el.disabled = !allow;
-        
-        if(allow) {
+        if(allow) { 
             el.removeAttribute('disabled'); 
-            el.style.pointerEvents = 'auto'; 
-            
-            if(el.type === 'checkbox' || el.classList.contains('checkbox-unlock-area')) {
-                const container = el.closest('.checkbox-unlock-area') || el.parentElement;
-                if(container) {
-                    container.classList.remove('bg-light');
-                    container.style.backgroundColor = '#ffffff';
-                    container.style.borderColor = '#10b981';
-                    container.style.pointerEvents = 'auto';
-                }
-            } else {
-                el.classList.add('border-success'); 
-                el.style.borderColor = '#10b981';
-            }
-       } else {
-            el.style.borderColor = ''; 
-            el.classList.remove('border-success');
+            el.style.border = '2px solid #10b981'; // แสดงขอบสีเขียวเมื่อกรอกได้
         }
-    }); // ปีกกาปิดของ .forEach
+    });
     
     if(document.getElementById('btnToggleEdit')) document.getElementById('btnToggleEdit').classList.add('d-none'); 
     if(document.getElementById('btnSaveEdit')) document.getElementById('btnSaveEdit').classList.remove('d-none'); 
@@ -1905,9 +2071,10 @@ function toggleEditMode() {
                  const deptInput = document.querySelector('input[name="input_dept"]');
                  if(deptInput) { deptInput.value = user; deptInput.readOnly = true; deptInput.classList.add('bg-light'); }
                  inputs.forEach(i => { if(i.classList.contains('role-finance') || i.classList.contains('role-plan')) { i.disabled = true; } });
-            } else if (role === 'finance') {
-                inputs.forEach(i => { if(!i.classList.contains('role-finance') && !i.classList.contains('role-common')) i.disabled = true; }); 
-            } else if (role === 'supply' || role === 'plan') {
+            
+
+}
+             else if (role === 'supply' || role === 'plan') {
                 inputs.forEach(i => { if(i.classList.contains('role-finance')) i.disabled = true; }); 
             } 
         }
@@ -1927,6 +2094,10 @@ function toggleEditMode() {
             mapObj['หมวด']=dataObj['input_cat']; 
             mapObj['ชนิด']=dataObj['input_type'];
             if(type==='buy'){ 
+                mapObj['ปีงบประมาณ']=dataObj['input_year']; 
+                mapObj['กลุ่มงาน/หน่วยงาน']=dataObj['input_dept']; 
+                mapObj['หมวด']=dataObj['input_cat']; 
+                mapObj['ชนิด']=dataObj['input_type'];
                 mapObj['รายการ']=dataObj['input_name']; 
                 mapObj['เลขที่']=dataObj['input_code']; 
                 mapObj['ราคา']=dataObj['input_budget_plan']; 
@@ -1957,41 +2128,48 @@ function toggleEditMode() {
             } catch (err) { Swal.fire('Error', 'เพิ่มข้อมูลไม่สำเร็จ: ' + err.message, 'error'); }
         }
 
-// ค้นหาฟังก์ชัน submitAdminPlan (บรรทัดที่ 1493) และวางทับด้วยชุดนี้:
 async function submitAdminPlan() {
     const form = document.getElementById('adminAddForm'); 
     if(!form) return;
     const type = (currentTabMode === 'buy') ? 'buy' : 'plan';
     const dataObj = {}; 
 
-    // 1. กวาดข้อมูลจาก Input ทั่วไป
-    const formData = new FormData(form);
-    formData.forEach((v, k) => {
-        if (v && v.trim() !== "") dataObj[k] = v;
-    });
-
-    // 2. จัดการ Checkbox แยกต่างหาก
-    form.querySelectorAll('input[type="checkbox"]').forEach(cb => { 
-        dataObj[cb.name] = cb.checked ? '/' : ''; 
+    // 1. กวาดข้อมูลจาก Input ทุกตัว
+    const inputs = form.querySelectorAll('.admin-add-input');
+    inputs.forEach(i => {
+        const key = i.name;
+        if (!key) return; 
+        let val = i.value || '';
+        if (i.type === 'checkbox') val = i.checked ? '/' : '';
+        dataObj[key] = val;
     });
 
     Swal.fire({ title: 'กำลังบันทึก (Admin)...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
     try { 
+        // ✅ ใช้โครงสร้าง fetch แบบเดียวกับหน้าแก้ไข (Edit) ที่คุณยืนยันว่าทำงานได้ปกติ
         const response = await fetch(API_URL, { 
             method: 'POST', 
             body: JSON.stringify({ action: 'add', type: type, data: dataObj }) 
         }); 
+        
         const result = await response.json(); 
         if (result.status === 'success') { 
-            Swal.fire('สำเร็จ', 'เพิ่มข้อมูลเข้าระบบเรียบร้อยแล้ว', 'success').then(() => { 
+            Swal.fire('สำเร็จ', 'เพิ่มข้อมูลโครงการใหม่เรียบร้อยแล้ว', 'success').then(() => { 
                 cancelAdd(); 
                 loadDataList(type, 'all'); 
             }); 
         } else { throw new Error(result.message); } 
     } catch (err) { 
+        console.error("Save Error:", err);
         Swal.fire('เกิดข้อผิดพลาด', 'บันทึกไม่สำเร็จ: ' + err.message, 'error'); 
     }
 }
+
+
+
+//ปฏิบัติการ 
+
 
         function renderAdminAddForm() {
             const container = document.getElementById('adminPlanFormContainer');
@@ -2000,10 +2178,12 @@ async function submitAdminPlan() {
 
             if (masterRefs.depts.length === 0) {
         loadMasterRefs().then(() => renderAdminAddForm());
+
+        
         container.innerHTML = '<div class="text-center p-3">กำลังโหลดข้อมูลหน่วยงาน...</div>';
         return;
     }
-            let html = '<form id="adminAddForm"><div class="row g-2">'; 
+            let html = '<form id="adminAddForm"><div class="row g-2">';
             const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
     let input = '';
     if(type === 'select') {
@@ -2093,78 +2273,103 @@ async function submitAdminPlan() {
             initDatePickers();
         }
         
-        function renderAdminBuyAddForm() {
-            const container = document.getElementById('adminBuyFormContainer');
-            let html = '<form id="adminAddForm"><div class="row g-2">';
-            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
-                let input = '';
-                if(type === 'select') {
-                    input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
-                    opts.forEach(o => input += `<option value="${o}">${o}</option>`);
-                    input += `</select>`;
-                } else if(type === 'checkbox') {
-                    input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
-                    return `<div class="${col}">${input}</div>`;
-                } else if (type === 'date') {
-                      input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
-                } else {
-                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
-                }
-                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
-            };
-            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป (ครุภัณฑ์)</div><div class="row g-2">`;
-            html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
-            html += createInput('ปีงบ', 'ปีงบประมาณ', 'text', 'col-md-2');
-            html += createInput('รหัสแผน', 'เลขที่', 'text', 'col-md-2');
-           // ส่วนที่ 1: ข้อมูลทั่วไป (ครุภัณฑ์)
-            html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'select', 'col-md-3', masterRefs.depts);
-            html += createInput('หมวด', 'หมวด', 'select', 'col-md-2', masterRefs.categories);
-            html += createInput('ชนิด', 'ชนิด', 'select', 'col-md-2', masterRefs.kinds);
-            html += createInput('รายการ', 'รายการ', 'text', 'col-md-6');
-            html += createInput('สถานที่', 'สถานที่', 'text', 'col-md-3');
-            html += createInput('จำนวน', 'จำนวน', 'text', 'col-md-1');
-            html += createInput('ราคาในแผน', 'ราคา', 'number', 'col-md-2');
-            html += `</div></div></div>`;
-            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
-            html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
-            html += createInput('ตรวจสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-6');
-            html += `</div></div></div>`;
-            html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">3. หน.งานแพทยศาสตร์</div><div class="row g-2">`;
-            html += createInput('ตรวจสำเร็จ (หน.)', 'ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'date', 'col-md-6');
-            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (หน.งาน)', 'checkbox', 'col-md-6');
-            html += `</div></div></div>`;
-            html += `<div class="col-md-12"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
-            html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-3');
-            html += createInput('เลขที่บันทึก', 'เลขที่บันทึก', 'text', 'col-md-3');
-            html += `</div></div></div>`;
-            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">5. พัสดุ</div><div class="row g-2">`;
-            html += createInput('รับเรื่อง', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
-            html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
-            html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', ['กำลังดำเนินการ', 'เสร็จสิ้น', 'ยกเลิก']);
-            html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
-            html += createInput('สั่งจ้าง/ซื้อ', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'number', 'col-md-2');
-            html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
-            html += `</div></div></div>`;
-            html += `<div class="col-md-8"><div class="card-form"><div class="form-group-title">6. การเงิน</div><div class="row g-2">`;
-            html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-4');
-            html += createInput('สถานะ', 'สถานะ', 'select', 'col-md-4', ['อนุมัติ', 'ไม่อนุมัติ']);
-            html += createInput('ส่งแก้ไขพัสดุ', 'ส่งแก้ไขพัสดุ', 'text', 'col-md-4');
-            html += `</div></div></div>`;
-            html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">7. รอง ผอก.</div><div class="row g-2">`;
-            html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว (รอง ผอก.)', 'checkbox', 'col-12');
-            html += `</div></div></div>`;
-            html += `<div class="col-12"><div class="card-form"><div class="form-group-title">8. การจ่ายเงิน</div><div class="row g-2">`;
-            html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
-            html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
-            html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'number', 'col-md-2');
-            html += createInput('หมายเหตุ', 'หมายเหตุ', 'text', 'col-md-4');
-            html += createInput('ยกเลิกแผน', 'ยกเลิกแผน', 'checkbox', 'col-md-2');
-            html += `</div></div></div>`;
-            html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
-            container.innerHTML = html;
-            initDatePickers();
-        }
+function renderAdminBuyAddForm() {
+    const container = document.getElementById('adminBuyFormContainer');
+    if (!container) return;
 
+    // ถ้าข้อมูล Master Data มีอยู่แล้ว ให้วาดฟอร์มทันที ไม่ต้องโชว์ Loading
+    if (masterRefs.depts && masterRefs.depts.length > 0) {
+        renderAdminBuyAddFormUI();
+        return;
+    }
+
+    // กรณีข้อมูลยังไม่มา ถึงค่อยสั่งโหลดและโชว์ Loading ครับ
+    container.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary"></div> กำลังดึงข้อมูลอ้างอิง...</div>';
+    loadMasterRefs().then(() => {
+        renderAdminBuyAddFormUI(); 
+    });
+}
+
+
+//ครุภัรฑ์ 
+
+
+function renderAdminBuyAddFormUI() {
+    const container = document.getElementById('adminBuyFormContainer');
+    let html = '<form id="adminAddForm"><div class="row g-2">';
+
+    const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+        let input = '';
+        if(type === 'select') {
+            input = `<select name="${name}" class="form-select form-select-sm admin-add-input"><option value="">-- เลือก${label} --</option>`;
+            if(opts && opts.length > 0) opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+            input += `</select>`;
+        } else if(type === 'checkbox') {
+            input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="/"><label class="form-check-label compact-label">${label}</label></div>`;
+            return `<div class="${col}">${input}</div>`;
+        } else if (type === 'date') {
+            input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+        } else {
+            input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+        }
+        return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
+    };
+
+    // Step 1: ข้อมูลทั่วไป (A-J)
+    html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป (ครุภัณฑ์)</div><div class="row g-2">`;
+    html += createInput('ลำดับ', 'ลำดับ', 'text', 'col-md-1');
+    html += createInput('ปีงบประมาณ', 'ปีงบประมาณ', 'text', 'col-md-2');
+    html += createInput('รหัสแผน', 'เลขที่', 'text', 'col-md-2');
+    html += createInput('หน่วยงาน', 'กลุ่มงาน/หน่วยงาน', 'select', 'col-md-3', masterRefs.depts);
+    html += createInput('หมวด', 'หมวด', 'select', 'col-md-2', masterRefs.categories);
+    html += createInput('ชนิด', 'ชนิด', 'select', 'col-md-2', masterRefs.kinds);
+    html += createInput('รายการ', 'รายการ', 'text', 'col-md-6');
+    html += createInput('สถานที่', 'สถานที่', 'text', 'col-md-3');
+    html += createInput('จำนวน', 'จำนวน', 'text', 'col-md-1');
+    html += createInput('ราคาในแผน', 'ราคา', 'text', 'col-md-2');
+    html += `</div></div></div>`;
+
+    // Step 2-4: แผน, หน.งาน, ธุรการ
+    html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">2. งานแผน</div><div class="row g-2">`;
+    html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-12');
+    html += createInput('ตรวจสำเร็จ', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'date', 'col-md-12');
+    html += `</div></div></div>`;
+    html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">3. หน.งานแพทย์</div><div class="row g-2">`;
+    html += createInput('ตรวจสำเร็จ (หน.)', 'วันที่ตรวจ (หน.งาน)', 'date', 'col-md-12');
+    html += createInput('ตรวจสอบแล้ว', 'ตรวจสอบแล้ว', 'checkbox', 'col-md-12');
+    html += `</div></div></div>`;
+    html += `<div class="col-md-4"><div class="card-form"><div class="form-group-title">4. ธุรการ ศศค.</div><div class="row g-2">`;
+    html += createInput('ผอ. เซ็น', 'วันที่ ผอ. เซ็นเอกสาร', 'date', 'col-md-12');
+    html += createInput('เลขที่บันทึก', 'เลขที่บันทึก', 'text', 'col-md-12');
+    html += `</div></div></div>`;
+
+    // Step 5: พัสดุ (Q-V)
+    html += `<div class="col-12"><div class="card-form"><div class="form-group-title">5. ขั้นตอนดำเนินการพัสดุ</div><div class="row g-2">`;
+    html += createInput('รับเรื่อง (พัสดุ)', 'วันที่รับเรื่องเข้า', 'date', 'col-md-2');
+    html += createInput('ประเภท', 'ประเภท', 'text', 'col-md-2');
+    html += createInput('สถานะหลัก', 'สถานะหลัก', 'select', 'col-md-2', masterRefs.statuses);
+    html += createInput('รายการย่อย', 'รายการย่อย', 'text', 'col-md-2');
+    html += createInput('สั่งจ้าง/ซื้อ (บาท)', 'จำนวนเงินที่สั่งจ้าง / ซื้อ', 'text', 'col-md-2');
+    html += createInput('งานสำเร็จ', 'วันที่งานสำเร็จ', 'date', 'col-md-2');
+    html += `</div></div></div>`;
+
+    // Step 6-9: การเงิน และ สรุป (W-AG)
+    html += `<div class="col-12"><div class="card-form"><div class="form-group-title">6-9. การเงิน และ สรุปผล</div><div class="row g-2">`;
+    html += createInput('รับเรื่อง (การเงิน)', 'วันที่รับเรื่องเข้า (การเงิน)', 'date', 'col-md-2');
+    html += createInput('สถานะ', 'สถานะ', 'select', 'col-md-2', ['อนุมัติ', 'ไม่อนุมัติ']);
+    html += createInput('ตรวจสอบแล้ว (รอง)', 'ตรวจสอบแล้ว (รอง)', 'checkbox', 'col-md-2');
+    html += createInput('เลขที่เช็ค', 'เลขที่เช็ค', 'text', 'col-md-2');
+    html += createInput('วันที่จ่าย', 'วันที่จ่าย', 'date', 'col-md-2');
+    html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'text', 'col-md-2');
+    html += createInput('หมายเหตุสรุป (AG)', 'หมายเหตุสรุป', 'text', 'col-md-4');
+    html += `</div></div></div>`;
+
+    html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;
+    container.innerHTML = html;
+    initDatePickers();
+}
+
+        
         function initDatePickers() {
             setTimeout(() => {
                 flatpickr(".date-picker-thai", {
@@ -2191,7 +2396,7 @@ async function submitAdminPlan() {
             
             if(!startVal || !endVal) { Swal.fire('แจ้งเตือน', 'กรุณาระบุช่วงวันที่ให้ครบถ้วน', 'warning'); return; }
 
-            document.getElementById('reportPlanId').innerText = (type === 'plan' ? 'แผนปฏิบัติการ' : 'เบิกจ่ายครุภัณฑ์');
+            document.getElementById('reportPlanId').innerText = (type === 'plan' ? 'แผนปฏิบัติการ' : 'แผนครุภัณฑ์');
             document.getElementById('displayReportYear').innerText = ` (${startVal} - ${endVal})`;
 
             Swal.fire({title: 'กำลังค้นหาข้อมูล...', didOpen: () => Swal.showLoading()});
@@ -2588,14 +2793,15 @@ function openManageModal(index) {
             currentItemIndex = index;
             const item = currentDisplayData[index];
             if(!item) return;
-
+const role = (localStorage.getItem('appRole') || '').toLowerCase();
             // 1. เรียกแสดงแบบฟอร์มแก้ไขโดยตรง (ไม่ผ่าน Timeline)
             openDetail(index, 'edit'); 
             
             // 2. แสดง Toolbar ปุ่มสีส้มด้านล่าง
             const toolbar = document.getElementById('modalToolbar');
+            const submitBtnText = (role === 'admin') ? 'ปิดโครงการ/บันทึกสรุป' : 'บันทึกและส่งงานต่อ';
             toolbar.style.display = 'flex'; 
-           toolbar.innerHTML = `
+            toolbar.innerHTML = `
                 <button type="button" class="btn btn-light rounded-pill px-3" onclick="cancelEditMode()">
                     <i class="fas fa-times me-1"></i> ปิด
                 </button>
@@ -2605,9 +2811,11 @@ function openManageModal(index) {
                 <button type="button" class="btn btn-warning rounded-pill px-3" onclick="saveChanges(false)">
                     <i class="fas fa-save me-1"></i> บันทึก (ชั่วคราว)
                 </button>
+                
+
                 <button type="button" class="btn btn-primary rounded-pill px-3" onclick="submitTaskAction(${index})">
-                    <i class="fas fa-paper-plane me-1"></i> บันทึกและส่งงานต่อ
-                </button>
+            <i class="fas fa-check-double me-1"></i> ${submitBtnText}
+        </button>
             `;
             
             // 3. ซ่อนปุ่มมาตรฐานด้านบนเพื่อใช้ปุ่มใน Toolbar แทน

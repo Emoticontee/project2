@@ -1806,29 +1806,28 @@ optionsHtml += opts.map(o => `<option value="${o}" ${displayVal === o ? 'selecte
             initDatePickers();
         }
         
-// แก้ไขฟังก์ชัน saveChanges (บรรทัดที่ 1222)
 async function saveChanges(isSubmit = true) { 
     if (currentItemIndex === -1 || !currentDisplayData[currentItemIndex]) return;
 
     const item = currentDisplayData[currentItemIndex]; 
     const rowNum = item['_rowNum']; 
     const role = (localStorage.getItem('appRole') || '').toLowerCase();
-    
     let updates = {};
     
-    // รายการคอลัมน์ที่จะ "ข้าม" ไม่บันทึกเมื่อกด "บันทึกชั่วคราว" (เพื่อไม่ให้งานไหล)
+// --- เริ่มต้นส่วนที่วางทับจุดที่ 1 (แทนที่บรรทัด 1230 - 1255) ---
     const statusTriggers = {
-        'plan': ['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ (หน.งาน)', 'วันที่จัดโครงการเสร็จสิ้น', 'วันที่ส่งสรุปโครงการ'],
+        'plan': ['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'วันที่ตรวจ (หน.งาน)', 'วันที่จัดโครงการเสร็จสิ้น', 'วันที่ส่งสรุปโครงการ'],
         'head_med': ['ตรวจสอบแล้ว', 'วันที่ตรวจ (หน.งาน)'],
         'ssk_admin': ['วันที่ ผอ. เซ็นเอกสาร', 'เลขที่บันทึกข้อความ', 'เลขที่บันทึก'],
-        'supply': ['วันที่งานสำเร็จ'], // ✅ เอา 'สถานะหลัก' ออกเพื่อให้เซฟร่างได้
+        'supply': ['วันที่งานสำเร็จ'],
         'finance': ['สถานะ', 'วันที่จ่าย', 'เลขที่เช็ค'],
         'deputy': ['ตรวจสอบแล้ว (รอง)'],
-        'admin': ['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'วันที่ตรวจ (หน.งาน)', 'ตรวจสอบแล้ว', 'วันที่ ผอ. เซ็นเอกสาร', 'เลขที่บันทึก', 'วันที่งานสำเร็จ', 'สถานะ', 'วันที่จ่าย', 'เลขที่เช็ค', 'ตรวจสอบแล้ว (รอง)', 'หมายเหตุสรุป', 'ยกเลิกแผน'] // ✅ เพิ่ม Admin
+        'admin': ['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'วันที่ตรวจ (หน.งาน)', 'ตรวจสอบแล้ว', 'วันที่ ผอ. เซ็นเอกสาร', 'เลขที่บันทึกข้อความ', 'เลขที่บันทึก', 'วันที่งานสำเร็จ', 'สถานะ', 'วันที่จ่าย', 'เลขที่เช็ค', 'ตรวจสอบแล้ว (รอง)', 'หมายเหตุสรุป', 'ยกเลิกแผน']
     };
 
     const myTriggers = statusTriggers[role] || statusTriggers['admin'];
 
+    // --- ส่วนที่ 1: กวาดข้อมูลจากหน้าฟอร์มเข้าตัวแปร updates ---
     document.querySelectorAll('.edit-input').forEach(i => {
         if (!i.disabled) {
             const key = i.dataset.header || i.dataset.key;
@@ -1836,25 +1835,38 @@ async function saveChanges(isSubmit = true) {
 
             let val = i.value;
             if (val === 'อนุมัติ') val = '/';
-            else if (val === 'ไม่อนุมัติ') val = '';
+            else if (val === 'ไม่นุมัติ') val = '';
             if (i.type === 'checkbox') val = i.checked ? '/' : '';
-
-            // ✅ ถ้าบันทึกชั่วคราว ให้ข้ามช่องที่เป็นตัวส่งงานต่อ
-            if (!isSubmit && myTriggers.includes(key)) {
-                return; 
-            }
 
             updates[key] = val;
         }
     });
 
+    // --- ส่วนที่ 2: จัดการเครื่องหมาย [SENT] เพื่อกักงาน ---
+    const noteKey = (currentSystemType === 'buy') ? 'หมายเหตุสรุป' : 'หมายเหตุ';
+    let currentNote = updates[noteKey] || findVal(item, noteKey) || '';
+
+    if (isSubmit) {
+        // ✅ ถ้ากด "ส่งงานต่อ": เติมเครื่องหมายเพื่อให้งานไหลไปสเต็ปถัดไป
+        if (!currentNote.toString().includes('[SENT]')) {
+            updates[noteKey] = currentNote.toString().trim() + '';
+        }
+    } else {
+        // ✅ ถ้ากด "บันทึกข้อมูล": ลบเครื่องหมายออก (ถ้ามี) เพื่อล็อกงานไว้ที่เดิม
+        updates[noteKey] = currentNote.toString().replace('[SENT]', '').trim();
+    }
+
+
+
+
     if (Object.keys(updates).length === 0) { 
-        Swal.fire('แจ้งเตือน', 'ไม่มีข้อมูลใหม่สำหรับบันทึกชั่วคราว', 'info'); 
+        Swal.fire('แจ้งเตือน', 'ไม่มีข้อมูลใหม่สำหรับบันทึก (หรือข้อมูลที่กรอกถูกกักไว้เพื่อไม่ให้งานไหล)', 'info'); 
         return; 
     }
 
+    // ✅ เปลี่ยนข้อความแจ้งเตือนให้ตรงตามชื่อปุ่มใหม่
     Swal.fire({
-        title: isSubmit ? 'กำลังส่งงานต่อ...' : 'กำลังบันทึกชั่วคราว...', 
+        title: isSubmit ? 'กำลังส่งงาน...' : 'กำลังบันทึกข้อมูล...', 
         allowOutsideClick: false, 
         didOpen: () => Swal.showLoading()
     });
@@ -1866,7 +1878,7 @@ async function saveChanges(isSubmit = true) {
         });
         const result = await response.json(); 
         if (result.status === 'success') {
-            Swal.fire('สำเร็จ', isSubmit ? 'ส่งงานต่อเรียบร้อยแล้ว' : 'บันทึกข้อมูลชั่วคราวแล้ว', 'success').then(() => { 
+            Swal.fire('สำเร็จ', isSubmit ? 'ส่งงานเรียบร้อยแล้ว' : 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success').then(() => { 
                 bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
                 loadDataList(currentSystemType, currentTabMode === 'mytasks' ? 'mytasks' : 'all'); 
             });
@@ -1880,69 +1892,74 @@ async function saveChanges(isSubmit = true) {
 function calculateStatus(item, type) {
     if (!item) return { text: 'รอดำเนินการ', badge: '', currentDept: '' };
     
-    // --- ทุกบรรทัดต้องมี item, อยู่ข้างหน้าเสมอ ---
+    // ดึงสัญญาณการส่งงานจริงจากหมายเหตุ
+    const noteField = (type === 'buy') ? 'หมายเหตุสรุป' : 'หมายเหตุ';
+    const noteVal = findVal(item, noteField) || '';
+    const isSent = noteVal.toString().includes('[SENT]');
 
-    // 9. ปิดโครงการสมบูรณ์ (เช็คจากหมายเหตุสรุปใน Step 9)
-   if (hasValue(item, 'หมายเหตุสรุป') || findVal(item, 'ยกเลิกแผน') === '/') {
-        return { text: 'ปิดโครงการสมบูรณ์', badge: '<span class="status-badge status-success">ปิดโครงการแล้ว</span>', currentDept: 'สิ้นสุดขั้นตอน' };
+    // --- 9. ยกเลิกโครงการ ---
+    if (findVal(item, 'ยกเลิกแผน') === '/') {
+        return { text: 'ยกเลิกโครงการ', badge: '<span class="status-badge bg-danger text-white">ยกเลิกโครงการ</span>', currentDept: 'สิ้นสุดขั้นตอน' };
     }
 
-    // 8. เสร็จสิ้นการจ่ายเงิน
+    // --- 8. การเงิน (จ่ายเงิน) ---
     if (hasValue(item, 'วันที่จ่าย') || hasValue(item, 'เลขที่เช็ค')) {
-        return { text: 'เสร็จสิ้น', badge: '<span class="status-badge status-success">จ่ายเงินแล้ว</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
+        if (isSent) return { text: 'เสร็จสิ้น', badge: '<span class="status-badge status-success">จ่ายเงินแล้ว</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
+        return { text: 'กำลังจ่ายเงิน', badge: '<span class="status-badge status-warning">การเงิน (กำลังจ่ายเงิน)</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
     }
 
-    // 7. การเงิน (ใส่สถานะ)
-   const financeStatus = findVal(item, 'สถานะ');
+    // --- 7. รอง ผอก. / การเงิน (สถานะ) ---
+    const financeStatus = findVal(item, 'สถานะ');
     const deputyStatus = findVal(item, 'ตรวจสอบแล้ว (รอง)');
-
-    if (financeStatus === 'อนุมัติ' || financeStatus === '✅' || financeStatus === '/') {
-        // ✅ จุดสำคัญ: ถ้าท่านรองลงผลอนุมัติแล้ว (เป็น / หรือ อนุมัติ) ให้ส่งงานไปสเต็ปจ่ายเงิน
-        if (deputyStatus === '/' || deputyStatus === 'อนุมัติ' || deputyStatus === '✅') {
-            return { text: 'รอการเงินจ่ายเงิน', badge: '<span class="status-badge status-pending">รอการเงินจ่ายเงิน</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
+    if (financeStatus === 'อนุมัติ' || financeStatus === '/' || hasValue(item, 'วันที่รับเรื่องเข้า (การเงิน)')) {
+        if ((financeStatus === 'อนุมัติ' || financeStatus === '/') && isSent) {
+            if (deputyStatus === '/' || deputyStatus === 'อนุมัติ') return { text: 'รอจ่ายเงิน', badge: '<span class="status-badge status-pending">รอการเงินจ่ายเงิน</span>', currentDept: 'การเงิน (จ่ายเงิน)' };
+            return { text: 'รอรอง ผอก.ตรวจ', badge: '<span class="status-badge status-pending">รอรอง ผอก.</span>', currentDept: 'รอง ผอก. ศศค. งบประมาณ' };
         }
-        // ถ้าท่านรองยังไม่ลงผล ให้ค้างที่หน้าท่านรองเหมือนเดิม
-        return { text: 'รอรอง ผอก.ตรวจ', badge: '<span class="status-badge status-pending">รอรอง ผอก.</span>', currentDept: 'รอง ผอก. ศศค. งบประมาณ' };
+        
+        // ✅ เพิ่มจุดนี้: ถ้ามีข้อมูลของท่านรองแล้ว (แม้ยังไม่กดส่ง) ให้ล็อคงานไว้ที่ท่านรองก่อน
+        if (hasValue(item, 'ตรวจสอบแล้ว (รอง)')) {
+            return { text: 'รอง ผอก. กำลังตรวจ', badge: '<span class="status-badge status-warning">รอง ผอก. (กำลังตรวจ)</span>', currentDept: 'รอง ผอก. ศศค. งบประมาณ' };
+        }
+        return { text: 'กำลังตรวจสอบ', badge: '<span class="status-badge status-warning">การเงิน (กำลังตรวจเรื่อง)</span>', currentDept: 'การเงิน' };
     }
 
-    // 6. พัสดุ (งานสำเร็จ)
-    if (hasValue(item, 'วันที่งานสำเร็จ')) {
-        return { text: 'ส่งเบิกการเงิน', badge: '<span class="status-badge status-pending">รอการเงินรับเรื่อง</span>', currentDept: 'การเงิน' };
+    // --- 6. พัสดุ (งานสำเร็จ) ---
+    if (hasValue(item, 'วันที่รับเรื่องเข้า') || hasValue(item, 'วันที่งานสำเร็จ')) {
+        if (hasValue(item, 'วันที่งานสำเร็จ') && isSent) return { text: 'ส่งเบิกการเงิน', badge: '<span class="status-badge status-pending">รอการเงินรับเรื่อง</span>', currentDept: 'การเงิน' };
+        return { text: 'กำลังดำเนินการ', badge: '<span class="status-badge status-warning">พัสดุ (กำลังสรุปงาน)</span>', currentDept: 'พัสดุ' };
     }
 
-    // --- 5. แผนติดตามสรุป (เฉพาะ Plan) ---
-    if (type === 'plan' && hasValue(item, 'วันที่ส่งสรุปโครงการ')) {
-        return { text: 'ส่งพัสดุ', badge: '<span class="status-badge status-pending">รอพัสดุรับเรื่อง</span>', currentDept: 'พัสดุ/งานแผน' };
+    // --- 5. จัดโครงการ/ส่งสรุป (เฉพาะ Plan) ---
+    if (type === 'plan' && (hasValue(item, 'วันที่จัดโครงการเสร็จสิ้น') || hasValue(item, 'วันที่ส่งสรุปโครงการ'))) {
+        if (hasValue(item, 'วันที่ส่งสรุปโครงการ') && isSent) return { text: 'ส่งพัสดุ', badge: '<span class="status-badge status-pending">รอพัสดุรับเรื่อง</span>', currentDept: 'พัสดุ/งานแผน' };
+        return { text: 'กำลังส่งสรุป', badge: '<span class="status-badge status-warning">แผน (กำลังส่งสรุป)</span>', currentDept: 'แผนติดตามการส่งสรุปโครงการ' };
     }
 
-    // --- 4. ธุรการ/ผอ. (ออกเลขแล้ว) ---
-    if (hasValue(item, 'เลขที่บันทึกข้อความ') || hasValue(item, 'เลขที่บันทึก')) {
-        const nextDept = (type === 'buy') ? 'พัสดุ' : 'แผนติดตามการส่งสรุปโครงการ';
-        return { text: 'อนุมัติแล้ว', badge: `<span class="status-badge status-success">รอ${nextDept}</span>`, currentDept: nextDept };
+    // --- 4. ธุรการ/ผอ. (ออกเลข/ลงนาม) ---
+    if (hasValue(item, 'วันที่ ผอ. เซ็นเอกสาร') || hasValue(item, 'เลขที่บันทึกข้อความ') || hasValue(item, 'เลขที่บันทึก')) {
+        if ((hasValue(item, 'เลขที่บันทึกข้อความ') || hasValue(item, 'เลขที่บันทึก')) && isSent) {
+            const nextDept = (type === 'buy') ? 'พัสดุ' : 'แผนติดตามการส่งสรุปโครงการ';
+            return { text: 'อนุมัติแล้ว', badge: `<span class="status-badge status-success">รอ${nextDept}</span>`, currentDept: nextDept };
+        }
+        return { text: 'กำลังออกเลข', badge: '<span class="status-badge status-warning">ธุรการ (กำลังออกเลข)</span>', currentDept: 'ธุรการ ศศค.' };
     }
 
-    // --- 3. หน.งาน (ตรวจสอบแล้ว) (บรรทัด 1319) ---
-    // ✅ แก้ไข: งานจะไปถึง ธุรการ/ผอ. (Step 4) ก็ต่อเมื่อ หน.งาน ติ๊กถูก "และ" บันทึกวันที่รับเรื่องแล้วเท่านั้น
-    const headApprove = (findVal(item, 'ตรวจสอบแล้ว') === '/' || findVal(item, 'ตรวจสอบแล้ว') === 'อนุมัติ' || findVal(item, 'ตรวจสอบแล้ว') === '✅');
-    const headReceiveDate = getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)']);
-    
-    // --- ค้นหาช่วงบรรทัด 1326 ใน calculateStatus ---
-    if (headApprove && headReceiveDate && headReceiveDate !== '-') {
-        // ✅ แก้ไข: ไม่ว่าจะเป็นแผนปฏิบัติการหรือครุภัณฑ์ เมื่อ หน.งาน อนุมัติแล้ว ต้องส่งมาที่ "ธุรการ ศศค." (Step 4) เสมอ
-        const nextDept = 'ธุรการ ศศค.';
-        return { 
-            text: 'เสนอ ผอ.', 
-            badge: `<span class="status-badge status-pending">รอ${nextDept} (เสนอ ผอ.)</span>`, 
-            currentDept: nextDept 
-        };
+    // --- 3. หน.งานแพทยศาสตร์ (ตรวจสอบสำเร็จ) ---
+    const headApprove = (findVal(item, 'ตรวจสอบแล้ว') === '/' || findVal(item, 'ตรวจสอบแล้ว') === 'อนุมัติ');
+    const headDate = getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)']);
+    if (headDate && headDate !== '-') {
+        if (headApprove && isSent) return { text: 'เสนอ ผอ.', badge: '<span class="status-badge status-pending">รอธุรการ ศศค. (เสนอ ผอ.)</span>', currentDept: 'ธุรการ ศศค.' };
+        return { text: 'กำลังตรวจสอบ', badge: '<span class="status-badge status-warning">หน.งาน (กำลังตรวจ)</span>', currentDept: 'หน.งานแพทยศาสตร์' };
     }
 
-    // --- 2. แผน (ตรวจสำเร็จ) ---
-    if (hasValue(item, 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ') || hasValue(item, 'ตรวจ/แก้ไขเอกสารสำเร็จ')) {
-        return { text: 'รอ หน.งานตรวจ', badge: '<span class="status-badge status-pending">รอ หน.งานแพทยศาสตร์</span>', currentDept: 'หน.งานแพทยศาสตร์' };
+    // --- 2. งานแผน (ตรวจเอกสารสำเร็จ) ---
+    if (hasValue(item, 'วันที่ตรวจ/แก้ไขเอกสารสำเร็จ')) {
+        if (isSent) return { text: 'รอ หน.งานตรวจ', badge: '<span class="status-badge status-pending">รอ หน.งานแพทยศาสตร์</span>', currentDept: 'หน.งานแพทยศาสตร์' };
+        return { text: 'กำลังตรวจเอกสาร', badge: '<span class="status-badge status-warning">แผน (กำลังตรวจเอกสาร)</span>', currentDept: 'แผน (ต้องผ่านทุกเอกสาร)' };
     }
 
-    // --- 1. เริ่มต้น ---
+    // --- 1. จุดเริ่มต้น ---
     if (hasValue(item, 'วันที่รับเอกสารครั้งแรก')) {
         return { text: 'แผนตรวจสอบ', badge: '<span class="status-badge status-pending">รอแผนตรวจเอกสาร</span>', currentDept: 'แผน (ต้องผ่านทุกเอกสาร)' };
     }
@@ -2800,39 +2817,36 @@ function renderAdminBuyAddFormUI() {
                 }
             }
         }
-
+        
 function openManageModal(index) {
-            currentItemIndex = index;
-            const item = currentDisplayData[index];
-            if(!item) return;
-const role = (localStorage.getItem('appRole') || '').toLowerCase();
-            // 1. เรียกแสดงแบบฟอร์มแก้ไขโดยตรง (ไม่ผ่าน Timeline)
-            openDetail(index, 'edit'); 
-            
-            // 2. แสดง Toolbar ปุ่มสีส้มด้านล่าง
-            const toolbar = document.getElementById('modalToolbar');
-            const submitBtnText = (role === 'admin') ? 'ปิดโครงการ/บันทึกสรุป' : 'บันทึกและส่งงานต่อ';
-            toolbar.style.display = 'flex'; 
-            toolbar.innerHTML = `
-                <button type="button" class="btn btn-light rounded-pill px-3" onclick="cancelEditMode()">
-                    <i class="fas fa-times me-1"></i> ปิด
-                </button>
-                <button type="button" class="btn btn-danger rounded-pill px-3" onclick="cancelTaskAction(${index})">
-                    <i class="fas fa-ban me-1"></i> ยกเลิกรายการ
-                </button>
-                <button type="button" class="btn btn-warning rounded-pill px-3" onclick="saveChanges(false)">
-                    <i class="fas fa-save me-1"></i> บันทึก (ชั่วคราว)
-                </button>
-                
-
-                <button type="button" class="btn btn-primary rounded-pill px-3" onclick="submitTaskAction(${index})">
-            <i class="fas fa-check-double me-1"></i> ${submitBtnText}
+    currentItemIndex = index;
+    const item = currentDisplayData[index];
+    if(!item) return;
+    const role = (localStorage.getItem('appRole') || '').toLowerCase();
+    
+    // 1. เรียกแสดงแบบฟอร์มแก้ไข
+    openDetail(index, 'edit'); 
+    
+    // 2. แสดง Toolbar ปุ่มจัดการงาน (ตัดปุ่ม "ปิด" และ "ยกเลิก" ออกตามต้องการ)
+    const toolbar = document.getElementById('modalToolbar');
+    
+    // ✅ กำหนดข้อความปุ่มส่งงานตามบทบาท (ถ้าเป็น Admin ให้ขึ้นว่าปิดโครงการ)
+    const submitBtnText = (role === 'admin') ? 'ส่งงานต่อ (ปิดโครงการ)' : 'ส่งงานต่อ';
+    
+    toolbar.style.display = 'flex'; 
+    toolbar.innerHTML = `
+        <button type="button" class="btn btn-warning rounded-pill px-4 shadow-sm" onclick="saveChanges(false)">
+            <i class="fas fa-save me-1"></i> บันทึกข้อมูล
         </button>
-            `;
-            
-            // 3. ซ่อนปุ่มมาตรฐานด้านบนเพื่อใช้ปุ่มใน Toolbar แทน
-            document.getElementById('defaultModalButtons').classList.add('d-none');
-        }
+        
+        <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="submitTaskAction(${index})">
+            <i class="fas fa-paper-plane me-1"></i> ${submitBtnText}
+        </button>
+    `;
+    
+    // 3. ซ่อนปุ่มมาตรฐานด้านบน
+    document.getElementById('defaultModalButtons').classList.add('d-none');
+}
 
 
 

@@ -1706,19 +1706,25 @@ optionsHtml += opts.map(o => `<option value="${o}" ${displayVal === o ? 'selecte
                 html += createField('งานสำเร็จ', ['supply_done', 'วันที่งานสำเร็จ'], 'role-supply', 'date');
                 html += `</div></div>`;
 
-                html += `<div class="card p-3 mb-2 bg-success bg-opacity-10 border-success rounded-3"><h6 class="text-success fw-bold border-bottom pb-2">7. การเงิน (Step 7)</h6><div class="row">`;
+              // Step 7: การเงิน - รับเรื่อง (Step 7)
+                html += `<div class="card p-3 mb-2 bg-success bg-opacity-10 border-success rounded-3"><h6 class="text-success fw-bold border-bottom pb-2">7. การเงิน - รับเรื่อง (Step 7)</h6><div class="row">`;
                 html += createField('รับเรื่อง (การเงิน)', ['finance_receive', 'วันที่รับเรื่องเข้า (การเงิน)'], 'role-finance', 'date');
                 html += createField('สถานะ', ['finance_status', 'สถานะ'], 'role-finance', 'select', ['อนุมัติ', 'ไม่อนุมัติ']);
                 html += createField('ส่งแก้ไขพัสดุ', ['finance_fix', 'ส่งแก้ไขพัสดุ'], 'role-finance');
-                html += createField('ตรวจสอบแล้ว (รอง)', ['finance_check', 'ตรวจสอบแล้ว (รอง)'], 'role-deputy', 'checkbox');
-                
-                html += `<div class="col-12"><hr class="text-success"></div>`;
-                html += createField('เลขที่เช็ค', ['finance_cheque', 'เลขที่เช็ค'], 'role-finance');
-                html += createField('วันที่จ่าย', ['finance_pay', 'วันที่จ่าย'], 'role-finance', 'date');
-                html += createField('เงินคงเหลือ', ['finance_remain', 'เงินคงเหลือ'], 'role-finance', 'text');
-                html += createField('หมายเหตุ', ['finance_note', 'หมายเหตุ'], 'role-finance');
                 html += `</div></div>`;
 
+                // Step 8: รอง ผอก. ตรวจสอบ (Step 8)
+                html += `<div class="card p-3 mb-2 border-info rounded-3"><h6 class="text-info fw-bold border-bottom pb-2">8. รอง ผอก. (Step 8)</h6><div class="row">`;
+                html += createField('ตรวจสอบแล้ว (รอง)', ['finance_check', 'ตรวจสอบแล้ว (รอง)'], 'role-deputy', 'select', ['อนุมัติ', 'ไม่อนุมัติ']);
+                html += `</div></div>`;
+
+                // Step 9: การเงิน - จ่ายเงิน & สรุปผล (Step 9)
+                html += `<div class="card p-3 mb-2 bg-success bg-opacity-10 border-success rounded-3"><h6 class="text-success fw-bold border-bottom pb-2">9. การเงิน - จ่ายเงิน & สรุป (Step 9)</h6><div class="row">`;
+                html += createField('เลขที่เช็ค', ['finance_cheque', 'เลขที่เช็ค'], 'role-finance-pay');
+                html += createField('วันที่จ่าย', ['finance_pay', 'วันที่จ่าย'], 'role-finance-pay', 'date');
+                html += createField('เงินคงเหลือ', ['finance_remain', 'เงินคงเหลือ'], 'role-admin-only', 'text');
+                html += createField('หมายเหตุ', ['finance_note', 'หมายเหตุ'], 'role-finance-pay');
+                html += `</div></div>`;
            } else {
                 // ==========================================
                 // BUY (ครุภัณฑ์) - แยก 9 Step ตามคอลัมน์ A-AG
@@ -1920,9 +1926,15 @@ function calculateStatus(item, type) {
     const headApprove = (findVal(item, 'ตรวจสอบแล้ว') === '/' || findVal(item, 'ตรวจสอบแล้ว') === 'อนุมัติ' || findVal(item, 'ตรวจสอบแล้ว') === '✅');
     const headReceiveDate = getKey(item, ['head_check', 'วันที่ตรวจ (หน.งาน)']);
     
+    // --- ค้นหาช่วงบรรทัด 1326 ใน calculateStatus ---
     if (headApprove && headReceiveDate && headReceiveDate !== '-') {
-        const nextDept = (type === 'buy') ? 'พัสดุ' : 'ธุรการ ศศค.';
-        return { text: 'เสนอ ผอ.', badge: '<span class="status-badge status-pending">รอธุรการ (เสนอ ผอ.)</span>', currentDept: nextDept };
+        // ✅ แก้ไข: ไม่ว่าจะเป็นแผนปฏิบัติการหรือครุภัณฑ์ เมื่อ หน.งาน อนุมัติแล้ว ต้องส่งมาที่ "ธุรการ ศศค." (Step 4) เสมอ
+        const nextDept = 'ธุรการ ศศค.';
+        return { 
+            text: 'เสนอ ผอ.', 
+            badge: `<span class="status-badge status-pending">รอ${nextDept} (เสนอ ผอ.)</span>`, 
+            currentDept: nextDept 
+        };
     }
 
     // --- 2. แผน (ตรวจสำเร็จ) ---
@@ -2094,15 +2106,15 @@ function toggleEditMode() {
             mapObj['หมวด']=dataObj['input_cat']; 
             mapObj['ชนิด']=dataObj['input_type'];
             if(type==='buy'){ 
-                mapObj['ปีงบประมาณ']=dataObj['input_year']; 
-                mapObj['กลุ่มงาน/หน่วยงาน']=dataObj['input_dept']; 
-                mapObj['หมวด']=dataObj['input_cat']; 
-                mapObj['ชนิด']=dataObj['input_type'];
-                mapObj['รายการ']=dataObj['input_name']; 
-                mapObj['เลขที่']=dataObj['input_code']; 
-                mapObj['ราคา']=dataObj['input_budget_plan']; 
-                mapObj['สถานที่']=dataObj['input_place'];
-                mapObj['จำนวน']=dataObj['input_qty'];
+                mapObj['ปีงบประมาณ'] = dataObj['input_year']; 
+                mapObj['กลุ่มงาน/หน่วยงาน'] = dataObj['input_dept']; 
+                mapObj['หมวด'] = dataObj['input_cat']; 
+                mapObj['ชนิด'] = dataObj['input_type'];
+                mapObj['รายการ'] = dataObj['input_name']; 
+                mapObj['เลขที่'] = dataObj['input_code']; // ✅ แก้จาก mapObj['เลขที่']=dataObj['input_code'] ให้ชัดเจน
+                mapObj['ราคา'] = dataObj['input_budget_plan']; 
+                mapObj['สถานที่'] = dataObj['input_place'];
+                mapObj['จำนวน'] = dataObj['input_qty'];
             } else { 
                 mapObj['ยุทธศาสตร์']=dataObj['input_strat'];
                 mapObj['กำหนดเริ่มโครงการ']=dataObj['input_start']; 

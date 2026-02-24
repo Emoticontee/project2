@@ -17,7 +17,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<style>
+.color-selector-group {
+    display: flex; gap: 10px; align-items: center; 
+    background: #f8fafc; padding: 8px 15px; border-radius: 50px; border: 1px solid #e2e8f0;
+}
+.color-item { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; }
+.color-picker-custom {
+    width: 25px; height: 25px; border: none; padding: 0; background: none; cursor: pointer;
+}
+</style>
     <style>
         :root { 
             --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
@@ -440,7 +451,135 @@
     z-index: 10;
 }
 
+
+
+
+/* --- New Summary Table Style --- */
+.report-table-summary { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+.report-table-summary th, .report-table-summary td { 
+    border: 1px solid #000; padding: 8px; font-size: 15px; vertical-align: middle; 
+}
+.bg-tan { background-color: #fce5cd; } /* สีหัวข้อตามภาพ */
+.bg-pink-light { background-color: #f4cccc; } /* สีแถวไตรมาส */
+.bg-progress-combined { background-color: #d9ead3; font-weight: bold; font-size: 1.2rem; }
+.chart-container-full { 
+    display: flex; flex-direction: column; align-items: center; 
+    padding: 20px; border: 1px solid #dee2e6; border-radius: 12px;
+}
+
         @media print { .header-bar, .nav-tabs, #loginPage, .navbar, .navbar-custom { display: none !important; } .a4-paper { box-shadow: none; margin: 0; width: 100%; } }
+   
+   
+
+        /* --- New Zig-Zag Timeline CSS --- */
+.timeline-zigzag {
+    position: relative;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px 0;
+}
+.timeline-zigzag::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    background-color: #e2e8f0;
+    top: 0; bottom: 0;
+    left: 50%;
+    margin-left: -2px;
+}
+.timeline-container-box {
+    padding: 10px 40px;
+    position: relative;
+    background-color: inherit;
+    width: 50%;
+}
+.timeline-container-box::after {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    right: -10px;
+    background-color: white;
+    border: 4px solid #cbd5e1;
+    top: 15px;
+    border-radius: 50%;
+    z-index: 1;
+}
+.left-box { left: 0; text-align: right; }
+.right-box { left: 50%; text-align: left; }
+.left-box::after { right: -10px; }
+.right-box::after { left: -10px; }
+
+/* Status Colors */
+.timeline-container-box.success::after { border-color: #10b981; background: #10b981; }
+.timeline-container-box.warning::after { border-color: #f59e0b; background: #f59e0b; }
+
+.timeline-content-card {
+    padding: 12px 18px;
+    background-color: white;
+    position: relative;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+}
+.success .timeline-content-card { border-left: 4px solid #10b981; background: #ecfdf5; }
+.warning .timeline-content-card { border-left: 4px solid #f59e0b; background: #fffbeb; }
+
+@media screen and (max-width: 600px) {
+    .timeline-zigzag::after { left: 31px; }
+    .timeline-container-box { width: 100%; padding-left: 70px; padding-right: 25px; text-align: left; }
+    .timeline-container-box::after { left: 21px; }
+    .right-box { left: 0%; }
+}
+   
+   /* --- Modern & Colorful Zig-Zag Timeline --- */
+.timeline-zigzag {
+    position: relative;
+    max-width: 720px; /* ✅ ขนาดกำลังดี ไม่ต้องเลื่อนจอ */
+    margin: 20px auto;
+    padding: 10px 0;
+}
+.timeline-zigzag::after {
+    content: ''; position: absolute; width: 3px; background-color: #f1f5f9;
+    top: 0; bottom: 0; left: 50%; margin-left: -1.5px;
+}
+.timeline-container-box { padding: 10px 30px; position: relative; width: 50%; }
+.timeline-container-box::after {
+    content: ''; position: absolute; width: 16px; height: 16px;
+    right: -8px; background-color: white; border: 3px solid #cbd5e1;
+    top: 22px; border-radius: 50%; z-index: 1; box-shadow: 0 0 0 3px white;
+}
+.left-box { left: 0; text-align: right; }
+.right-box { left: 50%; text-align: left; }
+.left-box::after { right: -8px; }
+.right-box::after { left: -8px; }
+
+/* ✅ จุดสีตามสถานะ */
+.success::after { border-color: #10b981 !important; background: #10b981 !important; box-shadow: 0 0 0 4px #d1fae5 !important; }
+.warning::after { border-color: #f59e0b !important; background: #f59e0b !important; box-shadow: 0 0 0 4px #fef3c7 !important; }
+
+/* ✅ การ์ดและตัวหนังสือให้อ่านง่ายขึ้น */
+.timeline-content-card {
+    padding: 15px 20px; background-color: white; border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #f1f5f9;
+}
+.timeline-content-card h6 { 
+    font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 4px; 
+}
+.timeline-content-card small { font-size: 0.85rem; color: #475569 !important; font-weight: 600; }
+.timeline-content-card p { font-size: 0.75rem; margin-top: 5px; color: #64748b; line-height: 1.4; }
+
+/* ✅ เล่นสีตามกลุ่มงาน (Phase Colors) */
+.phase-admin { border-top: 5px solid #3b82f6; } /* งานอนุมัติ - สีน้ำเงิน */
+.phase-supply { border-top: 5px solid #f59e0b; } /* งานพัสดุ - สีส้ม */
+.phase-finance { border-top: 5px solid #10b981; } /* งานการเงิน - สีเขียว */
+
+/* มือถือ */
+@media screen and (max-width: 600px) {
+    .timeline-zigzag::after { left: 20px; }
+    .timeline-container-box { width: 100%; padding-left: 45px; text-align: left; }
+    .timeline-container-box::after { left: 12px; }
+    .right-box { left: 0%; }
+}
     </style>
 </head>
 <body>
@@ -659,6 +798,21 @@
                             <span class="input-group-text bg-white border-start-0 border-end-0 text-muted">ถึง</span>
                             <input type="text" id="reportEndDate" class="form-control border-start-0 text-center date-picker-thai" placeholder="สิ้นสุด">
                         </div>
+
+                        <div class="color-selector-group d-print-none me-3">
+    <div class="color-item">
+        <input type="color" id="colorNot" class="color-picker-custom" value="#e2e8f0" onchange="updateChartColors()">
+        <span>ยังไม่ทำ</span>
+    </div>
+    <div class="color-item">
+        <input type="color" id="colorProgress" class="color-picker-custom" value="#3b82f6" onchange="updateChartColors()">
+        <span>กำลังทำ</span>
+    </div>
+    <div class="color-item">
+        <input type="color" id="colorDone" class="color-picker-custom" value="#10b981" onchange="updateChartColors()">
+        <span>เสร็จสิ้น</span>
+    </div>
+</div>
                         <button onclick="loadReportData(true)" class="btn btn-primary fw-bold px-3 rounded-pill shadow-sm"><i class="fas fa-search me-1"></i>ค้นหาข้อมูล</button>
                         
                         <select id="reportTypeSelector" class="form-select shadow-sm" style="width:160px; display:block;"> 
@@ -718,7 +872,7 @@
                                 <div class="col-5 d-flex flex-column align-items-center justify-content-center border-start">
                                     <h6 class="fw-bold mb-3">ผลการดำเนินการ</h6>
                                     <div style="width: 250px; height: 250px; position: relative;">
-                                        <canvas id="summaryChart" width="250" height="250"></canvas>
+                                      <div id="summaryChart3D" style="width: 300px; height: 300px;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -726,15 +880,17 @@
 
                         <div class="mb-2 fw-bold mt-4" style="font-size: 16px;">สรุปยอดรวมงบประมาณ</div><table class="report-table text-center w-100"><thead><tr><th rowspan="2" style="width:10%;">หมวดเงิน<br>(อุดหนุน)</th><th rowspan="2" style="width:10%;">ID PLAN</th><th rowspan="2" style="width:30%;">ชื่อโครงการ</th><th colspan="3">ดำเนินการโครงการ</th><th colspan="4">งบประมาณ</th></tr><tr><th>ยังไม่ได้<br>ดำเนินการ</th><th>กำลัง<br>ดำเนินการ</th><th>เสร็จสิ้น</th><th>ในแผน</th><th>ใน<br>โครงการ</th><th>ใช้จริง</th><th>คงเหลือ</th></tr></thead><tbody></tbody><tfoot id="summaryTableFooter" class="fw-bold bg-light"></tfoot></table>
                         <div class="mb-2 mt-4 fw-bold" style="font-size: 16px;">รายละเอียดโครงการแยกตามหน่วยงาน</div><table class="report-table text-center w-100"><tbody id="detailedTableBody"></tbody></table>
-                        <div class="text-center mt-5 pt-5 text-muted small">เอกสารนี้สร้างจากระบบอัตโนมัติ</div>
+                            <div class="text-center mt-5 pt-5 text-muted small">เอกสารนี้สร้างจากระบบอัตโนมัติ</div>
+                        </div>
+
+                        
+                     </div>
+                        <!-- แสดงข้อความเมื่อยังไม่ได้ค้นหา -->
+                        <div id="reportPlaceholder" class="text-center py-5">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">กรุณาเลือกช่วงวันที่และกดปุ่ม "ค้นหาข้อมูล"</h5>
+                        </div>
                     </div>
-                </div>
-                <!-- แสดงข้อความเมื่อยังไม่ได้ค้นหา -->
-                <div id="reportPlaceholder" class="text-center py-5">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">กรุณาเลือกช่วงวันที่และกดปุ่ม "ค้นหาข้อมูล"</h5>
-                </div>
-            </div>
 
             <!-- ADMIN PAGE -->
             <div id="adminPage" class="page-section" style="display:none;">
@@ -755,6 +911,8 @@
                 </div>
             </div>
 
+
+            
         </div> 
     </div>
 
@@ -1461,146 +1619,61 @@ async function performReceive(index) {
     myModal.show();
 }
 
-        // *** UPDATED RENDER TIMELINE FUNCTION (Green Line Logic & Date) ***
-        function renderTimeline(item) {
-            const container = document.getElementById('editFormContainer');
-            
-            // Helper to get date string
-            const getVal = (keys) => {
-                let v = getKey(item, Array.isArray(keys) ? keys : [keys]);
-                if (!v || v === '-' || v === '') return null;
-                return v;
-            };
+       function renderTimeline(item) {
+    const container = document.getElementById('editFormContainer');
+    const type = currentSystemType;
+    const getVal = (keys) => {
+        let v = getKey(item, Array.isArray(keys) ? keys : [keys]);
+        return (!v || v === '-' || v === '') ? null : v;
+    };
 
-            const steps = [];
+    const steps = [];
+    if (type === 'plan') {
+        // --- แผนปฏิบัติการ 9 Step ---
+        steps.push({ title: "1. เริ่มโครงการ", date: getVal(['กำหนดเริ่มโครงการ']), desc: "บันทึกข้อมูลเข้าระบบ", key: 'input_year' });
+        steps.push({ title: "2. งานแผนตรวจ", date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ']), desc: "ตรวจสอบเอกสารเบื้องต้น", key: 'plan_check' });
+        steps.push({ title: "3. หน.งานตรวจ", date: getVal(['วันที่ตรวจ (หน.งาน)']), desc: "หัวหน้างานพิจารณา", key: 'head_check' });
+        steps.push({ title: "4. ผอ. ลงนาม", date: getVal(['วันที่ ผอ. เซ็นเอกสาร']), desc: "ผอ. เซ็นอนุมัติโครงการ", key: 'admin_sign' });
+        steps.push({ title: "5. จัดโครงการ", date: getVal(['วันที่จัดโครงการเสร็จสิ้น']), desc: "ดำเนินงานและสรุปผล", key: 'project_done' });
+        steps.push({ title: "6. พัสดุรับเรื่อง", date: getVal(['วันที่รับเรื่องเข้า']), desc: "ดำเนินการจัดซื้อจัดจ้าง", key: 'supply_receive' });
+        steps.push({ title: "7. การเงินรับ", date: getVal(['วันที่รับเรื่องเข้า (การเงิน)']), desc: "ตรวจเอกสารสั่งจ่าย", key: 'finance_receive' });
+        steps.push({ title: "8. รอง ผอก. ตรวจ", date: getVal(['ตรวจสอบแล้ว (รอง)']), desc: "อนุมัติสั่งจ่ายเช็ค", key: 'finance_check' });
+        steps.push({ title: "9. การเงินจ่ายเช็ค", date: getVal(['วันที่จ่าย']), desc: "สั่งจ่ายเงินสำเร็จ", key: 'finance_pay' });
+    } else {
+        // --- แผนครุภัณฑ์ 9 Step ---
+        steps.push({ title: "1. เริ่มแผน", date: getVal(['ปีงบประมาณ']), desc: "ตั้งงบประมาณครุภัณฑ์", key: 'input_year' });
+        steps.push({ title: "2. งานแผนตรวจ", date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ']), desc: "ตรวจสอบรหัสและงบ", key: 'plan_check' });
+        steps.push({ title: "3. หน.งานตรวจ", date: getVal(['วันที่ตรวจ (หน.งาน)']), desc: "หัวหน้างานเห็นชอบ", key: 'head_check' });
+        steps.push({ title: "4. ผอ. ลงนาม", date: getVal(['วันที่ ผอ. เซ็นเอกสาร']), desc: "ผอ. อนุมัติจัดซื้อ", key: 'admin_sign' });
+        steps.push({ title: "5. พัสดุดำเนินการ", date: getVal(['วันที่งานสำเร็จ']), desc: "จัดซื้อจัดจ้างสำเร็จ", key: 'supply_done' });
+        steps.push({ title: "6. การเงินรับ", date: getVal(['วันที่รับเรื่องเข้า (การเงิน)']), desc: "ตรวจรับเอกสารการเงิน", key: 'finance_receive' });
+        steps.push({ title: "7. รอง ผอก. ตรวจ", date: getVal(['ตรวจสอบแล้ว (รอง)']), desc: "อนุมัติสั่งจ่าย", key: 'finance_check' });
+        steps.push({ title: "8. จ่ายเงิน", date: getVal(['วันที่จ่าย']), desc: "ออกเช็คชำระค่าสินค้า", key: 'finance_pay' });
+        steps.push({ title: "9. ปิดโครงการ", date: getVal(['หมายเหตุสรุป']), desc: "สรุปยอดคงเหลือ", key: 'final_note' });
+    }
 
-            // 1. Initial / Created
-            steps.push({ 
-                title: "เริ่มโครงการ", 
-                date: getVal(['กำหนดเริ่มโครงการ', 'เริ่มโครงการ', 'Start']), 
-                desc: "บันทึกข้อมูลเข้าระบบ",
-                isDone: true // Always true if data exists
-            });
+    // คำนวณสถานะ Success/Warning/Pending
+    let lastDoneIdx = -1;
+    steps.forEach((s, i) => { if(s.date) lastDoneIdx = i; });
 
-           if (currentSystemType === 'plan') {
-                // 2. งานแผน (ตรวจสอบ)
-                steps.push({
-                    title: "งานแผน (ตรวจสอบ)",
-                    date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ']),
-                    desc: "งานแผนตรวจสอบความถูกต้อง",
-                    isDone: !!getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ', 'ตรวจ/แก้ไขเอกสารสำเร็จ'])
-                });
+    let html = '<div class="timeline-zigzag">';
+    steps.forEach((step, i) => {
+        const isLeft = (i % 2 === 0);
+        let status = (i <= lastDoneIdx) ? 'success' : (i === lastDoneIdx + 1 ? 'warning' : 'pending');
+        let dateDisplay = step.date ? `<small class="d-block fw-bold text-muted">${step.date}</small>` : '<small class="text-secondary">รอข้อมูล...</small>';
 
-                // --- แก้ไขใน renderTimeline (ประมาณบรรทัดที่ 1039) ---
-                const headStatus = getVal(['ตรวจสอบแล้ว', 'head_status']);
-                // เพิ่ม ✅ เข้าไปในเงื่อนไข isHeadApproved
-                const isHeadApproved = (headStatus === '/' || headStatus === 'อนุมัติ' || headStatus === '✅');
-                
-                steps.push({
-                    title: "หน.งาน ตรวจสอบ",
-                    date: getVal(['วันที่ตรวจ (หน.งาน)', 'ตรวจ (หน.งาน)']),
-                    desc: "หัวหน้างานอนุมัติ/ตรวจสอบ",
-                    isDone: (!!getVal(['วันที่ตรวจ (หน.งาน)', 'ตรวจ (หน.งาน)']) && isHeadApproved)
-                });
-
-                // 4. Admin / Director
-                steps.push({
-                    title: "ธุรการ / ผอ.อนุมัติ",
-                    date: getVal(['วันที่ ผอ. เซ็นเอกสาร']),
-                    desc: "ผอ.ลงนามอนุมัติ (ออกเลข)",
-                    isDone: !!getVal(['วันที่ ผอ. เซ็นเอกสาร'])
-                });
-
-                // 5. Submit Summary (Execution)
-                steps.push({
-                    title: "ส่งสรุปผล (30 วัน)",
-                    date: getVal(['วันที่ส่งสรุปโครงการ']),
-                    desc: "ดำเนินการจัดโครงการและส่งสรุป",
-                    isDone: !!getVal(['วันที่ส่งสรุปโครงการ'])
-                });
-
-            } else {
-                // BUY FLOW
-                // 2. Plan Check
-                steps.push({
-                    title: "งานแผน (ตรวจสอบ)",
-                    date: getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ']),
-                    desc: "งานแผนตรวจสอบเอกสาร",
-                    isDone: !!getVal(['วันที่ตรวจ/แก้ไขเอกสารสำเร็จ'])
-                });
-
-                // 3. Supply
-                steps.push({
-                    title: "งานพัสดุ",
-                    date: getVal(['วันที่รับเรื่องเข้า']),
-                    desc: "รับเรื่อง/ดำเนินการจัดซื้อจัดจ้าง",
-                    isDone: !!getVal(['วันที่รับเรื่องเข้า'])
-                });
-                
-                // 4. Supply Finish
-                steps.push({
-                    title: "ดำเนินการสำเร็จ",
-                    date: getVal(['วันที่งานสำเร็จ']),
-                    desc: "พัสดุดำเนินการเสร็จสิ้น",
-                    isDone: !!getVal(['วันที่งานสำเร็จ'])
-                });
-            }
-            
-            // Common Last Step: Finance
-            steps.push({
-                title: "การเงิน (จ่ายเงิน)",
-                date: getVal(['วันที่จ่าย']),
-                desc: "อนุมัติและสั่งจ่ายเช็ค",
-                isDone: !!getVal(['วันที่จ่าย'])
-            });
-
-            // *** NEW LOGIC: FILL THE GREEN LINE ***
-            // Find the last step that is truly done
-            let lastDoneIndex = 0;
-            steps.forEach((s, i) => {
-                if(s.isDone) lastDoneIndex = i;
-            });
-
-            // Mark all steps up to lastDoneIndex as visually done (Green Line)
-            // This fixes the issue where missing dates in between break the green line
-            steps.forEach((s, i) => {
-                if (i <= lastDoneIndex) {
-                    s.visualStatus = 'success';
-                } else if (i === lastDoneIndex + 1) {
-                    s.visualStatus = 'warning'; // Current Step
-                } else {
-                    s.visualStatus = 'pending'; // Future Step
-                }
-            });
-
-            let html = '<div class="timeline-container"><div class="timeline">';
-
-            steps.forEach(step => {
-                let statusClass = step.visualStatus;
-                
-                // Format Date nicely
-                let dateHtml = '';
-                if(step.date) {
-                    dateHtml = `<i class="far fa-clock me-1"></i> ${step.date}`;
-                } else {
-                    if (statusClass === 'success') dateHtml = '<i class="fas fa-check me-1"></i> ผ่านแล้ว';
-                    else if (statusClass === 'warning') dateHtml = '<i class="fas fa-spinner fa-spin me-1"></i> กำลังดำเนินการ';
-                    else dateHtml = '...';
-                }
-
-                html += `
-                    <div class="timeline-item ${statusClass}">
-                        <div class="timeline-dot"></div>
-                        <div class="timeline-date">${dateHtml}</div>
-                        <div class="timeline-title">${step.title}</div>
-                        <div class="timeline-desc">${step.desc}</div>
-                    </div>
-                `;
-            });
-
-            html += '</div></div>';
-            container.innerHTML = html;
-        }
+        html += `
+            <div class="timeline-container-box ${isLeft ? 'left-box' : 'right-box'} ${status}">
+                <div class="timeline-content-card">
+                    <h6 class="fw-bold m-0" style="font-size:0.9rem;">${step.title}</h6>
+                    ${dateDisplay}
+                    <p class="m-0 small text-muted" style="font-size:0.75rem;">${step.desc}</p>
+                </div>
+            </div>`;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
 
 function renderDetailForm(item, type, editable) {
             const container = document.getElementById('editFormContainer');
@@ -1849,7 +1922,7 @@ async function saveChanges(isSubmit = true) {
     if (isSubmit) {
         // ✅ ถ้ากด "ส่งงานต่อ": เติมเครื่องหมายเพื่อให้งานไหลไปสเต็ปถัดไป
         if (!currentNote.toString().includes('[SENT]')) {
-            updates[noteKey] = currentNote.toString().trim() + '';
+            updates[noteKey] = currentNote.toString().trim() + ' [SENT]';
         }
     } else {
         // ✅ ถ้ากด "บันทึกข้อมูล": ลบเครื่องหมายออก (ถ้ามี) เพื่อล็อกงานไว้ที่เดิม
@@ -2122,16 +2195,17 @@ function toggleEditMode() {
             mapObj['กลุ่มงาน/หน่วยงาน']=dataObj['input_dept']; 
             mapObj['หมวด']=dataObj['input_cat']; 
             mapObj['ชนิด']=dataObj['input_type'];
-            if(type==='buy'){ 
-                mapObj['ปีงบประมาณ'] = dataObj['input_year']; 
-                mapObj['กลุ่มงาน/หน่วยงาน'] = dataObj['input_dept']; 
-                mapObj['หมวด'] = dataObj['input_cat']; 
-                mapObj['ชนิด'] = dataObj['input_type'];
-                mapObj['รายการ'] = dataObj['input_name']; 
-                mapObj['เลขที่'] = dataObj['input_code']; // ✅ แก้จาก mapObj['เลขที่']=dataObj['input_code'] ให้ชัดเจน
-                mapObj['ราคา'] = dataObj['input_budget_plan']; 
-                mapObj['สถานที่'] = dataObj['input_place'];
-                mapObj['จำนวน'] = dataObj['input_qty'];
+            if(type === 'buy'){ 
+            // ✅ แมปคีย์ให้ตรงกับ UNIVERSAL_MAP_BUY ใน GS (A=1, B=2, ...)
+            mapObj['ปีงบประมาณ'] = dataObj['input_year']; 
+            mapObj['เลขที่'] = dataObj['input_code'];
+            mapObj['กลุ่มงาน/หน่วยงาน'] = dataObj['input_dept']; 
+            mapObj['หมวด'] = dataObj['input_cat']; 
+            mapObj['ชนิด'] = dataObj['input_type'];
+            mapObj['รายการ'] = dataObj['input_name']; 
+            mapObj['สถานที่'] = dataObj['input_place'];
+            mapObj['จำนวน'] = dataObj['input_qty'];
+            mapObj['ราคา'] = dataObj['input_budget_plan'];
             } else { 
                 mapObj['ยุทธศาสตร์']=dataObj['input_strat'];
                 mapObj['กำหนดเริ่มโครงการ']=dataObj['input_start']; 
@@ -2639,46 +2713,137 @@ function renderAdminBuyAddFormUI() {
             new bootstrap.Modal(document.getElementById('categoryModal')).show();
         }
 
-        function renderChart(stats) {
-            const canvas = document.getElementById('summaryChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
+        // 1. โหลด Library ทันทีที่เปิดหน้าเว็บ
+google.charts.load('current', {'packages':['corechart']});
+
+function renderChart(stats) {
+    if (!stats) return;
+    
+    const c1 = document.getElementById('colorNot').value;      // สีแดง (ยังไม่เริ่ม)
+    const c2 = document.getElementById('colorProgress').value; // สีน้ำเงิน (กำลังทำ)
+    const c3 = document.getElementById('colorDone').value;     // สีเขียว (เสร็จสิ้น)
+
+    const draw = () => {
+        const data = google.visualization.arrayToDataTable([
+            ['สถานะ', 'จำนวน'],
+            ['ยังไม่เริ่ม', stats.notStart],
+            ['กำลังทำ', stats.progress],
+            ['เสร็จสิ้น', stats.done]
+        ]);
+
+        const options = {
+            is3D: true,
+            pieSliceText: 'value',
+            colors: [c1, c2, c3],
+            legend: { position: 'bottom', textStyle: { fontSize: 11 } },
+            chartArea: { width: '100%', height: '85%' },
+            backgroundColor: 'transparent',
+            slices: { 
+                0: { offset: 0.1 }, 
+                2: { offset: 0.2 }  
+            },
+            pieSliceTextStyle: { fontSize: 13, bold: true },
             
-            if(chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
+            
+            tooltip: { 
+                trigger: 'selection', // เปลี่ยนเป็นโชว์เมื่อคลิกเลือกเท่านั้น จะนิ่งที่สุด
+                isHtml: false,        // ปิด HTML Tooltip เพื่อใช้แบบมาตรฐานที่เสถียรกว่าในโหมด 3D
+                showColorCode: true
             }
-            
-            const total = stats.total || 1; 
-            
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['ยังไม่ทำ', 'กำลังทำ', 'เสร็จสิ้น'],
-                    datasets: [{
-                        data: [stats.notStart, stats.progress, stats.done],
-                        backgroundColor: ['#e2e8f0', '#3b82f6', '#10b981'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    legend: { display: false },
-                    plugins: {
-                        datalabels: {
-                            color: '#fff',
-                            font: { weight: 'bold' },
-                            formatter: (value, ctx) => {
-                                if(value === 0) return '';
-                                let percentage = (value * 100 / total).toFixed(0) + "%";
-                                return percentage;
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        };
+
+        const chart = new google.visualization.PieChart(document.getElementById('summaryChart3D'));
+        
+        // ✅ ระบบคลิกเพื่อโชว์ "ป๊อปอัพรายชื่อโครงการ"
+        google.visualization.events.addListener(chart, 'select', function() {
+            const selection = chart.getSelection();
+            if (selection.length > 0) {
+                const row = selection[0].row; 
+                showProjectPopup(row); // เรียกฟังก์ชันแสดงรายชื่อ
+                chart.setSelection([]); 
+            }
+        });
+
+        chart.draw(data, options);
+    };
+    google.charts.setOnLoadCallback(draw);
+}
+
+
+
+function showProjectPopup(categoryIdx) {
+    if (!reportDataCache || reportDataCache.length === 0) return;
+
+    const type = document.getElementById('reportTypeSelector').value;
+    let title = "";
+    let filtered = [];
+    let icon = "";
+
+    // กรองข้อมูลตามชิ้นส่วนที่คลิกบนกราฟ
+    if (categoryIdx === 0) {
+        title = "รายการที่ยังไม่ได้ดำเนินการ";
+        icon = "fas fa-times-circle text-danger";
+        filtered = reportDataCache.filter(item => {
+            const s = calculateStatus(item, type).text;
+            return !s.includes('กำลัง') && !s.includes('เสร็จ') && !s.includes('อนุมัติ');
+        });
+    } else if (categoryIdx === 1) {
+        title = "รายการที่กำลังดำเนินการ";
+        icon = "fas fa-spinner fa-spin text-primary";
+        filtered = reportDataCache.filter(item => calculateStatus(item, type).text.includes('กำลัง'));
+    } else if (categoryIdx === 2) {
+        title = "รายการที่ดำเนินการเสร็จสิ้น";
+        icon = "fas fa-check-circle text-success";
+        filtered = reportDataCache.filter(item => {
+            const s = calculateStatus(item, type).text;
+            return s.includes('เสร็จ') || s.includes('อนุมัติ');
+        });
+    }
+
+    let listHtml = `
+        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+            <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem;">
+                <thead class="table-dark sticky-top">
+                    <tr><th>รหัส</th><th>ชื่อโครงการ / รายการ</th><th class="text-end">งบประมาณ</th></tr>
+                </thead>
+                <tbody>
+                    ${filtered.map(p => `
+                        <tr>
+                            <td class="fw-bold text-primary">${getKey(p, ['รหัสแผน', 'เลขที่'])}</td>
+                            <td class="text-start">${getKey(p, ['ชื่อโครงการ', 'รายการ'])}</td>
+                            <td class="text-end fw-bold">${parseFloat(getKey(p, ['งบประมาณที่ขอในแผน', 'ราคา']) || 0).toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            ${filtered.length === 0 ? '<p class="text-center py-4 text-muted">ไม่พบข้อมูลในหมวดนี้</p>' : ''}
+        </div>
+    `;
+
+    Swal.fire({
+        title: `<i class="${icon} me-2"></i> ${title}`,
+        html: listHtml,
+        width: '800px',
+        showCloseButton: true,
+        showConfirmButton: false,
+        customClass: { popup: 'rounded-4 shadow-lg border-0' }
+    });
+}
+
+
+// 3. ฟังก์ชันอัปเดตสีกราฟทันทีเมื่อมีการเปลี่ยนสี
+function updateChartColors() {
+    // ดึงสถิติล่าสุดจากตัวแปรที่เก็บไว้ (ต้องไปเพิ่มการเก็บค่าใน loadReportData)
+    if (window.lastStats) {
+        renderChart(window.lastStats);
+    }
+}
+
+
+
+// เก็บค่าไว้เพื่อให้ฟังก์ชันเปลี่ยนสีเรียกใช้ได้
+window.lastStats = stats; 
+renderChart(stats);
 
         // --- Admin Functions ---
         async function loadAdminList() {

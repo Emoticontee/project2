@@ -298,10 +298,25 @@
         /* A4 Report Style */
         .a4-paper { background: white; width: 210mm; min-height: 297mm; margin: 0 auto; padding: 15mm; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; color: black; box-sizing: border-box; transition: width 0.3s; }
         .a4-paper.landscape { width: 297mm; min-height: 210mm; }
-        .report-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 5px; }
-        .report-table th, .report-table td { border: 1px solid #000; padding: 8px; vertical-align: middle; }
+       .report-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 13px; 
+            margin-top: 5px; 
+            table-layout: auto !important; 
+        } 
+        
+        .report-table th, .report-table td { 
+            border: 1px solid #000 !important; 
+            padding: 4px 2px !important; 
+            vertical-align: middle;
+            word-break: break-word; /* ป้องกันข้อความยาวเกินช่อง */
+        }
+       
+       
+       
         .report-table thead th { background-color: #ffffff; text-align: center; font-weight: bold; border-bottom: 2px solid #000; }
-        .dept-title-row { font-weight: bold; font-size: 15px; background-color: #ffffff; border-top: 2px solid #000; }
+        .dept-title-row { font-weight: bold; font-size: 10px; background-color: #ffffff; border-top: 2px solid #000; }
         .dept-total-row { background-color: #fff9db; font-weight: bold; border-top: 2px solid #000; }
         .repeated-header th { background-color: #f8f9fa; border-bottom: 2px solid #000; font-weight: bold; font-size: 13px; }
         
@@ -454,11 +469,18 @@
 
 
 
-/* --- New Summary Table Style --- */
-.report-table-summary { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-.report-table-summary th, .report-table-summary td { 
-    border: 1px solid #000; padding: 8px; font-size: 15px; vertical-align: middle; 
-}
+.report-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px; } /* ลดขนาดฟอนต์ลงเล็กน้อย */
+        .report-table th, .report-table td { border: 1px solid #000; padding: 2px 4px !important; vertical-align: middle; } /* ✅ ลด Padding จาก 8px เหลือ 4px */
+        .summary-section, .chart-section { margin-bottom: 10px !important; }
+        
+        /* เพิ่มคลาสสำหรับจัดหน้ากระดาษสรุปด้านบน */
+        .summary-wrapper { display: flex; align-items: flex-start; gap: 20px; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .summary-table-container { flex: 1; }
+        .summary-chart-container { flex: 1.2; }
+
+
+
+
 .bg-tan { background-color: #fce5cd; } /* สีหัวข้อตามภาพ */
 .bg-pink-light { background-color: #f4cccc; } /* สีแถวไตรมาส */
 .bg-progress-combined { background-color: #d9ead3; font-weight: bold; font-size: 1.2rem; }
@@ -467,10 +489,21 @@
     padding: 20px; border: 1px solid #dee2e6; border-radius: 12px;
 }
 
-        @media print { .header-bar, .nav-tabs, #loginPage, .navbar, .navbar-custom { display: none !important; } .a4-paper { box-shadow: none; margin: 0; width: 100%; } }
-   
-   
+       @media print { 
+            /* ซ่อนส่วนประกอบที่ไม่จำเป็นในการพิมพ์ */
+            .header-bar, .nav-tabs, #loginPage, .navbar, .navbar-custom, .color-selector-group, .d-print-none { display: none !important; } 
+            
+            /* ปรับแต่งหน้ากระดาษให้เต็มพื้นที่ */
+            .a4-paper { box-shadow: none; margin: 0; width: 100% !important; padding: 10mm !important; border: none; } 
+            
+            /* ✅ ป้องกันไม่ให้ส่วนสำคัญโดนตัดแบ่งครึ่งหน้า */
+            .chart-section, .summary-section, .report-table, div[id*="View"] > div { page-break-inside: avoid; margin-bottom: 20px; }
+            
+            /* ✅ บังคับให้กราฟ (SVG) ย่อขนาดให้พอดีกับความกว้างหน้ากระดาษอัตโนมัติ */
+            #summaryChart3D, #buyChart3D, svg { max-width: 100% !important; height: auto !important; }
+        }
 
+        
         /* --- New Zig-Zag Timeline CSS --- */
 .timeline-zigzag {
     position: relative;
@@ -858,6 +891,10 @@
                 </div>
             </div>
             <div class="chart-section text-center"><div id="summaryChart3D" style="width: 750px; height: 350px; margin: 0 auto;"></div></div>
+            
+            
+            
+            
             <div class="mb-2 fw-bold mt-4">สรุปยอดรวมงบประมาณ</div>
             <table class="report-table text-center w-100">
                 <thead>
@@ -872,55 +909,49 @@
             <table class="report-table text-center w-100"><tbody id="detailedTableBody"></tbody></table>
         </div>
 
-        <div id="reportBuyView" style="display:none;">
+    <div id="reportBuyView" style="display:none;">
             <div class="mb-4">
-                <h6 class="fw-bold mb-2">1) กลุ่มงาน/หน่วยงาน</h6>
                 <table class="report-table">
-                    <thead class="bg-light">
-                        <tr>
+                    <thead>
+                        <tr class="text-center bg-light">
                             <th style="width: 35%;">กลุ่มงาน/หน่วยงาน</th>
-                            <th style="width: 15%;">งบประมาณ</th>
-                            <th style="width: 10%;">จำนวน</th>
+                            <th style="width: 15%;">ไตรมาสที่ 1<br>(1 ต.ค. 68 - 15 ธ.ค. 68)</th>
+                            <th style="width: 10%;">จำนวน<br>รายการ</th>
                             <th style="width: 10%;">ดำเนินการ</th>
                             <th style="width: 15%;">ราคาที่จัดซื้อ</th>
-                            <th style="width: 15%;">ยังไม่ได้ทำ</th>
+                            <th style="width: 15%; color: #dc3545;">ยังไม่ได้<br>ดำเนินการ</th>
                         </tr>
                     </thead>
                     <tbody id="buySummaryTableBody"></tbody>
                 </table>
             </div>
 
-            <div class="row mb-4 align-items-center border p-3 rounded-3">
-                <div class="col-md-5">
-                    <table class="table table-sm table-bordered m-0 text-center">
-                        <tr class="bg-tan"><th>รายการทั้งหมด</th><th id="buyTotalCount">0</th><th>รายการ</th></tr>
-                        <tr><td>ดำเนินการเสร็จสิ้น</td><td id="buyDoneCount">0</td><td>รายการ</td></tr>
-                        <tr><td>ยังไม่ได้ดำเนินการ/ยกเลิก</td><td id="buyNotCount">0</td><td>รายการ</td></tr>
+            <div class="mb-4 border p-3 rounded-3 text-center">
+                <div class="d-flex justify-content-center mb-3">
+                    <table class="table table-sm table-bordered m-0 text-center" style="max-width: 400px; font-size: 13px;">
+                        <tr class="bg-tan"><th style="width: 50%;">รายการทั้งหมด</th><th id="buyTotalCount" style="width: 25%;">0</th><th style="width: 25%;">รายการ</th></tr>
+                        <tr class="text-success"><td>ดำเนินการเสร็จสิ้น</td><td id="buyDoneCount">0</td><td>รายการ</td></tr>
+                        <tr class="text-primary"><td>กำลังดำเนินการ</td><td id="buyProgressCount">0</td><td>รายการ</td></tr>
+                        <tr class="text-danger"><td>ยังไม่ได้ดำเนินการ/ยกเลิก</td><td id="buyNotCount">0</td><td>รายการ</td></tr>
                     </table>
                 </div>
-                <div class="col-md-7">
-                    <div id="buyChart3D" style="width: 100%; height: 300px;"></div>
-                </div>
+                <div id="buyChart3D" style="width: 100%; height: 300px;"></div>
             </div>
 
             <div class="mb-4">
-                <h6 class="fw-bold mb-2 text-danger">รายการที่ยังไม่ได้ดำเนินการ/ยกเลิก</h6>
                 <table class="report-table">
-                    <thead class="table-dark">
-                        <tr>
-                            <th style="width: 5%;">ลำดับ</th>
-                            <th style="width: 35%;">รายการ</th>
-                            <th style="width: 20%;">หน่วยงาน</th>
-                            <th style="width: 10%;">จำนวน</th>
-                            <th style="width: 30%;">หมายเหตุการยกเลิก</th>
+                    <thead>
+                        <tr class="table-danger text-center"><th colspan="5" class="py-2" style="font-size: 16px;">รายการที่ยังไม่ได้ดำเนินการ/ยกเลิก</th></tr>
+                        <tr class="table-dark">
+                            <th style="width: 5%;">ลำดับ</th><th style="width: 35%;">รายการ</th><th style="width: 20%;">หน่วยงาน</th><th style="width: 10%;">จำนวน</th><th style="width: 30%;">หมายเหตุการยกเลิก</th>
                         </tr>
                     </thead>
                     <tbody id="buyCancelledTableBody"></tbody>
                 </table>
             </div>
-        </div>
-    </div>
-</div>
+        </div> 
+    </div> 
+</div> 
 
 
 
@@ -2580,7 +2611,7 @@ function getCatNumber(catName) {
 
             // อัปเดตหัวข้อรายงาน
             const typeLabel = document.getElementById('reportTypeName');
-            if(typeLabel) typeLabel.innerText = (type === 'plan' ? 'แผนปฏิบัติการ' : 'แผนครุภัณฑ์');
+            if(typeLabel) typeLabel.innerText = (type === 'plan' ? 'main' : 'main');
             if(document.getElementById('displayReportYear')) document.getElementById('displayReportYear').innerText = ` (${startVal} - ${endVal})`;
 
             // สลับ View ระหว่างแผนปฏิบัติการ และแผนครุภัณฑ์
@@ -2626,7 +2657,7 @@ function getCatNumber(catName) {
             }
         }
 
-        function processPlanReport() {
+function processPlanReport() {
             let stats = { total: 0, notStart: 0, progress: 0, done: 0, cancelled: 0 };
             let grand = { plan:0, proj:0, act:0, rem:0 };
             let deptMap = {}; 
@@ -2636,115 +2667,82 @@ function getCatNumber(catName) {
                 let bProj = parseFloat((getKey(item, ['งบประมาณที่ขอในโครงการ', 'งบโครงการ']) || '0').toString().replace(/,/g,'')) || 0;
                 let bAct  = parseFloat((getKey(item, ['จำนวนเงินที่สั่งจ้าง / ซื้อ', 'สั่งจ้าง/ซื้อ']) || '0').toString().replace(/,/g,'')) || 0;
                 let bRem  = (bProj > 0 ? bProj : bPlan) - bAct;
-
                 let stText = calculateStatus(item, 'plan').text;
                 stats.total++; 
-                
                 let dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']) || 'ไม่ระบุ';
                 if (!deptMap[dept]) deptMap[dept] = { sNot:0, sProg:0, sDone:0, sPlan: 0, sProj: 0, sAct: 0, sRem: 0, items: [] };
                 let d = deptMap[dept];
-
-                // ✅ เปลี่ยนจากเครื่องหมาย ✓ เป็นตัวเลข 1 ตามที่พี่ต้องการ (และกัน undefined)
                 let c1 = '', c2 = '', c3 = '';
-                if (stText.includes('ยกเลิก') || stText.includes('รอ') || stText.includes('ยังไม่')) {
-                    stats.notStart++; d.sNot++; c1 = '1';
-                } else if (stText.includes('เสร็จ') || stText.includes('อนุมัติ') || stText.includes('จ่ายเงิน')) {
-                    stats.done++; d.sDone++; c3 = '1';
-                } else if (stText.includes('กำลัง')) {
-                    stats.progress++; d.sProg++; c2 = '1';
-                } else {
-                    stats.notStart++; d.sNot++; c1 = '1';
-                }
-
+                if (stText.includes('ยกเลิก')) { stats.cancelled++; d.sNot++; c1 = '✓'; }
+                else if (stText.includes('เสร็จ') || stText.includes('อนุมัติ')) { stats.done++; d.sDone++; c3 = '✓'; }
+                else if (stText.includes('กำลัง')) { stats.progress++; d.sProg++; c2 = '✓'; }
+                else { stats.notStart++; d.sNot++; c1 = '✓'; }
                 grand.plan += bPlan; grand.proj += bProj; grand.act += bAct; grand.rem += bRem;
                 d.sPlan += bPlan; d.sProj += bProj; d.sAct += bAct; d.sRem += bRem;
-
-                d.items.push({ 
-                    cat: getKey(item, ['หมวดเงินอุดหนุน', 'หมวด']) || '-', 
-                    id: getKey(item, ['รหัสแผน', 'เลขที่']) || '-', 
-                    name: getKey(item, ['ชื่อโครงการ', 'รายการ']) || '-', 
-                    c1, c2, c3, bPlan, bProj, bAct, bRem 
-                });
+                d.items.push({ cat: getKey(item, ['หมวดเงินอุดหนุน', 'หมวด']) || '-', id: getKey(item, ['รหัสแผน', 'เลขที่']) || '-', name: getKey(item, ['ชื่อโครงการ', 'รายการ']) || '-', c1, c2, c3, bPlan, bProj, bAct, bRem });
             });
 
-            // อัปเดต KPI บนสุด
+            // ✅ 1. ตารางสรุปงบประมาณด้านบน: ล้างข้อมูลใน Body ให้ว่างตามความต้องการของพี่
+            document.getElementById('summaryTableBody').innerHTML = ''; 
+
+            // แสดงเฉพาะแถว "รวมทั้งสิ้น" ในส่วน Footer
+            document.getElementById('summaryTableFooter').innerHTML = `<tr class="table-secondary fw-bold text-center">
+                <td colspan="3" style="text-align: center !important;">รวมทั้งสิ้น</td>
+                <td>${stats.notStart + stats.cancelled}</td>
+                <td>${stats.progress}</td>
+                <td>${stats.done}</td>
+                <td class="text-end">${grand.plan.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="text-end">${grand.proj.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="text-end">${grand.act.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="text-end">${grand.rem.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            </tr>`;
+
+            // 2. ตารางรายละเอียดรายหน่วยงาน (ส่วนนี้ยังคงแสดงข้อมูลครบเหมือนเดิม)
+            const container = document.getElementById('detailedTableContainer');
+            container.innerHTML = '';
+            for (let dept in deptMap) {
+                let d = deptMap[dept];
+                let cleanDept = (dept || '').toString().replace(/^\d+\.\s*/, ''); 
+                let tableHtml = `
+                <div class="mb-4">
+                    <table class="report-table text-center w-100">
+                        <thead><tr class="repeated-header"><th rowspan="2" style="width:50px;">หมวดเงิน</th><th rowspan="2" style="width:100px;">ID PLAN</th><th rowspan="2">ชื่อโครงการ</th><th colspan="3">การดำเนินโครงการ</th><th colspan="4">งบประมาณ</th></tr>
+                        <tr class="repeated-header"><th>ยังไม่ทำ</th><th>กำลังทำ</th><th>เสร็จ</th><th>ในแผน</th><th>ในโครงการ</th><th>ใช้จริง</th><th>คงเหลือ</th></tr></thead>
+                        <tbody><tr class="fw-bold bg-light"><td colspan="2"></td><td class="text-start ps-3 text-primary">${cleanDept}</td><td colspan="7"></td></tr>
+                            ${d.items.map(p => `<tr><td>${getCatNumber(p.cat)}</td><td>${p.id}</td><td class="text-start ps-3">${p.name}</td><td class="text-center">${p.c1}</td><td class="text-center">${p.c2}</td><td class="text-center">${p.c3}</td><td class="text-end">${p.bPlan.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${p.bProj.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${p.bAct.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${p.bRem.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`).join('')}
+                            
+
+
+                            
+                            <tr class="dept-total-row fw-bold"><td colspan="3" class="text-center">รวม</td><td>${d.sNot}</td><td>${d.sProg}</td><td>${d.sDone}</td><td class="text-end">${d.sPlan.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${d.sProj.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${d.sAct.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${d.sRem.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>
+                        </tbody>
+                    </table>
+                </div>`;
+                container.innerHTML += tableHtml;
+            }
+
+            // อัปเดตสถิติภาพรวม
             document.getElementById('sumTotal').innerText = stats.total + " โครงการ";
             document.getElementById('sumTrack').innerText = stats.total + " โครงการ"; 
             document.getElementById('sumDone').innerText = stats.done + " โครงการ";
             document.getElementById('percDone').innerText = (stats.total ? (stats.done/stats.total*100).toFixed(2) : '0.00');
             document.getElementById('sumProgress').innerText = stats.progress + " โครงการ";
             document.getElementById('percProgress').innerText = (stats.total ? (stats.progress/stats.total*100).toFixed(2) : '0.00');
-            document.getElementById('sumNotStart').innerText = (stats.notStart) + " โครงการ";
-            document.getElementById('percNotStart').innerText = (stats.total ? (stats.notStart/stats.total*100).toFixed(2) : '0.00');
+            document.getElementById('sumNotStart').innerText = (stats.notStart + stats.cancelled) + " โครงการ";
+            document.getElementById('percNotStart').innerText = (stats.total ? ((stats.notStart + stats.cancelled)/stats.total*100).toFixed(2) : '0.00');
             document.getElementById('sumActivePercent').innerText = (stats.total ? (((stats.done + stats.progress)/stats.total)*100).toFixed(2) : '0.00') + "%";
-
-            window.lastStats = stats;
-            renderChart(stats);
-
-            // ✅ 1. ตารางสรุปงบประมาณ: ล้างรายละเอียดทิ้ง ให้เหลือแค่แถว "รวมทั้งสิ้น" เพียงแถวเดียว
-            document.getElementById('summaryTableBody').innerHTML = ''; 
-            document.getElementById('summaryTableFooter').innerHTML = `<tr class="table-secondary fw-bold">
-                <td colspan="3">รวมทั้งสิ้น</td>
-                <td class="text-center">${stats.notStart}</td>
-                <td class="text-center">${stats.progress}</td>
-                <td class="text-center">${stats.done}</td>
-                <td class="text-end">${grand.plan.toLocaleString()}</td>
-                <td class="text-end">${grand.proj.toLocaleString()}</td>
-                <td class="text-end">${grand.act.toLocaleString()}</td>
-                <td class="text-end">${grand.rem.toLocaleString()}</td>
-            </tr>`;
-
-            // ✅ 2. ตารางรายละเอียด: สั่งสร้างตารางใหม่แยกชุดตามหน่วยงาน
-            const container = document.getElementById('detailedTableContainer');
-            container.innerHTML = '';
-            for (let dept in deptMap) {
-                let d = deptMap[dept];
-                let cleanDept = dept.replace(/^\d+\.\s*/, ''); 
-                
-                let tableHtml = `
-                <div class="mb-5"> <table class="report-table text-center w-100">
-                        <thead>
-                            <tr class="repeated-header">
-                                <th style="width:10%;">หมวดเงิน (อุดหนุน)</th><th style="width:10%;">ID PLAN</th><th style="width:30%;">ชื่อโครงการ</th>
-                                <th colspan="3">การดำเนินโครงการ</th><th colspan="4">งบประมาณ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="text-center fw-bold bg-light">
-                                <td style="border: 1px solid #000;"></td><td style="border: 1px solid #000;"></td>
-                                <td class="text-start text-primary ps-3" style="font-size:16px; border: 1px solid #000;">${cleanDept}</td>
-                                <td>ยังไม่ดำเนินการ</td><td>กำลังดำเนินการ</td><td>เสร็จสิ้น</td>
-                                <td>ในแผน</td><td>ในโครงการ</td><td>ใช้จริง</td><td>คงเหลือ</td>
-                            </tr>
-                            ${d.items.map(p => `
-                                <tr>
-                                    <td>${getCatNumber(p.cat)}</td><td>${p.id}</td><td class="text-start ps-4">- ${p.name}</td>
-                                    <td class="text-center">${p.c1}</td><td class="text-center">${p.c2}</td><td class="text-center">${p.c3}</td>
-                                    <td class="text-end">${p.bPlan.toLocaleString()}</td><td class="text-end">${p.bProj.toLocaleString()}</td>
-                                    <td class="text-end">${p.bAct.toLocaleString()}</td><td class="text-end">${p.bRem.toLocaleString()}</td>
-                                </tr>
-                            `).join('')}
-                            <tr class="dept-total-row">
-                                <td colspan="6" class="text-end">รวม ${cleanDept}</td>
-                                <td class="text-end">${d.sPlan.toLocaleString()}</td><td class="text-end">${d.sProj.toLocaleString()}</td>
-                                <td class="text-end">${d.sAct.toLocaleString()}</td><td class="text-end">${d.sRem.toLocaleString()}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>`;
-                container.innerHTML += tableHtml;
-            }
+            window.lastStats = stats; renderChart(stats);
         }
 
 
 
-        // ฟังก์ชันของแผนครุภัณฑ์
+
         function processBuyReport() {
             let buySummaryBody = document.getElementById('buySummaryTableBody');
             let buyCancelledBody = document.getElementById('buyCancelledTableBody');
             let deptMap = {};
             let cancelledList = [];
-            let stats = { total: 0, done: 0, pending: 0 };
+            let stats = { total: 0, done: 0, progress: 0, pending: 0 };
 
             reportDataCache.forEach(item => {
                 let dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']) || 'ไม่ระบุ';
@@ -2753,33 +2751,68 @@ function getCatNumber(catName) {
                 let bAct = parseFloat((getKey(item, ['จำนวนเงินที่สั่งจ้าง / ซื้อ']) || '0').toString().replace(/,/g,'')) || 0;
                 let st = calculateStatus(item, 'buy').text;
                 let isDone = (st.includes('เสร็จ') || st.includes('อนุมัติ') || st.includes('จ่ายเงิน'));
-
+                let isProgress = st.includes('กำลัง');
                 stats.total++;
-                if (isDone) stats.done++; else stats.pending++;
-
+                if (isDone) stats.done++; else if (isProgress) stats.progress++; else stats.pending++;
                 if(!deptMap[dept]) deptMap[dept] = {};
                 if(!deptMap[dept][cat]) deptMap[dept][cat] = { count: 0, done: 0, plan: 0, act: 0 };
                 let d = deptMap[dept][cat];
                 d.count++; if(isDone) d.done++; d.plan += bPlan; d.act += bAct;
-
-                if(st.includes('ยกเลิก') || st.includes('รอ')) {
+                if(st.includes('ยกเลิก') || st.includes('รอ') || st.includes('ยังไม่')) {
                     cancelledList.push({ name: getKey(item, ['รายการ', 'ชื่อโครงการ']), dept, qty: getKey(item, ['จำนวน']) || '1', note: getKey(item, ['หมายเหตุสรุป']) || '-' });
                 }
             });
 
             buySummaryBody.innerHTML = '';
+            let deptIdx = 1; 
+
             for (let d in deptMap) {
-                buySummaryBody.innerHTML += `<tr class="bg-light fw-bold text-primary"><td colspan="6" class="ps-3">${d}</td></tr>`;
-                for (let c in deptMap[d]) {
+                const categories = Object.keys(deptMap[d]);
+                const lastIdx = categories.length - 1;
+
+                // ✅ 1. แถวชื่อหน่วยงาน: บังคับเส้นล่างในช่องแรกให้โปร่งใส (ลบเส้นกั้นตัวเลข)
+                buySummaryBody.innerHTML += `
+                    <tr class="fw-bold bg-white">
+                        <td class="ps-2 text-start" style="border-bottom-color: transparent !important;">
+                            ${deptIdx}) ${d}
+                        </td>
+                        <td style="border-bottom-color: transparent !important;"></td>
+                        <td colspan="4" class="bg-light text-center" style="border: 1px solid #000 !important; font-size: 13px;">${d}</td>
+                    </tr>`;
+
+                // ✅ 2. รายการย่อย: บังคับเส้นบนและล่างช่องแรกให้โปร่งใส เพื่อให้ข้อมูลเรียงกันเป็นกลุ่มเดียว
+                categories.forEach((c, idx) => {
                     let v = deptMap[d][c];
-                    buySummaryBody.innerHTML += `<tr><td class="ps-5">- ${c}</td><td class="text-end">${v.plan.toLocaleString()}</td><td class="text-center">${v.count}</td><td class="text-center">${v.done}</td><td class="text-end">${v.act.toLocaleString()}</td><td class="text-center text-danger">${v.count - v.done}</td></tr>`;
-                }
+                    let pendingCount = v.count - v.done;
+                    let catText = c.replace('งบ','').substring(0,10);
+                    
+                    // สไตล์ช่องแรก: เส้นบนใสเสมอ และเส้นล่างใสยกเว้นรายการสุดท้ายของหน่วยงานนั้นๆ
+                    let firstColStyle = "border-top-color: transparent !important;";
+                    if (idx < lastIdx) firstColStyle += " border-bottom-color: transparent !important;";
+
+                    buySummaryBody.innerHTML += `
+                        <tr>
+                            <td class="ps-4 text-start" style="${firstColStyle}">- ${c}</td> 
+                            <td class="text-end pe-2">
+                                <div class="d-flex justify-content-between">
+                                    <span>${v.plan.toLocaleString(undefined, {minimumFractionDigits: 0})}</span>
+                                    <span class="text-primary ps-2" style="font-size: 11px;">${catText}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">${v.count}</td>
+                            <td class="text-center">${v.done > 0 ? v.done : '0'}</td>
+                            <td class="text-end pe-2">${v.act > 0 ? v.act.toLocaleString(undefined, {minimumFractionDigits: 2}) : '0.00'}</td>
+                            <td class="text-center text-danger fw-bold">${pendingCount > 0 ? pendingCount : ''}</td>
+                        </tr>`;
+                });
+                deptIdx++;
             }
 
+            // อัปเดตสถิติ
             document.getElementById('buyTotalCount').innerText = stats.total;
             document.getElementById('buyDoneCount').innerText = stats.done;
+            document.getElementById('buyProgressCount').innerText = stats.progress;
             document.getElementById('buyNotCount').innerText = stats.pending;
-
             buyCancelledBody.innerHTML = '';
             cancelledList.forEach((p, i) => {
                 buyCancelledBody.innerHTML += `<tr><td class="text-center">${i+1}</td><td>${p.name}</td><td>${p.dept}</td><td class="text-center">${p.qty}</td><td class="text-danger small">${p.note}</td></tr>`;
@@ -2790,15 +2823,23 @@ function getCatNumber(catName) {
 
 
 
+
+        // ✅ ปรับปรุงกราฟให้แสดง 3 รายการแยกสีชัดเจน
         function renderBuyChart(stats) {
             const draw = () => {
                 const data = google.visualization.arrayToDataTable([
                     ['สถานะ', 'จำนวน'],
-                    [`ดำเนินการเสร็จ: ${stats.done}`, stats.done],
-                    [`ยังไม่ดำเนินการ: ${stats.pending}`, stats.pending]
+                    [`เสร็จสิ้น: ${stats.done}`, stats.done],
+                    [`กำลังทำ: ${stats.progress}`, stats.progress],
+                    [`ยังไม่ทำ/ยกเลิก: ${stats.pending}`, stats.pending]
                 ]);
                 new google.visualization.PieChart(document.getElementById('buyChart3D')).draw(data, { 
-                    is3D: true, legend: 'labeled', colors: ['#10b981', '#ef4444'], chartArea: {width:'90%', height:'80%'} 
+                    is3D: true, 
+                    legend: { position: 'labeled', textStyle: { fontSize: 12 } }, 
+                    colors: ['#10b981', '#3b82f6', '#ef4444'], 
+                    // ✅ บีบพื้นที่กราฟ (Width) ลงเหลือ 65% เพื่อให้ข้อความด้านข้างไม่ตกขอบ
+                    chartArea: { left: '10%', top: '10%', width: '65%', height: '80%' },
+                    backgroundColor: 'transparent'
                 });
             };
             google.charts.setOnLoadCallback(draw);
@@ -2910,13 +2951,11 @@ function renderChart(stats) {
             colors: [c1, c2, c3, c4],
             legend: { 
                 position: 'labeled', 
-                textStyle: { fontSize: 12, bold: true, color: '#000' } 
+                textStyle: { fontSize: 11, bold: true } // ลดขนาดฟอนต์ Legend เล็กน้อย
             },
-            // ✅ ขยับ ChartArea ให้สมดุล (กว้าง 70% สูง 85%) เพื่อให้ตัวหนังสือด้านข้างโชว์ครบ
-            chartArea: { left: '15%', top: '5%', width: '70%', height: '85%' },
+            chartArea: { left: '5%', top: '5%', width: '90%', height: '90%' }, // ✅ ขยายพื้นที่กราฟให้เต็ม
             backgroundColor: 'transparent',
-            slices: { 0: { offset: 0.1 }, 2: { offset: 0.2 }, 3: { offset: 0.1 } },
-            tooltip: { trigger: 'selection' }
+            slices: { 0: { offset: 0.1 }, 2: { offset: 0.1 } }
         };
 
         const chart = new google.visualization.PieChart(document.getElementById('summaryChart3D'));

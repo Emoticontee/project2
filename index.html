@@ -469,7 +469,7 @@
 
 
 
-.report-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px; } /* ลดขนาดฟอนต์ลงเล็กน้อย */
+        .report-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px; } /* ลดขนาดฟอนต์ลงเล็กน้อย */
         .report-table th, .report-table td { border: 1px solid #000; padding: 2px 4px !important; vertical-align: middle; } /* ✅ ลด Padding จาก 8px เหลือ 4px */
         .summary-section, .chart-section { margin-bottom: 10px !important; }
         
@@ -481,23 +481,24 @@
 
 
 
-.bg-tan { background-color: #fce5cd; } /* สีหัวข้อตามภาพ */
-.bg-pink-light { background-color: #f4cccc; } /* สีแถวไตรมาส */
-.bg-progress-combined { background-color: #d9ead3; font-weight: bold; font-size: 1.2rem; }
-.chart-container-full { 
-    display: flex; flex-direction: column; align-items: center; 
-    padding: 20px; border: 1px solid #dee2e6; border-radius: 12px;
-}
+    .bg-tan { background-color: #fce5cd; } /* สีหัวข้อตามภาพ */
+    .bg-pink-light { background-color: #f4cccc; } /* สีแถวไตรมาส */
+    .bg-progress-combined { background-color: #d9ead3; font-weight: bold; font-size: 1.2rem; }
+    .chart-container-full { 
+        display: flex; flex-direction: column; align-items: center; 
+        padding: 20px; border: 1px solid #dee2e6; border-radius: 12px;
+    }
 
-       @media print { 
+      @media print { 
             /* ซ่อนส่วนประกอบที่ไม่จำเป็นในการพิมพ์ */
             .header-bar, .nav-tabs, #loginPage, .navbar, .navbar-custom, .color-selector-group, .d-print-none { display: none !important; } 
             
             /* ปรับแต่งหน้ากระดาษให้เต็มพื้นที่ */
             .a4-paper { box-shadow: none; margin: 0; width: 100% !important; padding: 10mm !important; border: none; } 
             
-            /* ✅ ป้องกันไม่ให้ส่วนสำคัญโดนตัดแบ่งครึ่งหน้า */
-            .chart-section, .summary-section, .report-table, div[id*="View"] > div { page-break-inside: avoid; margin-bottom: 20px; }
+            /* ✅ ปรับให้ตารางแสดงผลต่อเนื่องกันข้ามหน้าได้ ไม่เว้นที่ว่างใหญ่ๆ */
+            .chart-section, .summary-section { page-break-inside: avoid; margin-bottom: 20px; }
+            .report-table tr { page-break-inside: avoid; } /* บังคับแค่ไม่ให้ข้อมูลใน 1 แถวถูกตัดขาดครึ่งบน-ล่าง */
             
             /* ✅ บังคับให้กราฟ (SVG) ย่อขนาดให้พอดีกับความกว้างหน้ากระดาษอัตโนมัติ */
             #summaryChart3D, #buyChart3D, svg { max-width: 100% !important; height: auto !important; }
@@ -916,36 +917,33 @@
             </div>
 
 
-<div id="reportPlanView">
-    <div class="summary-wrapper align-items-center">
-        
-        <div class="summary-table-container summary-section text-center mb-0">
-            <h6 class="fw-bold mb-3">สรุปภาพรวมโครงการ</h6>
-            <table class="report-table text-center mx-auto" style="max-width: 100%;">
-                <tbody>
-                    <tr style="border-bottom: 2px solid black;">
-                        <td style="width: 40%;">จำนวนทั้งหมด</td>
-                        <td style="width: 30%;" id="sumTotal" class="fw-bold">0 โครงการ</td>
-                        <td style="width: 30%;">ร้อยละ</td>
-                    </tr>
-                    <tr><td>ติดตามไตรมาส</td><td id="sumTrack">0 โครงการ</td><td>100.00</td></tr>
-                    <tr><td>ดำเนินการเสร็จ</td><td id="sumDone">0 โครงการ</td><td id="percDone">0.00</td></tr>
-                    <tr><td>กำลังดำเนินการ</td><td id="sumProgress">0 โครงการ</td><td id="percProgress">0.00</td></tr>
-                    <tr><td>ยังไม่ได้ดำเนินการ</td><td id="sumNotStart">0 โครงการ</td><td id="percNotStart">0.00</td></tr>
-                </tbody>
-            </table>
-            <div class="mt-3 text-center p-2 bg-light rounded border mx-auto" style="max-width: 300px;">
-                <div class="small text-muted mb-1">ความก้าวหน้า (เสร็จ + กำลังทำ)</div>
-                <h2 class="fw-bold text-success m-0" id="sumActivePercent">0.00%</h2>
-            </div>
-        </div>
-        
-        <div class="summary-chart-container chart-section text-center mb-0">
-            <div id="summaryChart3D" style="width: 100%; height: 300px; margin: 0 auto;"></div>
-        </div>
-        
-    </div>
+        <div id="reportPlanView">
+                <div class="summary-section text-center mb-2">
+                    <h6 class="fw-bold mb-2">สรุปภาพรวมโครงการ</h6>
+                    <table class="report-table text-center mx-auto" style="max-width: 600px;">
+                        <tbody>
+                            <tr style="border-bottom: 2px solid black;">
+                                <td style="width: 40%;">จำนวนทั้งหมด</td>
+                                <td style="width: 30%;" id="sumTotal" class="fw-bold">0 โครงการ</td>
+                                <td style="width: 30%;">ร้อยละ</td>
+                            </tr>
+                            <tr><td>ติดตามไตรมาส</td><td id="sumTrack">0 โครงการ</td><td>100.00</td></tr>
+                            <tr><td>ดำเนินการเสร็จ</td><td id="sumDone">0 โครงการ</td><td id="percDone">0.00</td></tr>
+                            <tr><td>กำลังดำเนินการ</td><td id="sumProgress">0 โครงการ</td><td id="percProgress">0.00</td></tr>
+                            <tr><td>ยังไม่ได้ดำเนินการ</td><td id="sumNotStart">0 โครงการ</td><td id="percNotStart">0.00</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="mt-2 text-center p-2 bg-light rounded border mx-auto" style="max-width: 300px;">
+                        <div class="small text-muted mb-1">ความก้าวหน้า (เสร็จ + กำลังทำ)</div>
+                        <h2 class="fw-bold text-success m-0" id="sumActivePercent">0.00%</h2>
+                    </div>
+                </div>
                 
+                <div class="chart-section text-center">
+                    <div id="summaryChart3D" style="width: 750px; height: 260px; margin: 0 auto;"></div>
+                </div>
+                
+               
                 
                 
                 <div class="mb-2 fw-bold mt-4">สรุปยอดรวมงบประมาณ</div>
@@ -1225,6 +1223,7 @@ loadMasterRefs();
                 document.getElementById('loginPage').style.display = 'flex'; 
             }
         };
+        
 // ✅ ส่วนควบคุมการค้นหาแบบเรียลไทม์ (พิมพ์แล้วแสดงผลทันที)
 let searchTimer; // ตัวแปรสำหรับหน่วงเวลา
 const searchInputs = [document.getElementById('searchYear'), document.getElementById('searchKeyword')];
@@ -2857,16 +2856,40 @@ function processPlanReport() {
                 let cat = getKey(item, ['หมวด']) || 'อื่นๆ';
                 let bPlan = parseFloat((getKey(item, ['ราคา']) || '0').toString().replace(/,/g,'')) || 0;
                 let bAct = parseFloat((getKey(item, ['จำนวนเงินที่สั่งจ้าง / ซื้อ']) || '0').toString().replace(/,/g,'')) || 0;
-                let st = calculateStatus(item, 'buy').text;
-                let isDone = (st.includes('เสร็จ') || st.includes('อนุมัติ') || st.includes('จ่ายเงิน'));
-                let isProgress = st.includes('กำลัง');
+                
+                // 💡 LOGIC ใหม่ที่พี่ออกแบบ: ดักจับจากข้อมูลจริงๆ แทนการอ่านข้อความสถานะ
+                let isCancel = (findVal(item, 'ยกเลิกแผน') === '/' || findVal(item, 'ยกเลิกแผน') === '✅' || findVal(item, 'ยกเลิกแผน') === true);
+                let chequeVal = findVal(item, 'เลขที่เช็ค');
+                let hasCheque = (chequeVal && chequeVal.toString().trim() !== '' && chequeVal.toString().trim() !== '-');
+                
+                let isDone = false;
+                let isProgress = false;
+                let isPending = false; 
+
+                if (isCancel) {
+                    isPending = true; // ติ๊กยกเลิกแผน -> โยนเข้า ยังไม่ได้ดำเนินการ/ยกเลิก
+                } else if (hasCheque) {
+                    isDone = true;    // มีเลขเช็ค -> โยนเข้า ดำเนินการเสร็จสิ้น
+                } else {
+                    isProgress = true; // มีข้อมูลแต่ยังไม่มีเลขเช็ค -> โยนเข้า กำลังดำเนินการ
+                }
+
                 stats.total++;
-                if (isDone) stats.done++; else if (isProgress) stats.progress++; else stats.pending++;
+                if (isDone) stats.done++; 
+                else if (isProgress) stats.progress++; 
+                else stats.pending++;
+
                 if(!deptMap[dept]) deptMap[dept] = {};
                 if(!deptMap[dept][cat]) deptMap[dept][cat] = { count: 0, done: 0, plan: 0, act: 0 };
                 let d = deptMap[dept][cat];
-                d.count++; if(isDone) d.done++; d.plan += bPlan; d.act += bAct;
-                if(st.includes('ยกเลิก') || st.includes('รอ') || st.includes('ยังไม่')) {
+                
+                d.count++; 
+                if(isDone) d.done++; 
+                d.plan += bPlan; 
+                d.act += bAct;
+                
+                // ถ้ายกเลิก ให้ดึงไปแสดงในตารางรายการที่ 3 ด้านล่าง
+                if(isPending) {
                     cancelledList.push({ name: getKey(item, ['รายการ', 'ชื่อโครงการ']), dept, qty: getKey(item, ['จำนวน']) || '1', note: getKey(item, ['หมายเหตุสรุป']) || '-' });
                 }
             });
@@ -2961,15 +2984,22 @@ function processPlanReport() {
                     [`กำลังทำ: ${stats.progress}`, stats.progress],
                     [`ยังไม่ทำ/ยกเลิก: ${stats.pending}`, stats.pending]
                 ]);
-                // ✅ เพิ่ม fontName: 'Sarabun' เข้าไปในตั้งค่ากราฟครุภัณฑ์
-new google.visualization.PieChart(document.getElementById('buyChart3D')).draw(data, { 
-    is3D: true, 
-    fontName: 'Sarabun', // <--- เติมบรรทัดนี้ลงไป
-    legend: { position: 'labeled', textStyle: { fontSize: 12, fontName: 'Sarabun' } }, // <--- เติม fontName ในนี้ด้วย
-    colors: ['#10b981', '#3b82f6', '#ef4444'], 
-    chartArea: { left: '10%', top: '10%', width: '65%', height: '80%' },
-    backgroundColor: 'transparent'
-});
+                
+                new google.visualization.PieChart(document.getElementById('buyChart3D')).draw(data, { 
+                    is3D: true, 
+                    pieSliceText: 'none', 
+                    fontName: 'Sarabun', 
+                    legend: { position: 'labeled', textStyle: { fontSize: 12, fontName: 'Sarabun' } }, 
+                    colors: ['#10b981', '#3b82f6', '#ef4444'], 
+                    chartArea: { left: '10%', top: '10%', width: '65%', height: '80%' },
+                    backgroundColor: 'transparent',
+                    // ✅ เพิ่มคำสั่ง slices เพื่อดึงชิ้นส่วนกราฟให้แยกออกจากกัน
+                    slices: { 
+                        0: { offset: 0.08 }, 
+                        1: { offset: 0.08 }, 
+                        2: { offset: 0.08 } 
+                    }
+                });
             };
             google.charts.setOnLoadCallback(draw);
         }

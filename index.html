@@ -1015,7 +1015,7 @@
                 <div id="buyChart3D" style="width: 100%; height: 300px;"></div>
             </div>
 
-            <div class="mb-4">
+           <div class="mb-4">
             <table class="report-table" style="border: 1px solid #000; width: 100%; font-family: 'Sarabun', sans-serif;">
                 <thead>
                     <tr style="background-color: #e2e2e2; border: 1px solid #000;">
@@ -1039,7 +1039,7 @@
 
 
             <!-- ADMIN PAGE -->
-            <div id="adminPage" class="page-section" style="display:none;">
+           </div> </div> </div> </div> <div id="adminPage" class="page-section" style="display:none;">
                 <div class="header-bar">
                     <div>
                         <h4 class="fw-bold m-0 text-primary"><i class="fas fa-users-cog me-2"></i>จัดการผู้ใช้งานระบบ</h4>
@@ -1050,7 +1050,7 @@
                 <div class="card table-card">
                     <div class="table-responsive">
                         <table class="table table-custom mb-0 align-middle">
-                            <thead><tr><th style="width:60px;">#</th><th>Username</th><th>ชื่อ-นามสกุล</th><th class="text-center">สิทธิ์การใช้งาน (Role)</th><th class="text-center" style="width:150px;">จัดการ</th></tr></thead>
+                           <thead><tr><th style="width:60px;">#</th><th>Username</th><th>Password</th><th>ชื่อ-นามสกุล</th><th class="text-center">สิทธิ์การใช้งาน (Role)</th><th class="text-center" style="width:150px;">จัดการ</th></tr></thead>
                             <tbody id="adminTableBody"><tr><td colspan="5" class="text-center py-5 text-muted">กำลังโหลดข้อมูลผู้ใช้...</td></tr></tbody>
                         </table>
                     </div>
@@ -2519,7 +2519,7 @@ async function submitAdminPlan() {
             html += createInput('งบ (แผน)', 'งบประมาณที่ขอในแผน', 'number', 'col-md-2'); 
             html += createInput('งบ (ผอ.)', 'งบอนุมัติโดย ผอ.ศศค.', 'number', 'col-md-2');
             html += createInput('งบ (โครงการ)', 'งบประมาณที่ขอในโครงการ', 'number', 'col-md-2');
-            html += createInput('สถานะติดตามแผน (AK)', 'ติดตามแผนปฏิบัติการ', 'select', 'col-md-3', ['ยังไม่ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกดำเนินการ']);
+            html += createInput('สถานะติดตามแผน (AK)', 'ติดตามแผนปฏิบัติการ', 'select', 'col-md-3', ['ยังไม่ได้ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกดำเนินการ']);
             html += `</div></div></div>`;
 
             html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
@@ -3259,11 +3259,12 @@ function updateChartColors() {
                         return;
                     }
 
-                    adminUsersCache.forEach((u, i) => {
+                   adminUsersCache.forEach((u, i) => {
                         tbody.innerHTML += `
                             <tr>
                                 <td>${i+1}</td>
                                 <td class="fw-bold text-primary">${u.username}</td>
+                                <td><span class="text-danger fw-bold">${u.password || '-'}</span></td>
                                 <td>${u.name}</td>
                                 <td class="text-center"><span class="badge bg-light text-dark border">${u.role.toUpperCase()}</span></td>
                                 <td class="text-center">

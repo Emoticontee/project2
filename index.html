@@ -915,29 +915,36 @@
                 <small class="text-muted">ข้อมูล ณ วันที่ <span id="currentDate"></span></small>
             </div>
 
-            <div id="reportPlanView">
-                <div class="summary-section text-center mb-4">
-                    <h6 class="fw-bold mb-3">สรุปภาพรวมโครงการ</h6>
-                    <table class="report-table text-center mx-auto" style="max-width: 600px;">
-                        <tbody>
-                            <tr style="border-bottom: 2px solid black;">
-                                <td style="width: 40%;">จำนวนทั้งหมด</td>
-                                <td style="width: 30%;" id="sumTotal" class="fw-bold">0 โครงการ</td>
-                                <td style="width: 30%;">ร้อยละ</td>
-                            </tr>
-                            <tr><td>ติดตามไตรมาส</td><td id="sumTrack">0 โครงการ</td><td>100.00</td></tr>
-                            <tr><td>ดำเนินการเสร็จ</td><td id="sumDone">0 โครงการ</td><td id="percDone">0.00</td></tr>
-                            <tr><td>กำลังดำเนินการ</td><td id="sumProgress">0 โครงการ</td><td id="percProgress">0.00</td></tr>
-                            <tr><td>ยังไม่ได้ดำเนินการ</td><td id="sumNotStart">0 โครงการ</td><td id="percNotStart">0.00</td></tr>
-                        </tbody>
-                    </table>
-                    <div class="mt-3 text-center p-2 bg-light rounded border mx-auto" style="max-width: 300px;">
-                        <div class="small text-muted mb-1">ความก้าวหน้า (เสร็จ + กำลังทำ)</div>
-                        <h2 class="fw-bold text-success m-0" id="sumActivePercent">0.00%</h2>
-                    </div>
-                </div>
-                <div class="chart-section text-center"><div id="summaryChart3D" style="width: 750px; height: 350px; margin: 0 auto;"></div></div>
-                
+
+<div id="reportPlanView">
+    <div class="summary-wrapper align-items-center">
+        
+        <div class="summary-table-container summary-section text-center mb-0">
+            <h6 class="fw-bold mb-3">สรุปภาพรวมโครงการ</h6>
+            <table class="report-table text-center mx-auto" style="max-width: 100%;">
+                <tbody>
+                    <tr style="border-bottom: 2px solid black;">
+                        <td style="width: 40%;">จำนวนทั้งหมด</td>
+                        <td style="width: 30%;" id="sumTotal" class="fw-bold">0 โครงการ</td>
+                        <td style="width: 30%;">ร้อยละ</td>
+                    </tr>
+                    <tr><td>ติดตามไตรมาส</td><td id="sumTrack">0 โครงการ</td><td>100.00</td></tr>
+                    <tr><td>ดำเนินการเสร็จ</td><td id="sumDone">0 โครงการ</td><td id="percDone">0.00</td></tr>
+                    <tr><td>กำลังดำเนินการ</td><td id="sumProgress">0 โครงการ</td><td id="percProgress">0.00</td></tr>
+                    <tr><td>ยังไม่ได้ดำเนินการ</td><td id="sumNotStart">0 โครงการ</td><td id="percNotStart">0.00</td></tr>
+                </tbody>
+            </table>
+            <div class="mt-3 text-center p-2 bg-light rounded border mx-auto" style="max-width: 300px;">
+                <div class="small text-muted mb-1">ความก้าวหน้า (เสร็จ + กำลังทำ)</div>
+                <h2 class="fw-bold text-success m-0" id="sumActivePercent">0.00%</h2>
+            </div>
+        </div>
+        
+        <div class="summary-chart-container chart-section text-center mb-0">
+            <div id="summaryChart3D" style="width: 100%; height: 300px; margin: 0 auto;"></div>
+        </div>
+        
+    </div>
                 
                 
                 
@@ -956,21 +963,21 @@
             </div>
 
         <div id="reportBuyView" style="display:none;">
-           <div class="mb-4">
-        <table class="report-table">
-            <thead>
-                <tr class="text-center bg-light">
-                    <th style="width: 35%;">กลุ่มงาน/หน่วยงาน</th>
-                    <th style="width: 15%;" id="buyQuarterHeader">ไตรมาสที่ 1<br>(ช่วงวันที่)</th>
-                    <th style="width: 10%;">จำนวน<br>รายการ</th>
-                    <th style="width: 10%;">ดำเนินการ</th>
-                    <th style="width: 15%;">ราคาที่จัดซื้อ</th>
-                    <th style="width: 15%; color: #dc3545;">ยังไม่ได้<br>ดำเนินการ</th>
-                </tr>
-            </thead>
-            <tbody id="buySummaryTableBody"></tbody>
-        </table>
-    </div>
+            <div class="mb-4">
+                <table class="report-table">
+                    <thead>
+                        <tr class="text-center bg-light">
+                            <th style="width: 35%;">กลุ่มงาน/หน่วยงาน</th>
+                            <th style="width: 15%;" id="buyQuarterHeader">ไตรมาสที่ 1<br>(ช่วงวันที่)</th>
+                            <th style="width: 10%;">จำนวน<br>รายการ</th>
+                            <th style="width: 10%;">ดำเนินการ</th>
+                            <th style="width: 15%;">ราคาที่จัดซื้อ</th>
+                            <th style="width: 15%; color: #dc3545;">ยังไม่ได้<br>ดำเนินการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="buySummaryTableBody"></tbody>
+                </table>
+            </div>
 
             <div class="mb-4 border p-3 rounded-3 text-center">
                 <div class="d-flex justify-content-center mb-3">
@@ -985,16 +992,19 @@
             </div>
 
             <div class="mb-4">
-                <table class="report-table">
-                    <thead>
-                        <tr class="table-danger text-center"><th colspan="5" class="py-2" style="font-size: 16px;">รายการที่ยังไม่ได้ดำเนินการ/ยกเลิก</th></tr>
-                        <tr class="table-dark">
-                            <th style="width: 5%;">ลำดับ</th><th style="width: 35%;">รายการ</th><th style="width: 20%;">หน่วยงาน</th><th style="width: 10%;">จำนวน</th><th style="width: 30%;">หมายเหตุการยกเลิก</th>
-                        </tr>
-                    </thead>
-                    <tbody id="buyCancelledTableBody"></tbody>
-                </table>
-            </div>
+            <table class="report-table" style="border: 1px solid #000; width: 100%; font-family: 'Sarabun', sans-serif;">
+                <thead>
+                    <tr style="background-color: #e2e2e2; border: 1px solid #000;">
+                        <td colspan="2" class="text-center py-2" style="border: 1px solid #000; text-decoration: underline; font-weight: bold;">ยังไม่ได้ดำเนินการ/ยกเลิก</td>
+                        <td class="text-center" style="border: 1px solid #000; font-weight: bold;" id="pendingCancelCount">0</td>
+                        <td class="text-center" style="border: 1px solid #000; font-weight: bold;">รายการ</td>
+                        <td class="text-center" style="border: 1px solid #000;"></td>
+                    </tr>
+                </thead>
+                <tbody id="buyCancelledTableBody"></tbody>
+            </table>
+        </div>
+
         </div> 
     </div> 
 </div> 
@@ -2891,12 +2901,12 @@ function processPlanReport() {
                     buySummaryBody.innerHTML += `
                         <tr>
                             <td class="ps-4 text-start" style="${firstColStyle}">- ${c}</td> 
-                            <td class="text-end pe-2">
-                                <div class="d-flex justify-content-between">
-                                    <span>${v.plan.toLocaleString(undefined, {minimumFractionDigits: 0})}</span>
-                                    <span class="text-primary ps-2" style="font-size: 11px;">${catText}</span>
-                                </div>
-                            </td>
+                           <td class="text-end pe-2">
+    <div class="d-flex justify-content-between align-items-center">
+        <span style="white-space: nowrap;">${v.plan.toLocaleString(undefined, {minimumFractionDigits: 0})}</span>
+        <span class="text-primary ps-2 text-end" style="font-size: 11px; line-height: 1.2;">${catText}</span>
+    </div>
+</td>
                             <td class="text-center">${v.count}</td>
                             <td class="text-center">${v.done > 0 ? v.done : '0'}</td>
                             <td class="text-end pe-2">${v.act > 0 ? v.act.toLocaleString(undefined, {minimumFractionDigits: 2}) : '0.00'}</td>
@@ -2911,10 +2921,33 @@ function processPlanReport() {
             document.getElementById('buyDoneCount').innerText = stats.done;
             document.getElementById('buyProgressCount').innerText = stats.progress;
             document.getElementById('buyNotCount').innerText = stats.pending;
+           
+
+           // ✅ แมปข้อมูลลงตารางให้ตรงตามรูปภาพ 100% (แยกจำนวน กับ หน่วยนับ ออกจากกัน)
+
             buyCancelledBody.innerHTML = '';
+
+            // อัปเดตตัวเลขจำนวนรายการทั้งหมดบนหัวตาราง (ตรงกลาง)
+            let countEl = document.getElementById('pendingCancelCount');
+            if(countEl) countEl.innerText = cancelledList.length;
+
             cancelledList.forEach((p, i) => {
-                buyCancelledBody.innerHTML += `<tr><td class="text-center">${i+1}</td><td>${p.name}</td><td>${p.dept}</td><td class="text-center">${p.qty}</td><td class="text-danger small">${p.note}</td></tr>`;
+                // แยกระหว่าง "ตัวเลขจำนวน" และ "หน่วยนับ" ออกจากช่อง "จำนวน" (เช่น "180 โดส" -> 180 และ โดส)
+                let rawQty = (p.qty || '1').toString().trim();
+                let match = rawQty.match(/^([\d.,]+)\s*(.*)$/);
+                let num = match ? match[1] : rawQty;
+                let unit = (match && match[2] && match[2].trim() !== '') ? match[2] : 'งาน'; // ถ้าไม่ระบุหน่วยมา ให้ค่าเริ่มต้นเป็นคำว่า "งาน"
+                
+                buyCancelledBody.innerHTML += `
+                    <tr style="border: 1px solid #000;">
+                        <td class="text-center" style="width: 5%; border: 1px solid #000; padding: 6px;">${i+1}</td>
+                        <td class="text-start" style="width: 45%; border: 1px solid #000; padding: 6px 10px;">${p.name}</td>
+                        <td class="text-start" style="width: 25%; border: 1px solid #000; padding: 6px 10px;">${p.dept}</td>
+                        <td class="text-center" style="width: 10%; border: 1px solid #000; padding: 6px;">${num}</td>
+                        <td class="text-center" style="width: 15%; border: 1px solid #000; padding: 6px;">${unit}</td>
+                    </tr>`;
             });
+                        
             renderBuyChart(stats);
         }
 
@@ -2928,14 +2961,15 @@ function processPlanReport() {
                     [`กำลังทำ: ${stats.progress}`, stats.progress],
                     [`ยังไม่ทำ/ยกเลิก: ${stats.pending}`, stats.pending]
                 ]);
-                new google.visualization.PieChart(document.getElementById('buyChart3D')).draw(data, { 
-                    is3D: true, 
-                    legend: { position: 'labeled', textStyle: { fontSize: 12 } }, 
-                    colors: ['#10b981', '#3b82f6', '#ef4444'], 
-                    // ✅ บีบพื้นที่กราฟ (Width) ลงเหลือ 65% เพื่อให้ข้อความด้านข้างไม่ตกขอบ
-                    chartArea: { left: '10%', top: '10%', width: '65%', height: '80%' },
-                    backgroundColor: 'transparent'
-                });
+                // ✅ เพิ่ม fontName: 'Sarabun' เข้าไปในตั้งค่ากราฟครุภัณฑ์
+new google.visualization.PieChart(document.getElementById('buyChart3D')).draw(data, { 
+    is3D: true, 
+    fontName: 'Sarabun', // <--- เติมบรรทัดนี้ลงไป
+    legend: { position: 'labeled', textStyle: { fontSize: 12, fontName: 'Sarabun' } }, // <--- เติม fontName ในนี้ด้วย
+    colors: ['#10b981', '#3b82f6', '#ef4444'], 
+    chartArea: { left: '10%', top: '10%', width: '65%', height: '80%' },
+    backgroundColor: 'transparent'
+});
             };
             google.charts.setOnLoadCallback(draw);
         }
@@ -3033,18 +3067,20 @@ function renderChart(stats) {
             [`ยกเลิก: ${n4} (${((n4/total)*100).toFixed(0)}%)`, n4]
         ]);
 
-        const options = {
-            is3D: true,
-            pieSliceText: 'none',
-            colors: [c1, c2, c3, c4],
-            legend: { 
-                position: 'labeled', 
-                textStyle: { fontSize: 11, bold: true } // ลดขนาดฟอนต์ Legend เล็กน้อย
-            },
-            chartArea: { left: '5%', top: '5%', width: '90%', height: '90%' }, // ✅ ขยายพื้นที่กราฟให้เต็ม
-            backgroundColor: 'transparent',
-            slices: { 0: { offset: 0.1 }, 2: { offset: 0.1 } }
-        };
+        // ✅ เพิ่ม fontName: 'Sarabun' เข้าไปในตั้งค่ากราฟแผนปฏิบัติการ
+const options = {
+    is3D: true,
+    pieSliceText: 'none',
+    colors: [c1, c2, c3, c4],
+    fontName: 'Sarabun', // <--- เติมบรรทัดนี้ลงไป
+    legend: { 
+        position: 'labeled', 
+        textStyle: { fontSize: 11, bold: true, fontName: 'Sarabun' } // <--- เติม fontName ในนี้ด้วย
+    },
+    chartArea: { left: '5%', top: '5%', width: '90%', height: '90%' },
+    backgroundColor: 'transparent',
+    slices: { 0: { offset: 0.1 }, 2: { offset: 0.1 } }
+};
 
         const chart = new google.visualization.PieChart(document.getElementById('summaryChart3D'));
         google.visualization.events.addListener(chart, 'select', () => {

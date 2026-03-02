@@ -1896,9 +1896,8 @@ const createField = (label, keys, roleClass, inputType='text', opts=[]) => {
                 html += createField('สิ้นสุดโครงการ', ['input_end', 'กำหนดสิ้นสุดโครงการ', 'สิ้นสุดโครงการ'], 'role-user', 'date');
                 // ✅ ตรงนี้ของพี่ถูกต้องแล้วครับ (บรรทัดที่ 1213 ในไฟล์ที่ส่งมา)
                 html += createField('ชื่อโครงการ', ['input_project', 'ชื่อโครงการ', 'รายการ'], 'role-user'); 
-                // ✅ เปลี่ยนจาก role-plan เป็น role-admin-only
-                html += createField('สถานะติดตามแผน', ['ติดตามแผนปฏิบัติการ'], 'role-admin-only', 'select', ['ยังไม่ทำ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกดำเนินการ']);
-
+                // ✅ แผนปฏิบัติการ ต้องใช้คีย์ 'หมายเหตุ' เพื่อให้เซฟลงคอลัมน์ AG ได้ถูกต้อง
+html += createField('ผลดำเนินงาน (AG)', ['หมายเหตุ'], 'role-admin-only', 'select', ['ยังไม่ได้ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกโครงการ']);
                 html += `<div class="col-12"><hr class="my-1 text-muted"></div>`;
                 html += createField('งบ (แผน)', ['input_budget_plan', 'งบประมาณที่ขอในแผน', 'งบประมาณ'], 'role-user', 'text');
                 html += createField('งบ (ผอ.)', ['input_budget_dir', 'งบอนุมัติโดย ผอ.ศศค.', 'งบอนุมัติ'], 'role-user', 'text');
@@ -1965,8 +1964,8 @@ const createField = (label, keys, roleClass, inputType='text', opts=[]) => {
                 html += createField('เลขที่เช็ค', ['finance_cheque', 'เลขที่เช็ค'], 'role-finance-pay');
                 html += createField('วันที่จ่าย', ['finance_pay', 'วันที่จ่าย'], 'role-finance-pay', 'date');
                 html += createField('เงินคงเหลือ', ['finance_remain', 'เงินคงเหลือ'], 'role-admin-only', 'text');
-                html += createField('หมายเหตุ', ['finance_note', 'หมายเหตุ'], 'role-finance-pay');
-                html += `</div></div>`;
+// ✅ ลบกล่องหมายเหตุเก่าทิ้ง เพื่อไม่ให้มันส่งค่าว่างไปลบข้อมูลในคอลัมน์ AG
+html += `</div></div>`;
            } else {
                 // ==========================================
                 // BUY (ครุภัณฑ์) - แยก 9 Step ตามคอลัมน์ A-AG
@@ -2041,7 +2040,8 @@ html += createField('ตรวจสำเร็จ (แผน)', ['plan_check',
                 html += `<div class="card p-3 mb-2 bg-dark bg-opacity-10 border-secondary rounded-3"><h6 class="text-secondary fw-bold border-bottom pb-2">9. สรุปผล/หมายเหตุ (Step 9)</h6><div class="row">`;
                 html += createField('เงินคงเหลือ', ['finance_remain', 'เงินคงเหลือ'], 'role-admin-only', 'text');
                 html += createField('ยกเลิกแผน', ['plan_cancel', 'ยกเลิกแผน'], 'role-admin-only', 'checkbox');
-                html += createField('หมายเหตุเพิ่มเติม', ['final_note', 'หมายเหตุสรุป'], 'role-admin-only');
+                // ✅ เปลี่ยนจากกล่องพิมพ์ข้อความ เป็นกล่องเลือกสถานะ (ลงคอลัมน์ AG)
+                html += createField('ผลดำเนินงาน (AG)', ['หมายเหตุสรุป'], 'role-admin-only', 'select', ['ยังไม่ได้ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกแผน']);
                 html += `</div></div>`;
             
             }
@@ -2094,21 +2094,15 @@ async function saveChanges(isSubmit = true) {
     }
 });
 
-    // --- ส่วนที่ 2: จัดการเครื่องหมาย [SENT] เพื่อกักงาน ---
-    // ✅ มั่นใจว่าใช้ 'หมายเหตุสรุป' สำหรับครุภัณฑ์
-    const noteKey = (currentSystemType === 'buy') ? 'หมายเหตุสรุป' : 'หมายเหตุ';
-    let currentNote = updates[noteKey] || findVal(item, noteKey) || '';
-
-    if (isSubmit) {
-        if (!currentNote.toString().includes('[SENT]')) {
-            updates[noteKey] = currentNote.toString().trim() + ' [SENT]';
-        }
     
+    // ✅ บังคับให้คอลัมน์ AK เก็บแค่ '[SENT]' หรือค่าว่างเท่านั้น (ล้างข้อความเก่าทิ้งเด็ดขาด)
+    const statusKey = 'ติดตามแผนปฏิบัติการ'; 
+    
+    if (isSubmit) {
+        updates[statusKey] = '[SENT]'; // ถ้ากดส่งงานต่อ ใส่แค่ [SENT]
     } else {
-        // ✅ ถ้ากด "บันทึกข้อมูล": ลบเครื่องหมายออก (ถ้ามี) เพื่อล็อกงานไว้ที่เดิม
-        updates[noteKey] = currentNote.toString().replace('[SENT]', '').trim();
+        updates[statusKey] = '';       // ถ้ากดบันทึกข้อมูล (กักงาน) ล้างค่าให้ว่าง
     }
-
 
 
 
@@ -2147,15 +2141,16 @@ if (result.status === 'success') {
 function calculateStatus(item, type) {
     if (!item) return { text: 'รอดำเนินการ', badge: '', currentDept: '' };
     
-    // 1. ตรวจสอบสถานะด่วนจาก AK (ติดตามแผนปฏิบัติการ)
-    const followStatus = (findVal(item, 'ติดตามแผนปฏิบัติการ') || '').toString();
-    if (followStatus.includes('ยกเลิก')) return { text: 'ยกเลิกโครงการ', badge: '<span class="status-badge bg-danger text-white">ยกเลิกโครงการ</span>', currentDept: 'สิ้นสุดขั้นตอน' };
-    if (followStatus.includes('ดำเนินแล้ว') || followStatus.includes('เสร็จ')) return { text: 'เสร็จสิ้น', badge: '<span class="status-badge status-success">ดำเนินการเสร็จสิ้น</span>', currentDept: 'สิ้นสุดขั้นตอน' };
+   // 1. ตรวจสอบสถานะด่วนจาก AG (ผลดำเนินงาน/หมายเหตุสรุป)
+    // 1. ตรวจสอบสถานะด่วนจาก AG (แผนใช้ 'หมายเหตุ', ครุภัณฑ์ใช้ 'หมายเหตุสรุป')
+const agKey = (type === 'plan') ? 'หมายเหตุ' : 'หมายเหตุสรุป';
+const agStatus = (findVal(item, agKey) || '').toString();
+    if (agStatus.includes('ยกเลิก')) return { text: 'ยกเลิกโครงการ', badge: '<span class="status-badge bg-danger text-white">ยกเลิกโครงการ</span>', currentDept: 'สิ้นสุดขั้นตอน' };
+    if (agStatus.includes('ดำเนินแล้ว') || agStatus.includes('เสร็จ')) return { text: 'เสร็จสิ้น', badge: '<span class="status-badge status-success">ดำเนินการเสร็จสิ้น</span>', currentDept: 'สิ้นสุดขั้นตอน' };
 
-    // 2. ตรวจสอบสัญญาณการส่งงาน [SENT] จากช่องหมายเหตุ
-    const noteField = (type === 'buy') ? 'หมายเหตุสรุป' : 'หมายเหตุ';
-    const noteVal = findVal(item, noteField) || '';
-    const isSent = noteVal.toString().includes('[SENT]');
+    // 2. ตรวจสอบสัญญาณการส่งงาน [SENT] จากคอลัมน์ AK (ติดตามแผนปฏิบัติการ)
+    const followStatus = (findVal(item, 'ติดตามแผนปฏิบัติการ') || '').toString();
+    const isSent = followStatus.includes('[SENT]');
 
     // --- 9. ยกเลิกโครงการ ---
     if (findVal(item, 'ยกเลิกแผน') === '/') return { text: 'ยกเลิกโครงการ', badge: '<span class="status-badge bg-danger text-white">ยกเลิกโครงการ</span>', currentDept: 'สิ้นสุดขั้นตอน' };
@@ -2519,8 +2514,9 @@ async function submitAdminPlan() {
             html += createInput('งบ (แผน)', 'งบประมาณที่ขอในแผน', 'number', 'col-md-2'); 
             html += createInput('งบ (ผอ.)', 'งบอนุมัติโดย ผอ.ศศค.', 'number', 'col-md-2');
             html += createInput('งบ (โครงการ)', 'งบประมาณที่ขอในโครงการ', 'number', 'col-md-2');
-            html += createInput('สถานะติดตามแผน (AK)', 'ติดตามแผนปฏิบัติการ', 'select', 'col-md-3', ['ยังไม่ได้ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกดำเนินการ']);
-            html += `</div></div></div>`;
+// ✅ เปลี่ยนให้เซฟลง AG ('หมายเหตุ') และเลิกเซฟสถานะลง AK
+html += createInput('ผลดำเนินงาน (AG)', 'หมายเหตุ', 'select', 'col-md-3', ['ยังไม่ได้ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกโครงการ']);
+html += `</div></div></div>`;
 
             html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
             html += createInput('รับเอกสาร', 'วันที่รับเอกสารครั้งแรก', 'date', 'col-md-6');
@@ -2690,7 +2686,8 @@ function renderAdminBuyAddFormUI() {
     html += `<div class="col-12"><div class="card-form"><div class="form-group-title">9. สรุปผลและหมายเหตุเพิ่มเติม</div><div class="row g-2">`;
     html += createInput('เงินคงเหลือ', 'เงินคงเหลือ', 'text', 'col-md-3');
     html += createInput('ยกเลิกแผน', 'ยกเลิกแผน', 'checkbox', 'col-md-3');
-    html += createInput('หมายเหตุสรุป (AG)', 'หมายเหตุสรุป', 'text', 'col-md-6');
+   // ✅ เปลี่ยนจากช่องพิมพ์ข้อความ เป็นกล่องเลือกสถานะ
+html += createInput('ผลดำเนินงาน (AG)', 'หมายเหตุสรุป', 'select', 'col-md-6', ['ยังไม่ได้ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกแผน']);
     html += `</div></div></div>`;
 
     html += `<div class="col-12 mt-4 text-center"><button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 shadow-sm me-2" onclick="cancelAdd()">ยกเลิก</button><button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm fw-bold" onclick="submitAdminPlan()">บันทึกข้อมูล (Admin)</button></div></div></form>`;

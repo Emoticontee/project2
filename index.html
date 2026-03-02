@@ -950,7 +950,7 @@
                 <table class="report-table text-center w-100">
                     <thead>
                         <tr><th rowspan="2">หมวดเงิน</th><th rowspan="2">ID PLAN</th><th rowspan="2">ชื่อโครงการ</th><th colspan="3">การดำเนินโครงการ</th><th colspan="4">งบประมาณ</th></tr>
-                        <tr><th>ยังไม่ทำ</th><th>กำลังทำ</th><th>เสร็จสิ้น</th><th>ในแผน</th><th>ในโครงการ</th><th>ใช้จริง</th><th>คงเหลือ</th></tr>
+                        <tr><th>ยังไม่ได้ดำเนินการ/ยกเลิก</th><th>กำลังดำเนินการ</th><th>ดำเนินการเสร็จสิ้น</th><th>ในแผน</th><th>ในโครงการ</th><th>ใช้จริง</th><th>คงเหลือ</th></tr>
                     </thead>
                     <tbody id="summaryTableBody"></tbody>
                     <tfoot id="summaryTableFooter" class="fw-bold bg-light"></tfoot>
@@ -979,11 +979,37 @@
 
             <div class="mb-4 border p-3 rounded-3 text-center">
                 <div class="d-flex justify-content-center mb-3">
-                    <table class="table table-sm table-bordered m-0 text-center" style="max-width: 400px; font-size: 13px;">
-                        <tr class="bg-tan"><th style="width: 50%;">รายการทั้งหมด</th><th id="buyTotalCount" style="width: 25%;">0</th><th style="width: 25%;">รายการ</th></tr>
-                        <tr class="text-success"><td>ดำเนินการเสร็จสิ้น</td><td id="buyDoneCount">0</td><td>รายการ</td></tr>
-                        <tr class="text-primary"><td>กำลังดำเนินการ</td><td id="buyProgressCount">0</td><td>รายการ</td></tr>
-                        <tr class="text-danger"><td>ยังไม่ได้ดำเนินการ/ยกเลิก</td><td id="buyNotCount">0</td><td>รายการ</td></tr>
+                    <table class="table table-sm table-bordered m-0 text-center align-middle" style="max-width: 650px; font-size: 13px; border: 1px solid #000;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 30%; font-weight: bold; border: 1px solid #000;">รายการทั้งหมด</td>
+                                <td id="buyTotalCount" style="width: 15%; border: 1px solid #000;">0</td>
+                                <td style="width: 15%; border: 1px solid #000;">รายการ</td>
+                                <td id="buyTotalPercent" style="width: 15%; background-color: #fde68a; border: 1px solid #000; font-weight: bold;">100.00</td>
+                                <td id="buyTotalPrice" style="width: 25%; background-color: #fde68a; text-align: right; padding-right: 10px; border: 1px solid #000; font-weight: bold;">0.00</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; border: 1px solid #000;">ดำเนินการแล้ว</td>
+                                <td id="buyDoneCount" style="border: 1px solid #000;">0</td>
+                                <td style="border: 1px solid #000;">รายการ</td>
+                                <td id="buyDonePercent" style="background-color: #fde68a; border: 1px solid #000;">0</td>
+                                <td id="buyDonePrice" style="background-color: #fde68a; text-align: right; padding-right: 10px; border: 1px solid #000;">0.00</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; border: 1px solid #000;">ยังไม่ดำเนินการ/ยกเลิก</td>
+                                <td id="buyNotCount" style="border: 1px solid #000;">0</td>
+                                <td style="border: 1px solid #000;">รายการ</td>
+                                <td id="buyNotPercent" style="background-color: #fde68a; border: 1px solid #000;">0</td>
+                                <td style="background-color: #fde68a; border: 1px solid #000;"></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; border: 1px solid #000;">นอกแผน</td>
+                                <td id="buyOutCount" style="border: 1px solid #000;">0</td>
+                                <td style="border: 1px solid #000;">รายการ</td>
+                                <td style="border: 1px solid #000;">ร้อยละ</td>
+                                <td style="background-color: #ead1dc; border: 1px solid #000;"></td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
                 <div id="buyChart3D" style="width: 100%; height: 300px;"></div>
@@ -2493,7 +2519,7 @@ async function submitAdminPlan() {
             html += createInput('งบ (แผน)', 'งบประมาณที่ขอในแผน', 'number', 'col-md-2'); 
             html += createInput('งบ (ผอ.)', 'งบอนุมัติโดย ผอ.ศศค.', 'number', 'col-md-2');
             html += createInput('งบ (โครงการ)', 'งบประมาณที่ขอในโครงการ', 'number', 'col-md-2');
-            html += createInput('สถานะติดตามแผน (AK)', 'ติดตามแผนปฏิบัติการ', 'select', 'col-md-3', ['ยังไม่ทำ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกดำเนินการ']);
+            html += createInput('สถานะติดตามแผน (AK)', 'ติดตามแผนปฏิบัติการ', 'select', 'col-md-3', ['ยังไม่ดำเนินการ', 'กำลังดำเนินการ', 'ดำเนินการเสร็จสิ้น', 'ยกเลิกดำเนินการ']);
             html += `</div></div></div>`;
 
             html += `<div class="col-md-6"><div class="card-form"><div class="form-group-title">2. แผน</div><div class="row g-2">`;
@@ -2814,7 +2840,7 @@ function processPlanReport() {
                 <div class="mb-4">
                     <table class="report-table text-center w-100">
                         <thead><tr class="repeated-header"><th rowspan="2" style="width:50px;">หมวดเงิน</th><th rowspan="2" style="width:100px;">ID PLAN</th><th rowspan="2">ชื่อโครงการ</th><th colspan="3">การดำเนินโครงการ</th><th colspan="4">งบประมาณ</th></tr>
-                        <tr class="repeated-header"><th>ยังไม่ทำ</th><th>กำลังทำ</th><th>เสร็จ</th><th>ในแผน</th><th>ในโครงการ</th><th>ใช้จริง</th><th>คงเหลือ</th></tr></thead>
+                        <tr class="repeated-header"><th>ยังไม่ดำเนินการ</th><th>กำลังดำเนินการ</th><th>ดำเนินการเสร็จ</th><th>ในแผน</th><th>ในโครงการ</th><th>ใช้จริง</th><th>คงเหลือ</th></tr></thead>
                         <tbody><tr class="fw-bold bg-light"><td colspan="2"></td><td class="text-start ps-3 text-primary">${cleanDept}</td><td colspan="7"></td></tr>
                             ${d.items.map(p => `<tr><td>${getCatNumber(p.cat)}</td><td>${p.id}</td><td class="text-start ps-3">${p.name}</td><td class="text-center">${p.c1}</td><td class="text-center">${p.c2}</td><td class="text-center">${p.c3}</td><td class="text-end">${p.bPlan.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${p.bProj.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${p.bAct.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="text-end">${p.bRem.toLocaleString(undefined, {minimumFractionDigits: 2})}</td></tr>`).join('')}
                             
@@ -2850,6 +2876,9 @@ function processPlanReport() {
             let deptMap = {};
             let cancelledList = [];
             let stats = { total: 0, done: 0, progress: 0, pending: 0 };
+            
+            // ✅ 1. เพิ่มตัวแปรเก็บยอดรวมงบประมาณทั้งหมด
+            let grandBuy = { plan: 0, act: 0 }; 
 
             reportDataCache.forEach(item => {
                 let dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']) || 'ไม่ระบุ';
@@ -2857,7 +2886,10 @@ function processPlanReport() {
                 let bPlan = parseFloat((getKey(item, ['ราคา']) || '0').toString().replace(/,/g,'')) || 0;
                 let bAct = parseFloat((getKey(item, ['จำนวนเงินที่สั่งจ้าง / ซื้อ']) || '0').toString().replace(/,/g,'')) || 0;
                 
-                // 💡 LOGIC ใหม่ที่พี่ออกแบบ: ดักจับจากข้อมูลจริงๆ แทนการอ่านข้อความสถานะ
+                // ✅ 2. บวกสะสมยอดเงินเข้าตัวแปรส่วนกลาง
+                grandBuy.plan += bPlan; 
+                grandBuy.act += bAct;   
+
                 let isCancel = (findVal(item, 'ยกเลิกแผน') === '/' || findVal(item, 'ยกเลิกแผน') === '✅' || findVal(item, 'ยกเลิกแผน') === true);
                 let chequeVal = findVal(item, 'เลขที่เช็ค');
                 let hasCheque = (chequeVal && chequeVal.toString().trim() !== '' && chequeVal.toString().trim() !== '-');
@@ -2867,11 +2899,11 @@ function processPlanReport() {
                 let isPending = false; 
 
                 if (isCancel) {
-                    isPending = true; // ติ๊กยกเลิกแผน -> โยนเข้า ยังไม่ได้ดำเนินการ/ยกเลิก
+                    isPending = true; 
                 } else if (hasCheque) {
-                    isDone = true;    // มีเลขเช็ค -> โยนเข้า ดำเนินการเสร็จสิ้น
+                    isDone = true;    
                 } else {
-                    isProgress = true; // มีข้อมูลแต่ยังไม่มีเลขเช็ค -> โยนเข้า กำลังดำเนินการ
+                    isProgress = true; 
                 }
 
                 stats.total++;
@@ -2888,7 +2920,6 @@ function processPlanReport() {
                 d.plan += bPlan; 
                 d.act += bAct;
                 
-                // ถ้ายกเลิก ให้ดึงไปแสดงในตารางรายการที่ 3 ด้านล่าง
                 if(isPending) {
                     cancelledList.push({ name: getKey(item, ['รายการ', 'ชื่อโครงการ']), dept, qty: getKey(item, ['จำนวน']) || '1', note: getKey(item, ['หมายเหตุสรุป']) || '-' });
                 }
@@ -2901,7 +2932,6 @@ function processPlanReport() {
                 const categories = Object.keys(deptMap[d]);
                 const lastIdx = categories.length - 1;
 
-                // ✅ 1. แถวชื่อหน่วยงาน: บังคับเส้นล่างในช่องแรกให้โปร่งใส (ลบเส้นกั้นตัวเลข)
                 buySummaryBody.innerHTML += `
                     <tr class="fw-bold bg-white">
                         <td class="ps-2 text-start" style="border-bottom-color: transparent !important;">
@@ -2911,13 +2941,11 @@ function processPlanReport() {
                         <td colspan="4" class="bg-light text-center" style="border: 1px solid #000 !important; font-size: 13px;">${d}</td>
                     </tr>`;
 
-                // ✅ 2. รายการย่อย: บังคับเส้นบนและล่างช่องแรกให้โปร่งใส เพื่อให้ข้อมูลเรียงกันเป็นกลุ่มเดียว
                 categories.forEach((c, idx) => {
                     let v = deptMap[d][c];
                     let pendingCount = v.count - v.done;
                     let catText = c.replace('งบ','');
                     
-                    // สไตล์ช่องแรก: เส้นบนใสเสมอ และเส้นล่างใสยกเว้นรายการสุดท้ายของหน่วยงานนั้นๆ
                     let firstColStyle = "border-top-color: transparent !important;";
                     if (idx < lastIdx) firstColStyle += " border-bottom-color: transparent !important;";
 
@@ -2939,27 +2967,43 @@ function processPlanReport() {
                 deptIdx++;
             }
 
+            // ✅ 3. สร้างแถว "รวมทั้งสิ้น" ต่อท้ายตารางตามในรูปเป๊ะๆ (ขอบเส้นหนา + สีพื้นหลังแยกชัดเจน)
+            buySummaryBody.innerHTML += `
+                <tr class="fw-bold" style="background-color: #e2e2e2; border-top: 2px solid #000; border-bottom: 2px solid #000;">
+                    <td class="text-center">รวมทั้งสิ้น</td>
+                    <td class="text-end pe-2" style="white-space: nowrap;">${grandBuy.plan.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td class="text-center">${stats.total}</td>
+                    <td class="text-center">${stats.done}</td>
+                    <td class="text-end pe-2" style="white-space: nowrap;">${grandBuy.act.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td class="text-center text-danger">${stats.pending > 0 ? stats.pending : ''}</td>
+                </tr>`;
+
             // อัปเดตสถิติ
-            document.getElementById('buyTotalCount').innerText = stats.total;
-            document.getElementById('buyDoneCount').innerText = stats.done;
-            document.getElementById('buyProgressCount').innerText = stats.progress;
-            document.getElementById('buyNotCount').innerText = stats.pending;
+         // ✅ อัปเดตสถิติลงตารางสรุป (ลบโค้ดเดิมที่ทำให้เกิด Error และใส่การดึงข้อมูลราคากับเปอร์เซ็นต์แทน)
+            let activeCount = stats.done + stats.progress; 
+            let totalC = stats.total > 0 ? stats.total : 1; 
+
+            if (document.getElementById('buyTotalCount')) document.getElementById('buyTotalCount').innerText = stats.total;
+            if (document.getElementById('buyTotalPercent')) document.getElementById('buyTotalPercent').innerText = "100.00";
+            if (document.getElementById('buyTotalPrice')) document.getElementById('buyTotalPrice').innerText = grandBuy.plan.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+            if (document.getElementById('buyDoneCount')) document.getElementById('buyDoneCount').innerText = activeCount;
+            if (document.getElementById('buyDonePercent')) document.getElementById('buyDonePercent').innerText = ((activeCount / totalC) * 100).toFixed(0);
+            if (document.getElementById('buyDonePrice')) document.getElementById('buyDonePrice').innerText = grandBuy.act.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+            if (document.getElementById('buyNotCount')) document.getElementById('buyNotCount').innerText = stats.pending;
+            if (document.getElementById('buyNotPercent')) document.getElementById('buyNotPercent').innerText = ((stats.pending / totalC) * 100).toFixed(0);
+            if (document.getElementById('buyOutCount')) document.getElementById('buyOutCount').innerText = "0";
            
-
-           // ✅ แมปข้อมูลลงตารางให้ตรงตามรูปภาพ 100% (แยกจำนวน กับ หน่วยนับ ออกจากกัน)
-
             buyCancelledBody.innerHTML = '';
-
-            // อัปเดตตัวเลขจำนวนรายการทั้งหมดบนหัวตาราง (ตรงกลาง)
             let countEl = document.getElementById('pendingCancelCount');
             if(countEl) countEl.innerText = cancelledList.length;
 
             cancelledList.forEach((p, i) => {
-                // แยกระหว่าง "ตัวเลขจำนวน" และ "หน่วยนับ" ออกจากช่อง "จำนวน" (เช่น "180 โดส" -> 180 และ โดส)
                 let rawQty = (p.qty || '1').toString().trim();
-                let match = rawQty.match(/^([\d.,]+)\s*(.*)$/);
+                let match = rawQty.match(/^([\\d.,]+)\\s*(.*)$/);
                 let num = match ? match[1] : rawQty;
-                let unit = (match && match[2] && match[2].trim() !== '') ? match[2] : 'งาน'; // ถ้าไม่ระบุหน่วยมา ให้ค่าเริ่มต้นเป็นคำว่า "งาน"
+                let unit = (match && match[2] && match[2].trim() !== '') ? match[2] : 'งาน'; 
                 
                 buyCancelledBody.innerHTML += `
                     <tr style="border: 1px solid #000;">
@@ -2980,9 +3024,9 @@ function processPlanReport() {
             const draw = () => {
                 const data = google.visualization.arrayToDataTable([
                     ['สถานะ', 'จำนวน'],
-                    [`เสร็จสิ้น: ${stats.done}`, stats.done],
-                    [`กำลังทำ: ${stats.progress}`, stats.progress],
-                    [`ยังไม่ทำ/ยกเลิก: ${stats.pending}`, stats.pending]
+                    [`ดำเนินเสร็จสิ้น: ${stats.done}`, stats.done],
+                    [`กำลังดำเนินการ: ${stats.progress}`, stats.progress],
+                    [`ยังไม่ดำเนินการ/ยกเลิก: ${stats.pending}`, stats.pending]
                 ]);
                 
                 new google.visualization.PieChart(document.getElementById('buyChart3D')).draw(data, { 

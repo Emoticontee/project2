@@ -2955,8 +2955,8 @@ function processPlanReport() {
                 d.plan += bPlan; 
                 d.act += bAct;
                 
-                // ✅ ดึงเฉพาะงานที่ "ยกเลิกจริงๆ" ลงตารางด้านล่าง (ไม่เอางานที่แค่ยังไม่ได้ดำเนินการมาโชว์แล้ว)
-                if(isExplicitCancel) {
+              // ✅ ดึงเฉพาะงานที่ "ยังไม่ได้ดำเนินการ" (แผนยังไม่กรอกวันที่ และไม่ได้ถูกยกเลิก) ลงตารางด้านล่าง
+                if(isPending && !isExplicitCancel) {
                     cancelledList.push({ name: getKey(item, ['รายการ', 'ชื่อโครงการ']), dept, qty: getKey(item, ['จำนวน']) || '1', note: getKey(item, ['หมายเหตุสรุป']) || '-' });
                 }
             });

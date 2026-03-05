@@ -962,7 +962,7 @@
                     <thead>
                         <tr class="text-center bg-light">
                             <th style="width: 35%;">กลุ่มงาน/หน่วยงาน</th>
-                            <th style="width: 15%;" id="buyQuarterHeader">ไตรมาสที่ 1<br>(ช่วงวันที่)</th>
+                           <th style="width: 15%;" id="buyQuarterHeader">ไตรมาสที่ 1<br>(ช่วงวันที่)</th>
                             <th style="width: 10%;">จำนวน<br>รายการ</th>
                             <th style="width: 10%;">ดำเนินการ</th>
                             <th style="width: 15%;">ราคาที่จัดซื้อ</th>
@@ -2886,13 +2886,17 @@ function processPlanReport() {
             let deptMap = {}; 
 
             reportDataCache.forEach(item => {
+                // 🌟 เพิ่มการดักจับ: ถ้าไม่มีชื่อหน่วยงาน ให้เตะทิ้งข้ามบรรทัดนี้ไปเลย
+                let rawDept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']);
+                if (!rawDept || rawDept.toString().trim() === '' || rawDept === '-') return;
+                let dept = rawDept.toString().trim();
+
                 let bPlan = parseFloat((getKey(item, ['งบประมาณที่ขอในแผน', 'ราคา', 'งบประมาณ']) || '0').toString().replace(/,/g,'')) || 0;
                 let bProj = parseFloat((getKey(item, ['งบประมาณที่ขอในโครงการ', 'งบโครงการ']) || '0').toString().replace(/,/g,'')) || 0;
                 let bAct  = parseFloat((getKey(item, ['จำนวนเงินที่สั่งจ้าง / ซื้อ', 'สั่งจ้าง/ซื้อ']) || '0').toString().replace(/,/g,'')) || 0;
                 let bRem  = (bProj > 0 ? bProj : bPlan) - bAct;
                 let stText = calculateStatus(item, 'plan').text;
-                stats.total++; 
-                let dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']) || 'ไม่ระบุ';
+                stats.total++;
                 if (!deptMap[dept]) deptMap[dept] = { sNot:0, sProg:0, sDone:0, sPlan: 0, sProj: 0, sAct: 0, sRem: 0, items: [] };
                 let d = deptMap[dept];
                 let c1 = '', c2 = '', c3 = '';
@@ -2967,11 +2971,14 @@ function processPlanReport() {
             let cancelledList = [];
             let stats = { total: 0, done: 0, progress: 0, pending: 0 };
             
-            // ✅ 1. เพิ่มตัวแปรเก็บยอดรวมงบประมาณทั้งหมด
+            
             let grandBuy = { plan: 0, act: 0 }; 
 
-            reportDataCache.forEach(item => {
-                let dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']) || 'ไม่ระบุ';
+           reportDataCache.forEach(item => {
+                let rawDept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']);
+                if (!rawDept || rawDept.toString().trim() === '' || rawDept === '-') return;
+                
+                let dept = rawDept.toString().trim();
                 let cat = getKey(item, ['หมวด']) || 'อื่นๆ';
                 let bPlan = parseFloat((getKey(item, ['ราคา']) || '0').toString().replace(/,/g,'')) || 0;
                 let bAct = parseFloat((getKey(item, ['จำนวนเงินที่สั่งจ้าง / ซื้อ']) || '0').toString().replace(/,/g,'')) || 0;
@@ -3010,7 +3017,7 @@ function processPlanReport() {
                 } else if (isPlanCompletedDates || agStatus.includes('กำลัง')) {
                     isProgress = true; 
                 } else {
-                    isPending = true; // งานที่แผนยังกรอกวันที่ไม่ครบ (จะถูกนับเป็น "ยังไม่ได้ดำเนินการ" แต่ไม่ลงตารางล่าง)
+                    isPending = true; 
                 }
 
                 stats.total++;
@@ -3018,18 +3025,20 @@ function processPlanReport() {
                 else if (isProgress) stats.progress++; 
                 else stats.pending++;
 
-                if(!deptMap[dept]) deptMap[dept] = {};
-                if(!deptMap[dept][cat]) deptMap[dept][cat] = { count: 0, done: 0, progress: 0, pending: 0, plan: 0, act: 0 };
-                let d = deptMap[dept][cat];
                 
-                d.count++; 
-                if(isDone) d.done++; 
-                if(isProgress) d.progress++; 
-                if(isPending) d.pending++;   
-                d.plan += bPlan; 
-                d.act += bAct;
+                if(!deptMap[dept]) deptMap[dept] = { items: [] };
                 
-              // ✅ ดึงเฉพาะงานที่ "ยังไม่ได้ดำเนินการ" (แผนยังไม่กรอกวันที่ และไม่ได้ถูกยกเลิก) ลงตารางด้านล่าง
+                deptMap[dept].items.push({
+                    name: getKey(item, ['รายการ', 'ชื่อโครงการ']) || 'ไม่ระบุชื่อรายการ',
+                    cat: cat, 
+                    plan: bPlan,
+                    act: bAct,
+                    isDone: isDone,
+                    isProgress: isProgress,
+                    isPending: isPending
+                });
+                
+                
                 if(isPending && !isExplicitCancel) {
                     cancelledList.push({ name: getKey(item, ['รายการ', 'ชื่อโครงการ']), dept, qty: getKey(item, ['จำนวน']) || '1', note: getKey(item, ['หมายเหตุสรุป']) || '-', actPrice: bAct });
                 }
@@ -3039,8 +3048,7 @@ function processPlanReport() {
             let deptIdx = 1; 
 
             for (let d in deptMap) {
-                const categories = Object.keys(deptMap[d]);
-                const lastIdx = categories.length - 1;
+                let items = deptMap[d].items;
 
                 buySummaryBody.innerHTML += `
                     <tr class="fw-bold bg-white">
@@ -3051,40 +3059,42 @@ function processPlanReport() {
                         <td colspan="4" class="bg-light text-center" style="border: 1px solid #000 !important; font-size: 13px;">${d}</td>
                     </tr>`;
 
-              categories.forEach((c, idx) => {
-                    let v = deptMap[d][c];
-                    // ✅ ใช้ยอด pending ที่เรานับแยกไว้โดยเฉพาะ (ไม่เอายอด 'กำลังดำเนินการ' มาปนแล้ว)
-                    let pendingCount = v.pending; 
-                    let catText = c.replace('งบ','');
-                    
+                items.forEach((v, idx) => {
                     let firstColStyle = "border-top-color: transparent !important;";
-                    if (idx < lastIdx) firstColStyle += " border-bottom-color: transparent !important;";
+                    if (idx < items.length - 1) firstColStyle += " border-bottom-color: transparent !important;";
+
+                    let actionCount = (v.isDone || v.isProgress) ? '1' : '';
+                    let catText = v.cat.replace('งบ',''); 
 
                     buySummaryBody.innerHTML += `
                         <tr>
-                            <td class="ps-4 text-start" style="${firstColStyle}">- ${c}</td> 
-                           <td class="text-end pe-2">
-    <div class="d-flex justify-content-between align-items-center">
-        <span style="white-space: nowrap;">${v.plan.toLocaleString(undefined, {minimumFractionDigits: 0})}</span>
-        <span class="text-primary ps-2 text-end" style="font-size: 11px; line-height: 1.2;">${catText}</span>
-    </div>
-</td>
-                            <td class="text-center">${v.count}</td>
-                            <td class="text-center">${v.done > 0 ? v.done : '0'}</td>
-                            <td class="text-end pe-2">${v.act > 0 ? v.act.toLocaleString(undefined, {minimumFractionDigits: 2}) : '0.00'}</td>
-                            <td class="text-center text-danger fw-bold">${pendingCount > 0 ? pendingCount : ''}</td>
+                            <td class="ps-4 text-start" style="${firstColStyle}">- ${v.name}</td> 
+                            <td class="align-middle px-2">
+                                <div class="d-flex justify-content-end align-items-center" style="white-space: nowrap; min-width: 190px;">
+                                    <span class="fw-bold text-primary">${v.plan > 0 ? v.plan.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-'}</span>
+                                    <span class="text-muted text-start ms-2 flex-shrink-0" style="font-size: 11px; width: 130px;">(${catText})</span>
+                                </div>
+                            </td>
+                            <td class="text-center">1</td>
+                            <td class="text-center text-success fw-bold">${actionCount}</td>
+                            <td class="text-end pe-2" style="white-space: nowrap;">${v.act > 0 ? v.act.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-'}</td>
+                            <td class="text-center text-danger fw-bold">${v.isPending ? '1' : ''}</td>
                         </tr>`;
                 });
                 deptIdx++;
             }
 
-            // ✅ 3. สร้างแถว "รวมทั้งสิ้น" ต่อท้ายตารางตามในรูปเป๊ะๆ (ขอบเส้นหนา + สีพื้นหลังแยกชัดเจน)
+
+            
+           // ✅ 3. สร้างแถว "รวมทั้งสิ้น" ต่อท้ายตารางตามในรูปเป๊ะๆ (ขอบเส้นหนา + สีพื้นหลังแยกชัดเจน)
+            let totalActive = stats.done + stats.progress; // รวมยอดงานที่ทำเสร็จแล้วและกำลังทำอยู่
+            
             buySummaryBody.innerHTML += `
                 <tr class="fw-bold" style="background-color: #e2e2e2; border-top: 2px solid #000; border-bottom: 2px solid #000;">
                     <td class="text-center">รวมทั้งสิ้น</td>
                     <td class="text-end pe-2" style="white-space: nowrap;">${grandBuy.plan.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     <td class="text-center">${stats.total}</td>
-                    <td class="text-center">${stats.done}</td>
+                    <td class="text-center text-success">${totalActive > 0 ? totalActive : '0'}</td>
                     <td class="text-end pe-2" style="white-space: nowrap;">${grandBuy.act.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     <td class="text-center text-danger">${stats.pending > 0 ? stats.pending : ''}</td>
                 </tr>`;
@@ -3110,14 +3120,15 @@ function processPlanReport() {
             let countEl = document.getElementById('pendingCancelCount');
             if(countEl) countEl.innerText = cancelledList.length;
 
-            // ✅ แก้ไขให้ดึง "จำนวนเงินที่สั่งจ้าง / ซื้อ" มาแสดงแทนคำว่า "งาน"
+            let totalCancelledPrice = 0; 
             cancelledList.forEach((p, i) => {
                 let rawQty = (p.qty || '1').toString().trim();
                 let match = rawQty.match(/^([\d.,]+)\s*(.*)$/);
                 let num = match ? match[1] : rawQty;
                 
-                // ดึงราคาสั่งซื้อมาจัด Format ให้มีลูกน้ำ (ถ้าไม่มีข้อมูลให้โชว์ 0.00)
+                
                 let actualPrice = parseFloat((p.actPrice || '0').toString().replace(/,/g,'')) || 0;
+                totalCancelledPrice += actualPrice; 
                 let formattedPrice = actualPrice > 0 ? actualPrice.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
                 
                 buyCancelledBody.innerHTML += `
@@ -3129,12 +3140,19 @@ function processPlanReport() {
                         <td class="text-end" style="width: 20%; border: 1px solid #000; padding: 6px 10px;">${formattedPrice}</td>
                     </tr>`;
             });
+
+            
+            buyCancelledBody.innerHTML += `
+                <tr style="background-color: #e2e2e2; font-weight: bold; border-top: 2px solid #000;">
+                    <td colspan="4" class="text-center" style="border: 1px solid #000; padding: 6px 10px;">รวมทั้งสิ้น</td>
+                    <td class="text-end text-danger" style="border: 1px solid #000; padding: 6px 10px;">${totalCancelledPrice > 0 ? totalCancelledPrice.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-'}</td>
+                </tr>`;
                         
             renderBuyChart(stats);
         }
 
 
-        // ✅ ปรับปรุงกราฟให้แสดง 3 รายการแยกสีชัดเจน
+        
         function renderBuyChart(stats) {
             const draw = () => {
                 const data = google.visualization.arrayToDataTable([

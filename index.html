@@ -1304,9 +1304,7 @@ searchInputs.forEach(input => {
             const navLinks = document.querySelectorAll('.nav-link'); 
             navLinks.forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
-            if(['pending', 'plan', 'buy'].includes(tabName)) {
-        allData = []; 
-    }
+           
 
 if(tabName === 'manual') {
         const navLinks = document.querySelectorAll('.nav-link');
@@ -1417,6 +1415,8 @@ function togglePendingType(type) {
         }
 
         
+window.dataCaches = { plan: null, buy: null }; // บังคับให้โหลดใหม่เฉพาะตอนที่มีการเซฟข้อมูล
+
 async function loadDataList(type, filterMode) {
     currentSystemType = type;
     const year = document.getElementById('searchYear').value.trim();
@@ -1425,22 +1425,21 @@ async function loadDataList(type, filterMode) {
     const targetBodyId = (filterMode === 'mytasks') ? 'myTaskTableBody' : 'tableBody';
     const tbody = document.getElementById(targetBodyId);
     
-   
-    const isCacheEmpty = (allData.length === 0);
-    const isTypeChanged = (window.lastLoadedType !== type);
-
-    if (isCacheEmpty || isTypeChanged) {
-        window.lastLoadedType = type; 
+    // 🌟 เช็คว่ามีแคชของแท็บนี้หรือยัง ถ้ายังไม่มีถึงจะยอมโหลดใหม่
+    if (!window.dataCaches[type]) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-primary me-2"></div>กำลังโหลดข้อมูลจาก Google Sheet...</td></tr>';
         try {
             const res = await fetch(`${API_URL}?action=get_${type}&t=${new Date().getTime()}`);
             const json = await res.json();
-            allData = (json.status === 'success' && json.data) ? json.data : (Array.isArray(json) ? json : []);
+            window.dataCaches[type] = (json.status === 'success' && json.data) ? json.data : (Array.isArray(json) ? json : []);
         } catch (e) {
             tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-5">โหลดข้อมูลไม่สำเร็จ: ${e.message}</td></tr>`;
             return;
         }
     }
+
+    // ดึงข้อมูลจากแคชมาใช้ทันที (ไวระดับมิลลิวินาที)
+    allData = window.dataCaches[type];
 
     if (allData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">ไม่พบข้อมูลในระบบ</td></tr>';
@@ -1585,7 +1584,11 @@ function renderTable(data, type, tableId = 'tableBody') {
                 return; 
             }
 
-            data.forEach((item, index) => {
+            // 🌟 ไอเดียของพี่: ตัดเอามาแสดงแค่ 50 รายการแรกสุด ป้องกันเว็บค้าง
+            const maxRender = 50;
+            const dataToRender = data.slice(0, maxRender);
+
+            dataToRender.forEach((item, index) => {
                 const name = getKey(item, ['ชื่อโครงการ', 'รายการ', 'ProjectName']);
                 const code = getKey(item, ['รหัสแผน', 'เลขที่', 'รหัส']);
                 const dept = getKey(item, ['กลุ่มงาน/หน่วยงาน', 'หน่วยงาน']);
@@ -1789,7 +1792,7 @@ if (result.status === 'success') {
     myModal.show();
 }
 
-   function renderTimeline(item) {
+function renderTimeline(item) {
     const container = document.getElementById('editFormContainer');
     const type = currentSystemType;
     const getVal = (keys) => {
@@ -1832,6 +1835,19 @@ if (result.status === 'success') {
         }
     }
 
+    // 🌟 ดักจับ Checkbox ของรอง ผอก. แปลง TRUE เป็น "✅ อนุมัติแล้ว"
+    let rawDeputy = getVal(['ตรวจสอบแล้ว (รอง)']);
+    let deputyDisplay = null;
+    if (rawDeputy) {
+        let cleanDep = rawDeputy.toString().toUpperCase().trim();
+        // ถ้าระบบเจอคำว่า TRUE, ✅, / หรือ อนุมัติ ให้โชว์คำนี้แทน
+        if (cleanDep === 'TRUE' || cleanDep === '✅' || cleanDep === '/' || cleanDep === 'อนุมัติ') {
+            deputyDisplay = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>อนุมัติแล้ว</span>';
+        } else if (cleanDep !== 'FALSE') {
+            deputyDisplay = rawDeputy; // เผื่อมีคนพิมพ์เป็นข้อความปกติ
+        }
+    }
+
     // ✅ ส่วนที่ 2: สร้างจุดบนไทม์ไลน์ตามประเภทแผน
     const steps = [];
     if (type === 'plan') {
@@ -1843,7 +1859,7 @@ if (result.status === 'success') {
         steps.push({ title: "5. จัดโครงการ", date: getVal(['วันที่จัดโครงการเสร็จสิ้น']), desc: "ดำเนินงานและสรุปผล", key: 'project_done' });
         steps.push({ title: "6. พัสดุรับเรื่อง", date: getVal(['วันที่รับเรื่องเข้า']), desc: "ดำเนินการจัดซื้อจัดจ้าง", key: 'supply_receive' });
         steps.push({ title: "7. การเงินรับ", date: getVal(['วันที่รับเรื่องเข้า (การเงิน)']), desc: "ตรวจเอกสารสั่งจ่าย", key: 'finance_receive' });
-        steps.push({ title: "8. รอง ผอก. ตรวจ", date: getVal(['ตรวจสอบแล้ว (รอง)']), desc: "อนุมัติสั่งจ่ายเช็ค", key: 'finance_check' });
+        steps.push({ title: "8. รอง ผอก. ตรวจ", date: deputyDisplay, desc: "อนุมัติสั่งจ่ายเช็ค", key: 'finance_check' }); // เปลี่ยนตรงนี้
         steps.push({ title: "9. การเงินจ่ายเช็ค", date: payDate, desc: payDesc, key: 'finance_pay', isPartial: isPartial });
     } else {
         // --- แผนครุภัณฑ์ 9 Step ---
@@ -1853,7 +1869,7 @@ if (result.status === 'success') {
         steps.push({ title: "4. ผอ. ลงนาม", date: getVal(['วันที่ ผอ. เซ็นเอกสาร']), desc: "ผอ. อนุมัติจัดซื้อ", key: 'admin_sign' });
         steps.push({ title: "5. พัสดุดำเนินการ", date: getVal(['วันที่งานสำเร็จ']), desc: "จัดซื้อจัดจ้างสำเร็จ", key: 'supply_done' });
         steps.push({ title: "6. การเงินรับ", date: getVal(['วันที่รับเรื่องเข้า (การเงิน)']), desc: "ตรวจรับเอกสารการเงิน", key: 'finance_receive' });
-        steps.push({ title: "7. รอง ผอก. ตรวจ", date: getVal(['ตรวจสอบแล้ว (รอง)']), desc: "อนุมัติสั่งจ่าย", key: 'finance_check' });
+        steps.push({ title: "7. รอง ผอก. ตรวจ", date: deputyDisplay, desc: "อนุมัติสั่งจ่าย", key: 'finance_check' }); // เปลี่ยนตรงนี้
         steps.push({ title: "8. จ่ายเงิน", date: payDate, desc: payDesc, key: 'finance_pay', isPartial: isPartial });
         steps.push({ title: "9. ปิดโครงการ", date: getVal(['หมายเหตุสรุป']), desc: "สรุปยอดคงเหลือ", key: 'final_note' });
     }

@@ -1011,14 +1011,14 @@
                 <div id="buyChart3D" style="width: 100%; height: 300px;"></div>
             </div>
 
-           <div class="mb-4">
+         <div class="mb-4">
             <table class="report-table" style="border: 1px solid #000; width: 100%; font-family: 'Sarabun', sans-serif;">
                 <thead>
                     <tr style="background-color: #e2e2e2; border: 1px solid #000;">
                         <td colspan="2" class="text-center py-2" style="border: 1px solid #000; text-decoration: underline; font-weight: bold;">ยังไม่ได้ดำเนินการ/ยกเลิก</td>
                         <td class="text-center" style="border: 1px solid #000; font-weight: bold;" id="pendingCancelCount">0</td>
                         <td class="text-center" style="border: 1px solid #000; font-weight: bold;">รายการ</td>
-                        <td class="text-center" style="border: 1px solid #000;"></td>
+                        <td class="text-center" style="border: 1px solid #000; font-weight: bold; font-size: 12px;">จำนวนเงินที่สั่งจ้าง/ซื้อ</td>
                     </tr>
                 </thead>
                 <tbody id="buyCancelledTableBody"></tbody>
@@ -1805,8 +1805,7 @@ function renderTimeline(item) {
     let payDesc = "ออกเช็คชำระค่าสินค้า";
     let isPartial = false;
 
-    // ระบบฉลาด: ดึงตัวเลขมาจากชีท sub โดยตรง (สำหรับครุภัณฑ์)
-    if (type === 'buy' && item['_subTotal'] > 0) {
+    if (item['_subTotal'] > 0) {
         const t = parseInt(item['_subTotal']) || 1;
         const p = parseInt(item['_subPaid']) || 0;
 
@@ -1819,7 +1818,6 @@ function renderTimeline(item) {
             payDate = item['_subDate'] || getVal(['วันที่จ่าย']);
         }
     } else {
-        // แผนปฏิบัติการ
         const rawCheque = (getKey(item, ['เลขที่เช็ค']) || '').toString().trim();
         const rawSubItems = (getKey(item, ['รายการย่อย']) || '').toString().trim();
         if (rawCheque !== '' && rawCheque !== '-') {
@@ -1840,11 +1838,23 @@ function renderTimeline(item) {
     let deputyDisplay = null;
     if (rawDeputy) {
         let cleanDep = rawDeputy.toString().toUpperCase().trim();
-        // ถ้าระบบเจอคำว่า TRUE, ✅, / หรือ อนุมัติ ให้โชว์คำนี้แทน
         if (cleanDep === 'TRUE' || cleanDep === '✅' || cleanDep === '/' || cleanDep === 'อนุมัติ') {
             deputyDisplay = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>อนุมัติแล้ว</span>';
         } else if (cleanDep !== 'FALSE') {
-            deputyDisplay = rawDeputy; // เผื่อมีคนพิมพ์เป็นข้อความปกติ
+            deputyDisplay = rawDeputy; 
+        }
+    }
+
+    // 🌟 ฟีเจอร์ใหม่: ดึงข้อมูล "เงินคงเหลือ" มาจัด Format ให้สวยงาม
+    let financeRemain = getVal(['เงินคงเหลือ']);
+    let remainHtml = '';
+    if (financeRemain && financeRemain !== '-') {
+        // ใส่ลูกน้ำและทศนิยม 2 ตำแหน่งอัตโนมัติ
+        let num = parseFloat(financeRemain.toString().replace(/,/g, ''));
+        if (!isNaN(num)) {
+            remainHtml = `<br><span class="text-primary mt-1 d-inline-block" style="font-weight: 800; font-size: 0.85rem;"><i class="fas fa-coins me-1"></i>คงเหลือ: ${num.toLocaleString(undefined, {minimumFractionDigits: 2})} ฿</span>`;
+        } else {
+            remainHtml = `<br><span class="text-primary mt-1 d-inline-block" style="font-weight: 800; font-size: 0.85rem;"><i class="fas fa-coins me-1"></i>คงเหลือ: ${financeRemain}</span>`;
         }
     }
 
@@ -1859,8 +1869,9 @@ function renderTimeline(item) {
         steps.push({ title: "5. จัดโครงการ", date: getVal(['วันที่จัดโครงการเสร็จสิ้น']), desc: "ดำเนินงานและสรุปผล", key: 'project_done' });
         steps.push({ title: "6. พัสดุรับเรื่อง", date: getVal(['วันที่รับเรื่องเข้า']), desc: "ดำเนินการจัดซื้อจัดจ้าง", key: 'supply_receive' });
         steps.push({ title: "7. การเงินรับ", date: getVal(['วันที่รับเรื่องเข้า (การเงิน)']), desc: "ตรวจเอกสารสั่งจ่าย", key: 'finance_receive' });
-        steps.push({ title: "8. รอง ผอก. ตรวจ", date: deputyDisplay, desc: "อนุมัติสั่งจ่ายเช็ค", key: 'finance_check' }); // เปลี่ยนตรงนี้
-        steps.push({ title: "9. การเงินจ่ายเช็ค", date: payDate, desc: payDesc, key: 'finance_pay', isPartial: isPartial });
+        steps.push({ title: "8. รอง ผอก. ตรวจ", date: deputyDisplay, desc: "อนุมัติสั่งจ่ายเช็ค", key: 'finance_check' });
+        // แทรกเงินคงเหลือใน Step 9
+        steps.push({ title: "9. การเงินจ่ายเช็ค", date: payDate, desc: payDesc + remainHtml, key: 'finance_pay', isPartial: isPartial });
     } else {
         // --- แผนครุภัณฑ์ 9 Step ---
         steps.push({ title: "1. เริ่มแผน", date: getVal(['ปีงบประมาณ']), desc: "ตั้งงบประมาณครุภัณฑ์", key: 'input_year' });
@@ -1869,9 +1880,10 @@ function renderTimeline(item) {
         steps.push({ title: "4. ผอ. ลงนาม", date: getVal(['วันที่ ผอ. เซ็นเอกสาร']), desc: "ผอ. อนุมัติจัดซื้อ", key: 'admin_sign' });
         steps.push({ title: "5. พัสดุดำเนินการ", date: getVal(['วันที่งานสำเร็จ']), desc: "จัดซื้อจัดจ้างสำเร็จ", key: 'supply_done' });
         steps.push({ title: "6. การเงินรับ", date: getVal(['วันที่รับเรื่องเข้า (การเงิน)']), desc: "ตรวจรับเอกสารการเงิน", key: 'finance_receive' });
-        steps.push({ title: "7. รอง ผอก. ตรวจ", date: deputyDisplay, desc: "อนุมัติสั่งจ่าย", key: 'finance_check' }); // เปลี่ยนตรงนี้
+        steps.push({ title: "7. รอง ผอก. ตรวจ", date: deputyDisplay, desc: "อนุมัติสั่งจ่าย", key: 'finance_check' });
         steps.push({ title: "8. จ่ายเงิน", date: payDate, desc: payDesc, key: 'finance_pay', isPartial: isPartial });
-        steps.push({ title: "9. ปิดโครงการ", date: getVal(['หมายเหตุสรุป']), desc: "สรุปยอดคงเหลือ", key: 'final_note' });
+        // แทรกเงินคงเหลือใน Step 9
+        steps.push({ title: "9. ปิดโครงการ", date: getVal(['หมายเหตุสรุป']), desc: "สรุปยอดคงเหลือ" + remainHtml, key: 'final_note' });
     }
 
     // ✅ ส่วนที่ 3: คำนวณสีของจุดไทม์ไลน์
@@ -3019,7 +3031,7 @@ function processPlanReport() {
                 
               // ✅ ดึงเฉพาะงานที่ "ยังไม่ได้ดำเนินการ" (แผนยังไม่กรอกวันที่ และไม่ได้ถูกยกเลิก) ลงตารางด้านล่าง
                 if(isPending && !isExplicitCancel) {
-                    cancelledList.push({ name: getKey(item, ['รายการ', 'ชื่อโครงการ']), dept, qty: getKey(item, ['จำนวน']) || '1', note: getKey(item, ['หมายเหตุสรุป']) || '-' });
+                    cancelledList.push({ name: getKey(item, ['รายการ', 'ชื่อโครงการ']), dept, qty: getKey(item, ['จำนวน']) || '1', note: getKey(item, ['หมายเหตุสรุป']) || '-', actPrice: bAct });
                 }
             });
 
@@ -3098,19 +3110,23 @@ function processPlanReport() {
             let countEl = document.getElementById('pendingCancelCount');
             if(countEl) countEl.innerText = cancelledList.length;
 
+            // ✅ แก้ไขให้ดึง "จำนวนเงินที่สั่งจ้าง / ซื้อ" มาแสดงแทนคำว่า "งาน"
             cancelledList.forEach((p, i) => {
                 let rawQty = (p.qty || '1').toString().trim();
-                let match = rawQty.match(/^([\\d.,]+)\\s*(.*)$/);
+                let match = rawQty.match(/^([\d.,]+)\s*(.*)$/);
                 let num = match ? match[1] : rawQty;
-                let unit = (match && match[2] && match[2].trim() !== '') ? match[2] : 'งาน'; 
+                
+                // ดึงราคาสั่งซื้อมาจัด Format ให้มีลูกน้ำ (ถ้าไม่มีข้อมูลให้โชว์ 0.00)
+                let actualPrice = parseFloat((p.actPrice || '0').toString().replace(/,/g,'')) || 0;
+                let formattedPrice = actualPrice > 0 ? actualPrice.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
                 
                 buyCancelledBody.innerHTML += `
                     <tr style="border: 1px solid #000;">
                         <td class="text-center" style="width: 5%; border: 1px solid #000; padding: 6px;">${i+1}</td>
-                        <td class="text-start" style="width: 45%; border: 1px solid #000; padding: 6px 10px;">${p.name}</td>
+                        <td class="text-start" style="width: 35%; border: 1px solid #000; padding: 6px 10px;">${p.name}</td>
                         <td class="text-start" style="width: 25%; border: 1px solid #000; padding: 6px 10px;">${p.dept}</td>
-                        <td class="text-center" style="width: 10%; border: 1px solid #000; padding: 6px;">${num}</td>
-                        <td class="text-center" style="width: 15%; border: 1px solid #000; padding: 6px;">${unit}</td>
+                        <td class="text-center" style="width: 15%; border: 1px solid #000; padding: 6px;">${num}</td>
+                        <td class="text-end" style="width: 20%; border: 1px solid #000; padding: 6px 10px;">${formattedPrice}</td>
                     </tr>`;
             });
                         

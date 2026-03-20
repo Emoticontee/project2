@@ -641,6 +641,105 @@
     .timeline-container-box::after { left: 12px; }
     .right-box { left: 0%; }
 }
+
+
+
+
+/* ========================================================
+   🌟 โค้ดใหม่: การตกแต่งแถบเมนูด้านซ้าย (Sidebar UI)
+   ======================================================== */
+.sidebar-wrapper .nav-link {
+    padding: 12px 18px;
+    border-radius: 12px !important;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+}
+.sidebar-wrapper .nav-link:hover {
+    background-color: #f8fafc;
+    color: #4f46e5;
+    transform: translateX(6px); /* เอฟเฟกต์เลื่อนขวาเบาๆ เวลาชี้ */
+}
+.sidebar-wrapper .nav-link.active {
+    background: var(--primary-gradient);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    transform: translateY(-2px);
+}
+.sidebar-wrapper .tab-icon {
+    width: 26px;
+    text-align: center;
+    margin-right: 12px;
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+.sidebar-wrapper .nav-link.active .tab-icon {
+    opacity: 1;
+}
+
+/* รองรับการเปิดบนมือถือและแท็บเล็ต (หดเป็นแนวนอน) */
+@media (max-width: 768px) {
+    .sidebar-wrapper { width: 100% !important; margin-bottom: -10px; }
+    .sidebar-wrapper .bg-white { position: static !important; padding: 10px !important; }
+    .sidebar-wrapper .nav-pills { 
+        flex-direction: row !important; 
+        overflow-x: auto; 
+        flex-wrap: nowrap; 
+        padding-bottom: 5px; 
+    }
+    .sidebar-wrapper .nav-link { white-space: nowrap; width: auto !important; padding: 8px 16px; margin-right: 8px; }
+    .sidebar-wrapper .nav-item.mt-2.pt-2.border-top { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
+}
+
+
+.input-group-with-icon i { font-size: 1.1rem; }
+        .form-floating > .form-control:focus ~ label::after, 
+        .form-floating > .form-control:not(:placeholder-shown) ~ label::after, 
+        .form-floating > .form-select ~ label::after {
+            background-color: transparent !important;
+        }
+        .form-floating.input-group-with-icon .form-control:focus + label,
+        .form-floating.input-group-with-icon .form-control:not(:placeholder-shown) + label,
+        .form-floating.input-group-with-icon .form-select + label {
+            left: 15px !important;
+            padding-left: 0 !important;
+        }
+        .form-floating > .form-control:focus,
+        .form-floating > .form-select:focus {
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
+        }
+        .modal .btn-gradient, .modal .btn-primary {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1) !important;
+        }
+        /* 🌟 โค้ดใหม่: ปรับปุ่ม "ดูข้อมูล" ให้สไตล์เหมือนปุ่มจัดการ/รับเรื่อง (สีฟ้า) */
+        .btn-view {
+            background-color: #3b82f6; color: white;
+            border: none; padding: 5px 15px; border-radius: 50px; font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;
+        }
+        .btn-view:hover { 
+            background-color: #2563eb; transform: translateY(-1px); color: white; 
+        }
+
+
+        /* 🌟 โค้ดใหม่: ปรับแต่งหน้าเพิ่มข้อมูล (Add Form) ให้เป็น Card สวยๆ */
+        .card-form {
+            background: #ffffff; border-radius: 16px; padding: 25px; 
+            border: 1px solid #f1f5f9; box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
+            height: 100%;
+        }
+        .form-group-title {
+            font-size: 1.1rem; font-weight: 700; color: #3b82f6; 
+            background: transparent; border-bottom: 2px solid #e2e8f0; 
+            padding: 0 0 10px 0; margin-bottom: 18px; border-radius: 0;
+        }
+        .form-group-title.text-success { color: #10b981 !important; border-bottom-color: #d1fae5; }
     </style>
 </head>
 <body>
@@ -692,33 +791,37 @@
                     <i class="fas fa-user-circle fs-5"></i>
                     <span id="displayUserName">User</span>
                 </div>
-                <button onclick="checkDataStatus()" class="btn btn-light text-muted rounded-circle shadow-sm" style="width: 40px; height: 40px;" title="Check Status"><i class="fas fa-bug"></i></button>
+
                 <button onclick="handleLogout()" class="btn btn-outline-danger rounded-pill px-4 shadow-sm fw-bold">ออก</button>
             </div>
         </nav>
 
         
-        <div class="px-4">
-            <ul class="nav nav-tabs justify-content-start" id="mainTabs">
-                <li class="nav-item"><button class="nav-link" onclick="switchTab('mytasks')"><i class="fas fa-briefcase tab-icon"></i>งานของฉัน</button></li>
-                <li class="nav-item"><button class="nav-link active" onclick="switchTab('pending')"><i class="fas fa-clock tab-icon"></i>รายการรอดำเนินการ</button></li>
-                <li class="nav-item"><button class="nav-link" onclick="switchTab('plan')"><i class="fas fa-clipboard-list tab-icon"></i>แผนปฏิบัติการ</button></li>
-                <li class="nav-item"><button class="nav-link" onclick="switchTab('buy')"><i class="fas fa-cubes tab-icon"></i>แผนครุภัณฑ์</button></li>
-                <li class="nav-item"><button class="nav-link" onclick="switchTab('report')"><i class="fas fa-chart-pie tab-icon"></i>รายงานสรุปผล</button></li>
-                <li class="nav-item" id="nav-admin" style="display:none;"><button class="nav-link" onclick="switchTab('admin')"><i class="fas fa-users-cog tab-icon"></i>จัดการผู้ใช้งาน</button></li>
-                <li class="nav-item"><button class="nav-link" onclick="switchTab('manual')"><i class="fas fa-book tab-icon"></i>คู่มือการใช้งาน</button></li>
-            </ul>
-        </div>
+       <div class="px-4 d-flex flex-column flex-md-row gap-4">
+            
+            <div class="sidebar-wrapper" style="width: 250px; flex-shrink: 0;">
+                <div class="bg-white rounded-4 shadow-sm p-3 sticky-top" style="top: 20px; z-index: 10;">
+                    <h6 class="fw-bold text-muted mb-3 px-2 small text-uppercase" style="letter-spacing: 1px;">เมนูระบบ</h6>
+                    <ul class="nav flex-column nav-pills gap-1" id="mainTabs">
+                        <li class="nav-item"><button class="nav-link w-100 text-start" onclick="switchTab('mytasks')"><i class="fas fa-briefcase tab-icon"></i> งานของฉัน</button></li>
+                        <li class="nav-item"><button class="nav-link w-100 text-start active" onclick="switchTab('pending')"><i class="fas fa-clock tab-icon"></i> รอดำเนินการ</button></li>
+                        <li class="nav-item"><button class="nav-link w-100 text-start" onclick="switchTab('plan')"><i class="fas fa-clipboard-list tab-icon"></i> แผนปฏิบัติการ</button></li>
+                        <li class="nav-item"><button class="nav-link w-100 text-start" onclick="switchTab('buy')"><i class="fas fa-cubes tab-icon"></i> แผนครุภัณฑ์</button></li>
+                        <li class="nav-item"><button class="nav-link w-100 text-start" onclick="switchTab('report')"><i class="fas fa-chart-pie tab-icon"></i> รายงานสรุปผล</button></li>
+                        <li class="nav-item" id="nav-admin" style="display:none;"><button class="nav-link w-100 text-start text-danger" onclick="switchTab('admin')"><i class="fas fa-users-cog tab-icon"></i> จัดการผู้ใช้งาน</button></li>
+                        <li class="nav-item mt-2 pt-2 border-top"><button class="nav-link w-100 text-start bg-light text-dark shadow-none" onclick="switchTab('manual')"><i class="fas fa-book tab-icon"></i> คู่มือการใช้งาน</button></li>
+                    </ul>
+                </div>
+            </div>
 
-        
-        <div id="contentArea" class="px-4 pb-5 pt-2">
+            <div id="contentArea" class="flex-grow-1 pb-5 w-100" style="min-width: 0;">
 
             
             <div id="myTaskPage" class="page-section" style="display:none;"> 
                 <div class="header-bar" style="border-left-color: #eab308; background-color: #fff9e6;">
                     <div>
-                        <h4 class="fw-bold m-0 text-warning text-dark"><i class="fas fa-briefcase me-2"></i>งานของฉัน (ที่ต้องดำเนินการ)</h4>
-                        <small class="text-muted">รายการที่ส่งมาถึงหน่วยงานของคุณและรอการดำเนินการ</small>
+                        <h4 class="fw-bold m-0 text-warning text-dark"><i class="fas fa-briefcase me-2"></i>งานของฉัน </h4>
+                        <small class="text-muted">รายการที่ส่งมาถึงหน่วยงานของคุณ และรอการดำเนินการ</small>
                     </div>
                     <div>
                         <div class="btn-group shadow-sm">
@@ -727,17 +830,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-center p-3 mb-3">
-                    <i class="fas fa-info-circle me-3 fs-5 text-info"></i> 
-                    <div>
-                        <strong>คำแนะนำ:</strong> หน้านี้แสดงเฉพาะรายการที่ <u>ขั้นตอนปัจจุบันอยู่ที่หน่วยงานของคุณ</u> คุณสามารถกดปุ่ม <strong>"รับเรื่อง"</strong> หรือ <strong>"บันทึกผล"</strong> เพื่อบันทึกความคืบหน้าได้
-                    </div>
-                </div>
+                
                 <div id="myTaskResultArea">
                     <div class="card table-card">
                         <div class="table-responsive">
                             <table class="table table-custom mb-0 align-middle">
-                                <thead><tr><th style="width:80px;">ปี</th><th style="width:120px;">รหัส</th><th>ชื่อรายการ</th><th style="width:200px;">หน่วยงานเจ้าของ</th><th class="text-center" style="width:150px;">สถานะปัจจุบัน</th><th class="text-center" style="width:150px;">การดำเนินการ</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width:5%; white-space:nowrap;">ปี</th>
+                                        <th style="width:12%; white-space:nowrap;">รหัส</th>
+                                        <th style="width:38%;">ชื่อรายการ</th>
+                                        <th style="width:20%;">หน่วยงานเจ้าของ</th>
+                                        <th class="text-center" style="width:15%;">สถานะปัจจุบัน</th>
+                                        <th class="text-center" style="width:10%; white-space:nowrap;">การดำเนินการ</th>
+                                    </tr>
+                                </thead>
                                 <tbody id="myTaskTableBody"><tr><td colspan="6" class="text-center py-5 text-muted">กำลังโหลดข้อมูล...</td></tr></tbody>
                             </table>
                         </div>
@@ -762,56 +869,62 @@
 
             
             <div id="searchPage" class="page-section" style="display:block;"> 
-                <div class="header-bar">
-                    <div>
-                        <h4 class="fw-bold m-0" style="color: #1e293b;" id="pageTitle">รายการรอดำเนินการ</h4>
-                        <small class="text-muted">จัดการและติดตามสถานะโครงการ</small>
-                    </div>
+<div class="header-bar flex-column align-items-stretch mb-4 p-0 overflow-hidden" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: #ffffff;">
+                    <div style="height: 6px; background: var(--primary-gradient); width: 100%;"></div>
                     
-                    <div id="pendingToggleArea" style="display:none; margin-right: 15px;">
-                        <div class="btn-group shadow-sm">
-                            <button class="btn btn-sm btn-outline-primary active" id="btnPendingPlan" onclick="togglePendingType('plan')">แผนปฏิบัติการ</button>
-                            <button class="btn btn-sm btn-outline-primary" id="btnPendingBuy" onclick="togglePendingType('buy')">ครุภัณฑ์</button>
-                        </div>
-                    </div>
-
-                   <button id="btnAddData" class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4" onclick="goToAddPage()" style="display:none;"><i class="fas fa-plus-circle me-2"></i>เพิ่มข้อมูล</button>
-             </div>
-           
-            
-                
-                <div class="search-container">
-                    <div class="row g-3">
-                        <div class="col-md-2">
-                            <label class="form-label compact-label ms-1">ปีงบประมาณ</label>
-                            <input type="text" id="searchYear" class="form-control form-control-sm" placeholder="เช่น 68">
-                        </div>
-                        <div class="col-md-8">
-                            <label class="form-label compact-label ms-1">คำค้นหา</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                                <input type="text" id="searchKeyword" class="form-control border-start-0" placeholder="ชื่อโครงการ, รหัส, หรือหน่วยงาน...">
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-center w-100 mb-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-layer-group fs-5"></i>
+                                </div>
+                                <div>
+                                    <h4 class="fw-bold m-0" style="color: #1e293b;" id="pageTitle">รายการรอดำเนินการ</h4>
+                                    <small class="text-muted">จัดการและติดตามสถานะโครงการ</small>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center gap-3">
+                                <div id="pendingToggleArea" style="display:none;">
+                                    <div class="btn-group shadow-sm border rounded-pill p-1 bg-light">
+                                        <button class="btn btn-sm btn-outline-primary active border-0 rounded-pill px-3 fw-bold" id="btnPendingPlan" onclick="togglePendingType('plan')">แผนปฏิบัติการ</button>
+                                        <button class="btn btn-sm btn-outline-primary border-0 rounded-pill px-3 fw-bold" id="btnPendingBuy" onclick="togglePendingType('buy')">ครุภัณฑ์</button>
+                                    </div>
+                                </div>
+                                <button id="btnAddData" class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4 py-2 hover-scale" onclick="goToAddPage()" style="display:none;"><i class="fas fa-plus-circle me-2"></i> เพิ่มข้อมูล</button>
                             </div>
                         </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button onclick="triggerSearch()" id="btnSearch" class="btn btn-primary btn-sm w-100 fw-bold py-2 rounded-3 shadow-sm">ค้นหา</button>
+
+                        <div class="row g-3 w-100 m-0 p-4 rounded-4" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                            <div class="col-md-2 ps-0">
+                                <label class="form-label small fw-bold text-muted ms-1"><i class="far fa-calendar-alt me-1 text-primary"></i> ปีงบประมาณ</label>
+                                <input type="text" id="searchYear" class="form-control border-0 shadow-sm rounded-3 py-2" placeholder="เช่น 68" style="font-size: 0.95rem;">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small fw-bold text-muted ms-1"><i class="fas fa-keyboard me-1 text-primary"></i> คำค้นหา</label>
+                                <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                                    <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="fas fa-search"></i></span>
+                                    <input type="text" id="searchKeyword" class="form-control border-0 py-2" placeholder="พิมพ์ชื่อโครงการ, รหัส, หรือหน่วยงาน..." style="font-size: 0.95rem;">
+                                </div>
+                            </div>
+                            <div class="col-md-2 pe-0 d-flex align-items-end">
+                                <button onclick="triggerSearch()" id="btnSearch" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm hover-scale" style="font-size: 0.95rem;">
+                                    ค้นหา
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="pendingAlert" class="alert alert-warning border-0 shadow-sm rounded-3 d-flex align-items-center p-2 mb-3" style="display:block; background-color: #fffbeb; border-left: 5px solid #f59e0b;">
-                    <i class="fas fa-exclamation-triangle me-3 fs-5 text-warning"></i> 
-                    <div class="small">
-                        <strong>แจ้งเตือน:</strong> แสดงเฉพาะรายการที่ <span class="text-danger fw-bold">ยังไม่เสร็จสิ้น</span>
-                        <span id="displayCount" class="float-end badge bg-danger rounded-pill">0 รายการ</span>
-                    </div>
-                </div>
+                
 
                 <div id="resultArea">
                     <div class="card table-card">
                         <div class="table-responsive">
                             <table class="table table-custom mb-0 align-middle">
                                 <thead><tr><th style="width:80px;">ปี</th><th id="th-id-col" style="width:120px;">รหัส</th><th>ชื่อรายการ</th><th style="width:200px;">หน่วยงาน</th><th class="text-center" style="width:150px;">สถานะ</th><th class="text-center" style="width:150px;">จัดการ</th></tr></thead>
+                                
+                                
                                 <tbody id="tableBody"><tr><td colspan="6" class="text-center py-5 text-muted">กำลังโหลดข้อมูล...</td></tr></tbody>
                             </table>
                         </div>
@@ -819,42 +932,145 @@
                 </div>
             </div>
 
-            <!-- ADD PAGE -->
             <div id="addPage" class="page-section" style="display:none;">
-                <div class="header-bar"><div><button onclick="cancelAdd()" class="btn btn-light rounded-circle shadow-sm me-3"><i class="fas fa-arrow-left"></i></button><span class="fw-bold fs-5 text-success">เพิ่มข้อมูลใหม่</span></div></div>
-                <div class="add-form-wrapper pt-3">
-                    <h5 class="fw-bold mb-3 border-bottom pb-2 text-primary"><i class="fas fa-edit me-2"></i>แบบฟอร์มบันทึกข้อมูล</h5>
-                    
-                    
+                <div class="header-bar d-flex align-items-center mb-4 p-4 rounded-4 border-0 shadow-sm bg-white">
+                    <button onclick="cancelAdd()" class="btn btn-light rounded-circle shadow-sm me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; transition: 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"><i class="fas fa-arrow-left text-muted"></i></button>
+                    <div>
+                        <h4 class="fw-bold m-0 text-primary">เพิ่มข้อมูลใหม่</h4>
+                        <small class="text-muted">แบบฟอร์มบันทึกข้อมูลเข้าระบบ</small>
+                    </div>
+                </div>
+                
+                <div class="add-form-wrapper">
                     <div id="adminPlanFormContainer" style="display:none;"></div>
                     <div id="adminBuyFormContainer" style="display:none;"></div>
+                    
                     <div id="normalAddFormContainer">
                         <form id="addForm">
-                            <div class="row g-3">
-                                <div class="col-md-4"><label class="form-label compact-label">ปีงบประมาณ</label><input type="text" name="input_year" class="form-control form-control-sm role-common" required></div>
-                                <div class="col-md-4"><label class="form-label compact-label">รหัสแผน</label><input type="text" name="input_code" class="form-control form-control-sm role-common" required></div>
-                                <div class="col-md-4"><label class="form-label compact-label">หน่วยงาน</label><input type="text" name="input_dept" class="form-control form-control-sm role-common"></div>
-                                <div class="col-md-12 plan-field"><label class="form-label compact-label">ยุทธศาสตร์</label><input type="text" name="input_strat" class="form-control form-control-sm role-common"></div>
-                                <div class="col-md-6 plan-field"><label class="form-label compact-label">เริ่มโครงการ</label><input type="text" name="input_start" class="form-control form-control-sm text-center date-picker-thai role-plan" placeholder="วว/ดด/ปปปป"></div>
-                                <div class="col-md-6 plan-field"><label class="form-label compact-label">สิ้นสุดโครงการ</label><input type="text" name="input_end" class="form-control form-control-sm text-center date-picker-thai role-plan" placeholder="วว/ดด/ปปปป"></div>
-                                <div class="col-12"><label class="form-label compact-label">ชื่อโครงการ</label><input type="text" name="input_name" class="form-control form-control-sm role-common" required></div>
-                                
-                                <!-- NEW FIELDS FOR BUY -->
-                                <div class="col-md-6 buy-field" style="display:none;"><label class="form-label compact-label">สถานที่</label><input type="text" name="input_place" class="form-control form-control-sm role-common"></div>
-                                <div class="col-md-6 buy-field" style="display:none;"><label class="form-label compact-label">จำนวน</label><input type="text" name="input_qty" class="form-control form-control-sm role-common"></div>
-                                
-                                <div class="col-12"><hr class="my-1 text-muted"></div>
-                                <!-- Fix: Allow User to input budget -->
-                                <div class="col-md-4"><label class="form-label compact-label text-primary">งบ/ราคา (แผน)</label><input type="number" name="input_budget_plan" class="form-control form-control-sm role-common"></div>
-                                <div class="col-md-4 plan-field"><label class="form-label compact-label text-primary">งบ (ผอ.)</label><input type="number" name="input_budget_approve" class="form-control form-control-sm role-finance"></div>
-                                <div class="col-md-4 plan-field"><label class="form-label compact-label text-primary">งบ (โครงการ)</label><input type="number" name="input_budget_project" class="form-control form-control-sm role-finance"></div>
-                                <div class="col-md-6"><label class="form-label compact-label text-primary">หมวดเงิน</label><select class="form-select form-select-sm role-common" name="input_cat"><option value="งบดำเนินงาน">งบดำเนินงาน</option><option value="งบลงทุน">งบลงทุน</option><option value="งบอุดหนุน">งบอุดหนุน</option><option value="วัสดุ">วัสดุ</option><option value="ครุภัณฑ์">ครุภัณฑ์</option></select></div>
-                                <div class="col-md-6"><label class="form-label compact-label text-primary">ชนิด</label><input type="text" name="input_type" class="form-control form-control-sm role-common" value="ทั่วไป"></div>
-                                
-                                <div class="col-12 mt-4 text-center">
-                                    <button type="button" class="btn btn-light btn-sm px-4 me-3 rounded-pill shadow-sm" onclick="cancelAdd()">ยกเลิก</button>
-                                    <button type="button" class="btn btn-gradient btn-sm px-5 fw-bold rounded-pill shadow-lg" onclick="submitNewData()">บันทึกข้อมูล</button>
+                            <div class="card-form mb-4">
+                                <div class="form-group-title"><i class="fas fa-file-alt me-2"></i> ข้อมูลรายละเอียดโครงการ</div>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="far fa-calendar-alt text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_year" class="form-control rounded-3 ps-5 role-common" id="addInputYear" placeholder="ปีงบประมาณ" required>
+                                            <label for="addInputYear" class="ps-5 text-muted">ปีงบประมาณ</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-barcode text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_code" class="form-control rounded-3 ps-5 role-common" id="addInputCode" placeholder="รหัสแผน" required>
+                                            <label for="addInputCode" class="ps-5 text-muted">รหัสแผน / เลขที่</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-building text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_dept" class="form-control rounded-3 ps-5 role-common" id="addInputDept" placeholder="หน่วยงาน">
+                                            <label for="addInputDept" class="ps-5 text-muted">หน่วยงาน</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-12 plan-field">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-bullseye text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_strat" class="form-control rounded-3 ps-5 role-common" id="addInputStrat" placeholder="ยุทธศาสตร์">
+                                            <label for="addInputStrat" class="ps-5 text-muted">ยุทธศาสตร์</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 plan-field">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-play text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_start" class="form-control rounded-3 ps-5 date-picker-thai role-plan" id="addInputStart" placeholder="เริ่มโครงการ">
+                                            <label for="addInputStart" class="ps-5 text-muted">เริ่มโครงการ</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 plan-field">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-stop text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_end" class="form-control rounded-3 ps-5 date-picker-thai role-plan" id="addInputEnd" placeholder="สิ้นสุดโครงการ">
+                                            <label for="addInputEnd" class="ps-5 text-muted">สิ้นสุดโครงการ</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-project-diagram text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_name" class="form-control rounded-3 ps-5 role-common" id="addInputName" placeholder="ชื่อโครงการ" required>
+                                            <label for="addInputName" class="ps-5 text-muted">ชื่อโครงการ / รายการ</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 buy-field" style="display:none;">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-map-marker-alt text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_place" class="form-control rounded-3 ps-5 role-common" id="addInputPlace" placeholder="สถานที่">
+                                            <label for="addInputPlace" class="ps-5 text-muted">สถานที่</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 buy-field" style="display:none;">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-cubes text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_qty" class="form-control rounded-3 ps-5 role-common" id="addInputQty" placeholder="จำนวน">
+                                            <label for="addInputQty" class="ps-5 text-muted">จำนวน</label>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="card-form mb-4">
+                                <div class="form-group-title text-success"><i class="fas fa-coins me-2"></i> ข้อมูลงบประมาณและหมวดเงิน</div>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-money-bill-wave text-success opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="number" name="input_budget_plan" class="form-control rounded-3 ps-5 role-common" id="addInputBudget1" placeholder="งบ/ราคา (แผน)">
+                                            <label for="addInputBudget1" class="ps-5 text-muted">งบ/ราคา (แผน)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 plan-field">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-check-double text-success opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="number" name="input_budget_approve" class="form-control rounded-3 ps-5 role-finance" id="addInputBudget2" placeholder="งบ (ผอ.)">
+                                            <label for="addInputBudget2" class="ps-5 text-muted">งบ (ผอ. อนุมัติ)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 plan-field">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-wallet text-success opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="number" name="input_budget_project" class="form-control rounded-3 ps-5 role-finance" id="addInputBudget3" placeholder="งบ (โครงการ)">
+                                            <label for="addInputBudget3" class="ps-5 text-muted">งบ (โครงการ)</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-layer-group text-success opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <select class="form-select rounded-3 ps-5 role-common" name="input_cat" id="addInputCat">
+                                                <option value="งบดำเนินงาน">งบดำเนินงาน</option>
+                                                <option value="งบลงทุน">งบลงทุน</option>
+                                                <option value="งบอุดหนุน">งบอุดหนุน</option>
+                                                <option value="วัสดุ">วัสดุ</option>
+                                                <option value="ครุภัณฑ์">ครุภัณฑ์</option>
+                                            </select>
+                                            <label for="addInputCat" class="ps-5 text-muted">หมวดเงิน</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                                            <i class="fas fa-tags text-success opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                            <input type="text" name="input_type" class="form-control rounded-3 ps-5 role-common" id="addInputType" value="ทั่วไป" placeholder="ชนิด">
+                                            <label for="addInputType" class="ps-5 text-muted">ชนิด</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4 text-end">
+                                <button type="button" class="btn btn-light rounded-pill px-4 shadow-sm me-2 hover-scale" onclick="cancelAdd()"><i class="fas fa-times me-2"></i>ยกเลิก</button>
+                                <button type="button" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm hover-scale" onclick="submitNewData()"><i class="fas fa-save me-2"></i>บันทึกข้อมูล</button>
                             </div>
                         </form>
                     </div>
@@ -1021,46 +1237,42 @@
                         <td class="text-center" style="border: 1px solid #000; font-weight: bold; font-size: 12px;">จำนวนเงินที่สั่งจ้าง/ซื้อ</td>
                     </tr>
                 </thead>
-                <tbody id="buyCancelledTableBody"></tbody>
+               
+
+
+
+
+            <tbody id="buyCancelledTableBody"></tbody>
             </table>
         </div>
 
-        </div> 
-    </div> 
-</div> 
+        </div> </div> </div> </div> <div id="adminPage" class="page-section" style="display:none;">
+    <div class="header-bar">
+        <div>
+            <h4 class="fw-bold m-0 text-primary"><i class="fas fa-users-cog me-2"></i>จัดการผู้ใช้งานระบบ</h4>
+            <small class="text-muted">เพิ่ม ลบ แก้ไขสิทธิ์การเข้าใช้งาน</small>
+        </div>
+        <button class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4" onclick="openAdminModal('add')"><i class="fas fa-user-plus me-2"></i>เพิ่มผู้ใช้งาน</button>
+    </div>
+    <div class="card table-card">
+        <div class="table-responsive">
+            <table class="table table-custom mb-0 align-middle">
+               <thead><tr><th style="width:60px;">#</th><th>Username</th><th>Password</th><th>ชื่อ-นามสกุล</th><th class="text-center">สิทธิ์การใช้งาน (Role)</th><th class="text-center" style="width:150px;">จัดการ</th></tr></thead>
+                <tbody id="adminTableBody"><tr><td colspan="5" class="text-center py-5 text-muted">กำลังโหลดข้อมูลผู้ใช้...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-
-
-
-
-
-            <!-- ADMIN PAGE -->
-           </div> </div> </div> </div> <div id="adminPage" class="page-section" style="display:none;">
-                <div class="header-bar">
-                    <div>
-                        <h4 class="fw-bold m-0 text-primary"><i class="fas fa-users-cog me-2"></i>จัดการผู้ใช้งานระบบ</h4>
-                        <small class="text-muted">เพิ่ม ลบ แก้ไขสิทธิ์การเข้าใช้งาน</small>
-                    </div>
-                    <button class="btn btn-gradient fw-bold shadow-sm rounded-pill px-4" onclick="openAdminModal('add')"><i class="fas fa-user-plus me-2"></i>เพิ่มผู้ใช้งาน</button>
-                </div>
-                <div class="card table-card">
-                    <div class="table-responsive">
-                        <table class="table table-custom mb-0 align-middle">
-                           <thead><tr><th style="width:60px;">#</th><th>Username</th><th>Password</th><th>ชื่อ-นามสกุล</th><th class="text-center">สิทธิ์การใช้งาน (Role)</th><th class="text-center" style="width:150px;">จัดการ</th></tr></thead>
-                            <tbody id="adminTableBody"><tr><td colspan="5" class="text-center py-5 text-muted">กำลังโหลดข้อมูลผู้ใช้...</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+</div> </div> </div>
 
 
             
         </div> 
     </div>
 
-    <!-- Modals -->
-<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+  <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="modalProjectName">รายละเอียดโครงการ</h5>
@@ -1080,53 +1292,170 @@
 
             <div id="modalToolbar" class="modal-toolbar" style="display:none; background: #fffbeb; border-bottom: 1px solid #e2e8f0; border-top: none;"></div>
 
-            <div class="modal-body p-4">
-                <div id="editFormContainer"></div>
+           <div class="modal-body p-4">
+                <div class="row">
+                    <div class="col-lg-12 transition-all" id="mainFormColumn" style="transition: width 0.3s ease;">
+                        <div id="editFormContainer"></div>
+                    </div>
+                    
+                    <div class="col-lg-7" id="subItemsColumn" style="display:none;">
+                        <div id="subItemsContainer" class="h-100 ps-lg-3 border-start" style="display:none;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold text-primary"><i class="fas fa-list-ol me-2"></i>รายการย่อยของโครงการ</h5>
+                                <button class="btn btn-sm btn-primary rounded-pill shadow-sm" onclick="openSubModal('add')" id="btnAddSubItem"><i class="fas fa-plus me-1"></i> เพิ่มรายการย่อย</button>
+                            </div>
+                            <div class="table-responsive rounded-3 border bg-white">
+                                <table class="table table-hover table-sm mb-0 align-middle" style="font-size: 13px;">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="min-width: 150px;">รายการย่อย</th>
+                                            <th style="min-width: 150px;">บ.ร้านค้า/เลข PO</th>
+                                            <th class="text-end" style="min-width: 100px;">ยอดสั่งซื้อ</th>
+                                            <th class="text-center" style="min-width: 100px;">พัสดุสำเร็จ</th>
+                                            <th class="text-center" style="min-width: 80px;">รอง ผอก.</th>
+                                            <th class="text-center" style="min-width: 100px;">เลขที่เช็ค</th>
+                                            <th class="text-center" style="min-width: 100px;">วันที่จ่าย</th>
+                                            <th class="text-center" style="min-width: 80px;">จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="subItemsTableBody">
+                                        <tr><td colspan="8" class="text-center text-muted py-3">กำลังโหลดรายการย่อย...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
+
+
+<div class="modal fade" id="subItemModal" tabindex="-1" style="z-index: 1060;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>จัดการข้อมูลรายการย่อย</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <form id="subItemForm" class="card p-3 border-0 shadow-sm">
+                        <input type="hidden" id="subItemMode">
+                        <input type="hidden" id="subItemIndex">
+                        <div class="row g-3">
+                            <div class="col-12"><h6 class="text-warning fw-bold border-bottom pb-2 mt-2"><i class="fas fa-box me-1"></i> 1. ส่วนงานพัสดุ</h6></div>
+                            <div class="col-md-12"><label class="form-label small fw-bold text-muted">รายการย่อย</label><input type="text" class="form-control form-control-sm role-sub-supply" id="sub_name"></div>
+                            <div class="col-md-6"><label class="form-label small fw-bold text-muted">เลขครุภัณฑ์</label><input type="text" class="form-control form-control-sm role-sub-supply" id="sub_asset"></div>
+                            <div class="col-md-6"><label class="form-label small fw-bold text-muted">สถานะรายการย่อย</label><select class="form-select form-select-sm role-sub-supply" id="sub_status"><option value="">-- เลือกสถานะ --</option></select></div>
+                            <div class="col-md-12"><label class="form-label small fw-bold text-muted">ชื่อบริษัท / ร้าน / บุคคล</label><input type="text" class="form-control form-control-sm role-sub-supply" id="sub_company"></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">เลขที่สั่งจ้าง (PO)/สัญญา</label><input type="text" class="form-control form-control-sm role-sub-supply" id="sub_po"></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">ยอดเงินสั่งจ้าง / ซื้อ</label><input type="number" class="form-control form-control-sm role-sub-supply" id="sub_price"></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">วันที่ตรวจรับพัสดุสำเร็จ</label><input type="text" class="form-control form-control-sm date-picker-thai text-center role-sub-supply" id="sub_done_date" placeholder="วว/ดด/ปปปป"></div>
+                            
+                            <div class="col-12"><h6 class="text-success fw-bold border-bottom pb-2 mt-3"><i class="fas fa-file-invoice-dollar me-1"></i> 2. ส่วนงานการเงิน (รับเรื่อง)</h6></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">วันที่รับเรื่องเข้า (การเงิน)</label><input type="text" class="form-control form-control-sm date-picker-thai text-center role-sub-finance" id="sub_fin_receive" placeholder="วว/ดด/ปปปป"></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">สถานะการเงิน</label><select class="form-select form-select-sm role-sub-finance" id="sub_fin_status"><option value="">-- เลือก --</option><option value="อนุมัติ">อนุมัติ</option><option value="ไม่อนุมัติ">ไม่อนุมัติ</option></select></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">วันที่รับคืนจากพัสดุ</label><input type="text" class="form-control form-control-sm date-picker-thai text-center role-sub-finance" id="sub_fin_return" placeholder="วว/ดด/ปปปป"></div>
+
+                            <div class="col-12"><h6 class="text-info fw-bold border-bottom pb-2 mt-3"><i class="fas fa-user-tie me-1"></i> 3. ส่วนรอง ผอก. งบประมาณ</h6></div>
+                            <div class="col-md-12"><div class="form-check bg-white py-2 px-3 border rounded-3"><input class="form-check-input role-sub-deputy" type="checkbox" id="sub_deputy_check"><label class="form-check-label fw-bold">อนุมัติการสั่งจ่าย (รอง ผอก.)</label></div></div>
+                            
+                            <div class="col-12"><h6 class="text-success fw-bold border-bottom pb-2 mt-3"><i class="fas fa-coins me-1"></i> 4. ส่วนงานการเงิน (จ่ายเงิน)</h6></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">เลขที่เช็ค</label><input type="text" class="form-control form-control-sm role-sub-finance" id="sub_cheque"></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">วันที่จ่าย</label><input type="text" class="form-control form-control-sm date-picker-thai text-center role-sub-finance" id="sub_pay_date" placeholder="วว/ดด/ปปปป"></div>
+                            <div class="col-md-4"><label class="form-label small fw-bold text-muted">หมายเหตุ</label><input type="text" class="form-control form-control-sm role-sub-finance" id="sub_note"></div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="saveSubItem()"><i class="fas fa-save me-1"></i> บันทึกรายการย่อย</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+     </div>
+
         </div>
     </div>
 </div>
 
     
-    <!-- User Management Modal -->
     <div class="modal fade" id="userModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="userModalTitle"><i class="fas fa-user-cog me-2"></i>เพิ่มผู้ใช้งาน</h5>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                
+                <div class="modal-header text-white border-0 px-4 py-3" style="background: var(--primary-gradient);">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-cog fa-lg me-3 opacity-75"></i>
+                        <div>
+                            <h5 class="modal-title fw-bold m-0" id="userModalTitle">เพิ่มผู้ใช้งาน</h5>
+                            <small class="opacity-75">จัดการข้อมูลสิทธิ์การเข้าถึงระบบ</small>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                
+                <div class="modal-body p-4 bg-light">
                     <form id="userForm">
                         <input type="hidden" id="userEditRow">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Username</label>
-                            <input type="text" class="form-control" id="formUsername" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Password</label>
-                            <input type="password" class="form-control" id="formPassword" placeholder="เว้นว่างหากไม่เปลี่ยนรหัส">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">ชื่อ-นามสกุล</label>
-                            <input type="text" class="form-control" id="formName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">สิทธิ์การใช้งาน (Role)</label>
-                            <select class="form-select" id="formRole">
-                                <option value="admin">Admin (ผู้ดูแลระบบสูงสุด)</option>
-                                <option value="plan">Plan (งานแผน)</option>
-                                <option value="head_med">หน.งานแพทยศาสตร์</option> <option value="ssk_admin">ธุรการ ศศค.</option> <option value="deputy">รอง ผอก. ศศค. งบประมาณ</option> <option value="finance">Finance (การเงิน)</option>
-                                <option value="supply">Supply (พัสดุ)</option>
-                                <option value="user">User (ผู้ใช้ทั่วไป)</option>
-                            </select>
+                        <div class="row g-4">
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating mb-1 input-group-with-icon">
+                                    <i class="fas fa-user text-muted position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                    <input type="text" class="form-control rounded-3 ps-5 border-0 shadow-sm" id="formUsername" placeholder="Username" required>
+                                    <label for="formUsername" class="ps-5 text-muted">Username (ชื่อผู้ใช้)</label>
+                                </div>
+                                <div class="form-text ms-2 small text-muted">ใช้สำหรับเข้าสู่ระบบ</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-1 input-group-with-icon">
+                                    <i class="fas fa-lock text-muted position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                    <input type="password" class="form-control rounded-3 ps-5 border-0 shadow-sm" id="formPassword" placeholder="Password">
+                                    <label for="formPassword" class="ps-5 text-muted">Password (รหัสผ่าน)</label>
+                                </div>
+                                <div class="form-text ms-2 small text-muted">เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัส</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-floating mb-1 input-group-with-icon">
+                                    <i class="fas fa-id-card text-muted position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                    <input type="text" class="form-control rounded-3 ps-5 border-0 shadow-sm" id="formName" placeholder="ชื่อ-นามสกุล" required>
+                                    <label for="formName" class="ps-5 text-muted">ชื่อ-นามสกุล (ผู้ใช้งาน)</label>
+                                </div>
+                                <div class="form-text ms-2 small text-muted">ชื่อจริงและนามสกุลเต็ม</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-1 input-group-with-icon">
+                                    <i class="fas fa-users-cog text-muted position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                                    <select class="form-select rounded-3 ps-5 border-0 shadow-sm" id="formRole" required>
+                                        <option value="admin">Admin (ผู้ดูแลระบบสูงสุด)</option>
+                                        <option value="plan">Plan (งานแผน)</option>
+                                        <option value="head_med">หน.งานแพทยศาสตร์</option> 
+                                        <option value="ssk_admin">ธุรการ ศศค.</option> 
+                                        <option value="deputy">รอง ผอก. ศศค. งบประมาณ</option> 
+                                        <option value="finance">Finance (การเงิน)</option>
+                                        <option value="supply">Supply (พัสดุ)</option>
+                                        <option value="user">User (ผู้ใช้ทั่วไป)</option>
+                                    </select>
+                                    <label for="formRole" class="ps-5 text-muted">สิทธิ์การใช้งาน (Role)</label>
+                                </div>
+                                <div class="form-text ms-2 small text-muted">กำหนดขอบเขตการเข้าถึงข้อมูล</div>
+                            </div>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveAdminUser()">บันทึกข้อมูล</button>
+                
+                <div class="modal-footer border-0 px-4 pb-4 pt-0 bg-light d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold text-muted shadow-sm hover-scale" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>ยกเลิก
+                    </button>
+                    <button type="button" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm hover-scale" onclick="saveAdminUser()">
+                        <i class="fas fa-save me-2"></i>บันทึกข้อมูล
+                    </button>
                 </div>
             </div>
         </div>
@@ -1332,42 +1661,37 @@ if(tabName === 'manual') {
                 if(navLinks[1]) navLinks[1].classList.add('active'); 
                 document.getElementById('searchPage').style.display = 'block'; 
                 document.getElementById('pageTitle').innerText = 'รายการรอดำเนินการ'; 
-                document.getElementById('pendingAlert').style.display = 'block'; 
                 document.getElementById('btnAddData').style.display = 'none'; 
-                
                 
                 if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'block';
                 
                 loadDataList(currentSystemType || 'plan', 'pending'); 
             } 
             else if(tabName === 'plan') { 
-                
                 if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'none';
                 
                 if(navLinks[2]) navLinks[2].classList.add('active'); 
                 document.getElementById('searchPage').style.display = 'block'; 
                 document.getElementById('pageTitle').innerText = 'แผนปฏิบัติการ (ทั้งหมด)'; 
-                document.getElementById('pendingAlert').style.display = 'none'; 
                 if(currentUserRole !== 'supply') document.getElementById('btnAddData').style.display = 'block'; 
                 loadDataList('plan', 'all'); 
             }
             else if(tabName === 'buy') { 
-                
                 if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'none';
                 
                 if(navLinks[3]) navLinks[3].classList.add('active'); 
                 document.getElementById('searchPage').style.display = 'block'; 
                 document.getElementById('pageTitle').innerText = 'ครุภัณฑ์ (ทั้งหมด)'; 
-                document.getElementById('pendingAlert').style.display = 'none'; 
                 if(currentUserRole !== 'finance') document.getElementById('btnAddData').style.display = 'block'; 
                 loadDataList('buy', 'all'); 
             }
-            else if(tabName === 'report') {
+
+           else if(tabName === 'report') {
                 if(navLinks[4]) navLinks[4].classList.add('active');
                 document.getElementById('reportPage').style.display = 'block';
                 document.getElementById('reportContent').style.display = 'none';
-                document.getElementById('reportPlaceholder').style.display = 'block';
-            } 
+                if(document.getElementById('reportPlaceholder')) document.getElementById('reportPlaceholder').style.display = 'block';
+            }
             else if(tabName === 'admin') { 
                 if(navLinks[5]) navLinks[5].classList.add('active'); 
                 document.getElementById('adminPage').style.display = 'block'; 
@@ -1414,6 +1738,21 @@ function togglePendingType(type) {
             loadDataList((currentTabMode === 'buy') ? 'buy' : 'plan', filterMode); 
         }
 
+
+
+
+        function isActionRequired(item, statusInfo) {
+            const role = (localStorage.getItem('appRole') || '').toLowerCase();
+            const dept = statusInfo.currentDept;
+            if (role === 'admin') return true;
+            if (role === 'plan' && (dept.includes('แผน') || dept.includes('สรุป'))) return true;
+            if (role === 'head_med' && dept.includes('หน.งาน')) return true;
+            if (role === 'ssk_admin' && dept.includes('ธุรการ')) return true;
+            if (role === 'supply' && dept.includes('พัสดุ')) return true;
+            if (role === 'finance' && dept.includes('การเงิน')) return true;
+            if (role === 'deputy' && dept.includes('รอง ผอก')) return true;
+            return false;
+        }
         
 window.dataCaches = { plan: null, buy: null }; // บังคับให้โหลดใหม่เฉพาะตอนที่มีการเซฟข้อมูล
 
@@ -1635,13 +1974,13 @@ function renderTable(data, type, tableId = 'tableBody') {
                     }
                 
                    
-                if (isReceived) {
-                      
+          if (isReceived) {
                        actionBtn = `<button class="btn-manage" onclick="event.stopPropagation(); openManageModal(${index})"><i class="fas fa-cog me-1"></i> จัดการงาน</button>`;
                     } else {
-                        
                         actionBtn = `<button class="btn-accept" onclick="confirmReceiveTask(event, ${index})"><i class="fas fa-check-circle me-1"></i> รับเรื่อง</button>`;
                     }
+               } else {
+                    actionBtn = `<button class="btn-view" onclick="event.stopPropagation(); handleRowClick(${index})"><i class="fas fa-search me-1"></i> ดูข้อมูล</button>`;
                 }
                 
 
@@ -1756,10 +2095,14 @@ if (result.status === 'success') {
             openDetail(index, 'edit'); 
         }
 
-    function openDetail(index, mode) {
+   
+
+
+function openDetail(index, mode) {
     currentItemIndex = index; 
     const item = currentDisplayData[index]; 
     if(!item) return;
+
     document.getElementById('defaultModalButtons').style.display = 'block'; 
     document.getElementById('modalToolbar').style.display = 'none'; 
     document.getElementById('modalProjectName').innerText = getKey(item, ['ชื่อโครงการ', 'รายการ']) || 'ไม่มีชื่อ';
@@ -1770,7 +2113,6 @@ if (result.status === 'success') {
     const btnCancel = document.getElementById('btnCancelEdit');
     const toolbar = document.getElementById('modalToolbar'); 
 
-    
     btnEdit.classList.add('d-none'); 
     btnSave.classList.add('d-none'); 
     btnCancel.classList.add('d-none');
@@ -1779,11 +2121,30 @@ if (result.status === 'success') {
     if (mode === 'view') {
         renderTimeline(item);
     } else {
-      
         renderDetailForm(item, currentSystemType, false);
         if(mode === 'edit' && canEdit) {
             setTimeout(() => toggleEditMode(), 200);
         }
+    }
+
+   // 🌟 แบ่งหน้าจอซ้าย-ขวา ดึงตารางรายการย่อยมาแสดงเมื่อเป็นแผนครุภัณฑ์ (เฉพาะ Admin และแผนกที่เกี่ยวข้อง)
+    const currentRole = (localStorage.getItem('appRole') || '').toLowerCase();
+    const canManageSub = (currentRole === 'admin' || currentRole === 'supply' || currentRole === 'finance' || currentRole === 'deputy');
+
+    // ✅ แก้ไข: เพิ่มเงื่อนไข mode === 'edit' เข้าไป เพื่อให้โชว์รายการย่อยเฉพาะตอนกด "จัดการงาน" เท่านั้น
+    if (currentSystemType === 'buy' && canManageSub && mode === 'edit') {
+        // หดฟอร์มหลักเหลือ 5 ส่วน (ซ้าย) ขยายรายการตารางย่อย 7 ส่วน (ขวา)
+        document.getElementById('mainFormColumn').className = 'col-lg-5 transition-all';
+        document.getElementById('subItemsColumn').style.display = 'block';
+        document.getElementById('subItemsContainer').style.display = 'block';
+        
+        currentMainPlanId = getKey(item, ['รหัสแผน', 'เลขที่']);
+        loadSubItems(currentMainPlanId);
+    } else {
+        // ถ้ากดแค่ดูรายละเอียด (Timeline) หรือไม่มีสิทธิ์ ให้กาง Timeline เต็มจอและซ่อนรายการย่อยไปเลย
+        document.getElementById('mainFormColumn').className = 'col-lg-12 transition-all';
+        document.getElementById('subItemsColumn').style.display = 'none';
+        document.getElementById('subItemsContainer').style.display = 'none';
     }
     
     const modalEl = document.getElementById('detailModal');
@@ -1795,8 +2156,11 @@ if (result.status === 'success') {
 function renderTimeline(item) {
     const container = document.getElementById('editFormContainer');
     const type = currentSystemType;
+    
+    // 🌟 อัปเกรดให้สามารถดึงค่าเลข 0 มาแสดงได้ ไม่ถูกซ่อนหายไป
     const getVal = (keys) => {
         let v = getKey(item, Array.isArray(keys) ? keys : [keys]);
+        if (v === 0 || v === '0') return v; 
         return (!v || v === '-' || v === '') ? null : v;
     };
 
@@ -1845,11 +2209,10 @@ function renderTimeline(item) {
         }
     }
 
-    // 🌟 ฟีเจอร์ใหม่: ดึงข้อมูล "เงินคงเหลือ" มาจัด Format ให้สวยงาม
-    let financeRemain = getVal(['เงินคงเหลือ']);
+    // 🌟 ฟีเจอร์ใหม่: ดึงข้อมูล "เงินคงเหลือ" มาจัด Format ให้สวยงาม (ดักจับทั้ง 2 ชื่อคีย์กันพลาด)
+    let financeRemain = getVal(['finance_remain', 'เงินคงเหลือ']); 
     let remainHtml = '';
-    if (financeRemain && financeRemain !== '-') {
-        // ใส่ลูกน้ำและทศนิยม 2 ตำแหน่งอัตโนมัติ
+    if (financeRemain !== null) {
         let num = parseFloat(financeRemain.toString().replace(/,/g, ''));
         if (!isNaN(num)) {
             remainHtml = `<br><span class="text-primary mt-1 d-inline-block" style="font-weight: 800; font-size: 0.85rem;"><i class="fas fa-coins me-1"></i>คงเหลือ: ${num.toLocaleString(undefined, {minimumFractionDigits: 2})} ฿</span>`;
@@ -1911,6 +2274,8 @@ function renderTimeline(item) {
     html += '</div>';
     container.innerHTML = html;
 }
+
+
 
 function renderDetailForm(item, type, editable) {
             const container = document.getElementById('editFormContainer');
@@ -2549,28 +2914,37 @@ async function submitAdminPlan() {
         return;
     }
             let html = '<form id="adminAddForm"><div class="row g-2">';
-            const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
-    let input = '';
-    if(type === 'select') {
-        input = `<select name="${name}" class="form-select form-select-sm admin-add-input">`;
-       
-        input += `<option value="">-- เลือก${label} --</option>`; 
-        if(opts && opts.length > 0) {
-            opts.forEach(o => input += `<option value="${o}">${o}</option>`);
-        }
-        input += `</select>`;
+           const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                let icon = 'fa-pen';
+                if (name.includes('วันที่') || name.includes('เริ่ม') || name.includes('สิ้นสุด')) icon = 'fa-calendar-alt';
+                else if (name.includes('งบ') || name.includes('ราคา') || name.includes('เงิน') || name.includes('จำนวน')) icon = 'fa-coins';
+                else if (name.includes('หน่วยงาน') || name.includes('สถานที่')) icon = 'fa-building';
+                else if (name.includes('รหัส') || name.includes('เลขที่')) icon = 'fa-barcode';
+                else if (name.includes('สถานะ') || name.includes('ผล') || name.includes('ตรวจสอบ') || name.includes('หมวด')) icon = 'fa-clipboard-check';
+                
+                let idStr = 'id_' + Math.random().toString(36).substr(2, 9);
+
+                if(type === 'select') {
+                    input = `<select name="${name}" id="${idStr}" class="form-select rounded-3 ps-5 admin-add-input"><option value="">-- เลือก --</option>`; 
+                    if(opts && opts.length > 0) opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
                 } else if(type === 'checkbox') {
-                  input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="✅"><label class="form-check-label compact-label">${label}</label></div>`;
-                    return `<div class="${col}">${input}</div>`;
+                    input = `<div class="form-check m-0 bg-white border rounded-3 px-3 py-2 shadow-sm d-flex align-items-center"><input class="form-check-input admin-add-input m-0 me-2" type="checkbox" id="${idStr}" name="${name}" value="✅"><label class="form-check-label fw-bold text-dark pt-1" for="${idStr}">${label}</label></div>`;
+                    return `<div class="${col} mb-2">${input}</div>`;
                 } else if (type === 'date') {
-                      input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
+                    input = `<input type="text" id="${idStr}" name="${name}" class="form-control rounded-3 ps-5 text-start date-picker-thai admin-add-input" placeholder="${label}">`;
                 } else {
-                    input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
+                    input = `<input type="${type}" id="${idStr}" name="${name}" class="form-control rounded-3 ps-5 admin-add-input" placeholder="${label}">`;
                 }
-                return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
-            
-            
-            
+                return `
+                <div class="${col} mb-2">
+                    <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                        <i class="fas ${icon} text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                        ${input}
+                        <label for="${idStr}" class="ps-5 text-muted">${label}</label>
+                    </div>
+                </div>`;
             };
 
 
@@ -2678,22 +3052,38 @@ function renderAdminBuyAddFormUI() {
     const container = document.getElementById('adminBuyFormContainer');
     let html = '<form id="adminAddForm"><div class="row g-2">';
 
-    const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
-        let input = '';
-        if(type === 'select') {
-            input = `<select name="${name}" class="form-select form-select-sm admin-add-input"><option value="">-- เลือก${label} --</option>`;
-            if(opts && opts.length > 0) opts.forEach(o => input += `<option value="${o}">${o}</option>`);
-            input += `</select>`;
-        } else if(type === 'checkbox') {
-            input = `<div class="form-check mt-3"><input class="form-check-input admin-add-input" type="checkbox" name="${name}" value="✅"><label class="form-check-label compact-label">${label}</label></div>`;
-            return `<div class="${col}">${input}</div>`;
-        } else if (type === 'date') {
-            input = `<input type="text" name="${name}" class="form-control form-control-sm text-center date-picker-thai admin-add-input" placeholder="วว/ดด/ปปปป">`;
-        } else {
-            input = `<input type="${type}" name="${name}" class="form-control form-control-sm admin-add-input">`;
-        }
-        return `<div class="${col}"><label class="form-label compact-label text-muted">${label}</label>${input}</div>`;
-    };
+   const createInput = (label, name, type='text', col='col-md-6', opts=[]) => {
+                let input = '';
+                let icon = 'fa-pen';
+                if (name.includes('วันที่') || name.includes('เริ่ม') || name.includes('สิ้นสุด')) icon = 'fa-calendar-alt';
+                else if (name.includes('งบ') || name.includes('ราคา') || name.includes('เงิน') || name.includes('จำนวน')) icon = 'fa-coins';
+                else if (name.includes('หน่วยงาน') || name.includes('สถานที่')) icon = 'fa-building';
+                else if (name.includes('รหัส') || name.includes('เลขที่')) icon = 'fa-barcode';
+                else if (name.includes('สถานะ') || name.includes('ผล') || name.includes('ตรวจสอบ') || name.includes('หมวด')) icon = 'fa-clipboard-check';
+                
+                let idStr = 'id_' + Math.random().toString(36).substr(2, 9);
+
+                if(type === 'select') {
+                    input = `<select name="${name}" id="${idStr}" class="form-select rounded-3 ps-5 admin-add-input"><option value="">-- เลือก --</option>`; 
+                    if(opts && opts.length > 0) opts.forEach(o => input += `<option value="${o}">${o}</option>`);
+                    input += `</select>`;
+                } else if(type === 'checkbox') {
+                    input = `<div class="form-check m-0 bg-white border rounded-3 px-3 py-2 shadow-sm d-flex align-items-center"><input class="form-check-input admin-add-input m-0 me-2" type="checkbox" id="${idStr}" name="${name}" value="✅"><label class="form-check-label fw-bold text-dark pt-1" for="${idStr}">${label}</label></div>`;
+                    return `<div class="${col} mb-2">${input}</div>`;
+                } else if (type === 'date') {
+                    input = `<input type="text" id="${idStr}" name="${name}" class="form-control rounded-3 ps-5 text-start date-picker-thai admin-add-input" placeholder="${label}">`;
+                } else {
+                    input = `<input type="${type}" id="${idStr}" name="${name}" class="form-control rounded-3 ps-5 admin-add-input" placeholder="${label}">`;
+                }
+                return `
+                <div class="${col} mb-2">
+                    <div class="form-floating input-group-with-icon shadow-sm rounded-3">
+                        <i class="fas ${icon} text-primary opacity-50 position-absolute start-0 top-50 translate-middle-y ms-3 z-3"></i>
+                        ${input}
+                        <label for="${idStr}" class="ps-5 text-muted">${label}</label>
+                    </div>
+                </div>`;
+            };
 
     // Step 1: ข้อมูลทั่วไป (คอลัมน์ A-J)
     html += `<div class="col-12"><div class="card-form"><div class="form-group-title">1. ข้อมูลทั่วไป (ครุภัณฑ์)</div><div class="row g-2">`;
@@ -3797,6 +4187,191 @@ function renderManualByRole() {
 
     container.innerHTML = html;
 }
+
+
+
+
+// ==========================================
+// ระบบ Master-Detail (จัดการรายการย่อย)
+// ==========================================
+let currentSubItems = [];
+let currentMainPlanId = '';
+
+async function loadSubItems(planId) {
+    const tbody = document.getElementById('subItemsTableBody');
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm text-primary me-2"></div>กำลังโหลดรายการย่อย...</td></tr>';
+    
+    // กำหนดสิทธิ์ซ่อน/แสดงปุ่มเพิ่มรายการย่อย
+    const role = (localStorage.getItem('appRole') || '').toLowerCase();
+    const btnAdd = document.getElementById('btnAddSubItem');
+    if (role === 'supply' || role === 'admin') btnAdd.style.display = 'block'; else btnAdd.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_URL}?action=get_sub&planId=${encodeURIComponent(planId)}&t=${new Date().getTime()}`);
+        const json = await res.json();
+        if (json.status === 'success') {
+            currentSubItems = json.data;
+            renderSubItemTable(currentSubItems);
+        }
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">โหลดข้อมูลไม่สำเร็จ</td></tr>';
+    }
+}
+
+function renderSubItemTable(data) {
+    const tbody = document.getElementById('subItemsTableBody');
+    tbody.innerHTML = '';
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ยังไม่มีรายการย่อยในโครงการนี้</td></tr>';
+        return;
+    }
+    data.forEach((item, index) => {
+        const name = item['รายการย่อย'] || '-';
+        const company = item['ชื่อบริษัท'] || '-';
+        const po = item['เลขที่สั่งจ้าง'] || '';
+        const companyHtml = (po !== '') ? `${company}<br><small class="text-muted">PO: ${po}</small>` : company;
+        
+        const price = parseFloat(item['จำนวนเงินที่สั่งจ้าง'] || 0);
+        const priceStr = price > 0 ? price.toLocaleString(undefined, {minimumFractionDigits: 2}) : '-';
+        const doneDate = item['วันที่รายการย่อยสำเร็จ'] || '-';
+        const deputy = (item['ตรวจสอบรอง'] === '/' || item['ตรวจสอบรอง'] === 'TRUE' || item['ตรวจสอบรอง'] === '✅') ? '<i class="fas fa-check-circle text-success fs-5"></i>' : '<i class="fas fa-clock text-warning"></i>';
+        const cheque = item['เลขที่เช็ค'] || '-';
+        const payDate = item['วันที่จ่าย'] || '-';
+        
+        const chequeHtml = (cheque !== '-' && cheque !== '') ? `<span class="badge bg-success">${cheque}</span>` : '<span class="badge bg-light text-muted border">รอเช็ค</span>';
+
+        tbody.innerHTML += `
+            <tr class="bg-white">
+                <td class="fw-bold text-dark">${name}</td>
+                <td style="line-height: 1.2;">${companyHtml}</td>
+                <td class="text-end fw-bold text-primary">${priceStr}</td>
+                <td class="text-center">${doneDate}</td>
+                <td class="text-center">${deputy}</td>
+                <td class="text-center">${chequeHtml}</td>
+                <td class="text-center">${payDate}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-primary py-0 px-2 rounded-3" onclick="openSubModal('edit', ${index})"><i class="fas fa-edit"></i> แก้ไข</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function openSubModal(mode, index = -1) {
+    const role = (localStorage.getItem('appRole') || '').toLowerCase();
+    document.getElementById('subItemForm').reset();
+    
+    // เติม Option สถานะรายการย่อยถ้ายังไม่มี
+    const statusSelect = document.getElementById('sub_status');
+    if (statusSelect.options.length <= 1 && masterRefs.statuses) {
+        masterRefs.statuses.forEach(s => statusSelect.add(new Option(s, s)));
+    }
+
+    // ตั้งค่าสิทธิ์การพิมพ์
+    const isSupply = role === 'supply' || role === 'admin';
+    const isFinance = role === 'finance' || role === 'admin';
+    const isDeputy = role === 'deputy' || role === 'admin';
+    
+    document.querySelectorAll('.role-sub-supply').forEach(el => el.disabled = !isSupply);
+    document.querySelectorAll('.role-sub-finance').forEach(el => el.disabled = !isFinance);
+    document.querySelectorAll('.role-sub-deputy').forEach(el => el.disabled = !isDeputy);
+
+    if (mode === 'add') {
+        document.getElementById('subItemMode').value = 'add';
+        document.getElementById('subItemIndex').value = '-1';
+    } else {
+        document.getElementById('subItemMode').value = 'edit';
+        document.getElementById('subItemIndex').value = index;
+        const item = currentSubItems[index];
+        
+        // ดึงข้อมูลพัสดุ
+        document.getElementById('sub_name').value = item['รายการย่อย'] || '';
+        document.getElementById('sub_asset').value = item['เลขครุภัณฑ์'] || '';
+        document.getElementById('sub_status').value = item['สถานะรายการย่อย'] || '';
+        document.getElementById('sub_company').value = item['ชื่อบริษัท'] || '';
+        document.getElementById('sub_po').value = item['เลขที่สั่งจ้าง'] || '';
+        document.getElementById('sub_price').value = item['จำนวนเงินที่สั่งจ้าง'] || '';
+        document.getElementById('sub_done_date').value = item['วันที่รายการย่อยสำเร็จ'] || '';
+        
+        // ดึงข้อมูลการเงิน
+        document.getElementById('sub_fin_receive').value = item['รับเรื่องการเงิน'] || '';
+        document.getElementById('sub_fin_status').value = item['สถานะการเงิน'] || '';
+        document.getElementById('sub_fin_return').value = item['วันที่รับคืนจากพัสดุ'] || '';
+        document.getElementById('sub_cheque').value = item['เลขที่เช็ค'] || '';
+        document.getElementById('sub_pay_date').value = item['วันที่จ่าย'] || '';
+        document.getElementById('sub_note').value = item['หมายเหตุ'] || '';
+        
+        // ดึงข้อมูลรอง ผอก.
+        document.getElementById('sub_deputy_check').checked = (item['ตรวจสอบรอง'] === '/' || item['ตรวจสอบรอง'] === 'TRUE' || item['ตรวจสอบรอง'] === '✅');
+    }
+    
+    new bootstrap.Modal(document.getElementById('subItemModal')).show();
+    initDatePickers();
+}
+
+async function saveSubItem() {
+    const mode = document.getElementById('subItemMode').value;
+    const index = parseInt(document.getElementById('subItemIndex').value);
+    const role = (localStorage.getItem('appRole') || '').toLowerCase();
+    
+    let data = {};
+    if (role === 'supply' || role === 'admin') {
+        data['รายการย่อย'] = document.getElementById('sub_name').value;
+        data['เลขครุภัณฑ์'] = document.getElementById('sub_asset').value;
+        data['สถานะรายการย่อย'] = document.getElementById('sub_status').value;
+        data['ชื่อบริษัท'] = document.getElementById('sub_company').value;
+        data['เลขที่สั่งจ้าง'] = document.getElementById('sub_po').value;
+        data['จำนวนเงินที่สั่งจ้าง'] = document.getElementById('sub_price').value;
+        data['วันที่รายการย่อยสำเร็จ'] = document.getElementById('sub_done_date').value;
+    }
+    if (role === 'deputy' || role === 'admin') {
+        data['ตรวจสอบรอง'] = document.getElementById('sub_deputy_check').checked ? '✅' : '';
+    }
+    if (role === 'finance' || role === 'admin') {
+        data['รับเรื่องการเงิน'] = document.getElementById('sub_fin_receive').value;
+        data['สถานะการเงิน'] = document.getElementById('sub_fin_status').value;
+        data['วันที่รับคืนจากพัสดุ'] = document.getElementById('sub_fin_return').value;
+        data['เลขที่เช็ค'] = document.getElementById('sub_cheque').value;
+        data['วันที่จ่าย'] = document.getElementById('sub_pay_date').value;
+        data['หมายเหตุ'] = document.getElementById('sub_note').value;
+    }
+
+    if (mode === 'add') {
+        const mainItem = currentDisplayData[currentItemIndex];
+        data['รหัสแผน'] = currentMainPlanId;
+        data['ปีงบประมาณ'] = getKey(mainItem, ['ปีงบประมาณ', 'Year']);
+        data['กลุ่มงาน/หน่วยงาน'] = getKey(mainItem, ['กลุ่มงาน/หน่วยงาน']);
+        data['หมวด'] = getKey(mainItem, ['หมวด']);
+        data['ชนิด'] = getKey(mainItem, ['ชนิด']);
+        data['รายการ'] = getKey(mainItem, ['รายการ']);
+        data['สถานที่'] = getKey(mainItem, ['สถานที่']);
+    }
+
+    Swal.fire({title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+    
+    try {
+        let payload = {};
+        if (mode === 'edit') {
+            payload = { action: 'edit_sub', type: 'buy', rowNum: currentSubItems[index]['_rowNum'], updates: data };
+        } else {
+            payload = { action: 'add_sub', type: 'buy', data: data };
+        }
+        
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const json = await res.json();
+        
+        if (json.status === 'success') {
+            Swal.fire('สำเร็จ', 'อัปเดตรายการย่อยเรียบร้อย', 'success').then(() => {
+                bootstrap.Modal.getInstance(document.getElementById('subItemModal')).hide();
+                loadSubItems(currentMainPlanId); 
+                window.dataCaches['buy'] = null; 
+            });
+        }
+    } catch (e) {
+        Swal.fire('เกิดข้อผิดพลาด', e.message, 'error');
+    }
+}
+
     
     </script>
 </body>

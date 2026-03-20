@@ -116,13 +116,14 @@
             gap: 8px;
             padding: 0 10px;
         }
-        .nav-link { 
+       .nav-link { 
             color: #6b7280; 
             font-weight: 600; 
             border: none; 
             padding: 10px 18px; 
             border-radius: 10px !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* 🌟 แก้ไข: เปลี่ยน transition ให้สีสลับทันที ไม่ต้องเฟด เพื่อแก้บั๊กกล่องขาว */
+            transition: transform 0.2s ease, box-shadow 0.2s ease; 
             background: white;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             font-size: 0.95rem;
@@ -139,8 +140,8 @@
         }
         .tab-icon { margin-right: 8px; }
 
-        /* Modern Card Containers */
-        .page-section { animation: slideUp 0.4s ease-out; }
+       /* Modern Card Containers */
+        .page-section { animation: slideUp 0.15s ease-out; }
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -645,16 +646,14 @@
 
 
 
-/* ========================================================
-   🌟 โค้ดใหม่: การตกแต่งแถบเมนูด้านซ้าย (Sidebar UI)
-   ======================================================== */
 .sidebar-wrapper .nav-link {
     padding: 12px 18px;
     border-radius: 12px !important;
     color: #475569;
     font-weight: 600;
     font-size: 0.95rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 🌟 แก้ไข: ปรับให้เอฟเฟกต์สีทำงานแบบ Instant ตัดอาการหน่วงและสีขาวล่องหน */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     border: 1px solid transparent;
 }
 .sidebar-wrapper .nav-link:hover {
@@ -818,15 +817,25 @@
 
             
             <div id="myTaskPage" class="page-section" style="display:none;"> 
-                <div class="header-bar" style="border-left-color: #eab308; background-color: #fff9e6;">
-                    <div>
-                        <h4 class="fw-bold m-0 text-warning text-dark"><i class="fas fa-briefcase me-2"></i>งานของฉัน </h4>
-                        <small class="text-muted">รายการที่ส่งมาถึงหน่วยงานของคุณ และรอการดำเนินการ</small>
-                    </div>
-                    <div>
-                        <div class="btn-group shadow-sm">
-                            <button class="btn btn-sm btn-outline-primary active" id="btnTaskPlan" onclick="toggleTaskType('plan')">แผนปฏิบัติการ</button>
-                            <button class="btn btn-sm btn-outline-primary" id="btnTaskBuy" onclick="toggleTaskType('buy')">ครุภัณฑ์</button>
+               <div class="header-bar flex-column align-items-stretch mb-4 p-0 overflow-hidden" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: #ffffff;">
+                    <div style="height: 6px; background: linear-gradient(135deg, #eab308 0%, #f59e0b 100%); width: 100%;"></div>
+                    
+                    <div class="p-4 d-flex justify-content-between align-items-center w-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                <i class="fas fa-briefcase fs-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold m-0" style="color: #1e293b;">งานของฉัน</h4>
+                                <small class="text-muted">รายการที่ส่งมาถึงหน่วยงานของคุณ และรอการดำเนินการ</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="btn-group shadow-sm border rounded-pill p-1 bg-light">
+                                <button class="btn btn-sm btn-outline-primary active border-0 rounded-pill px-3 fw-bold" id="btnTaskPlan" onclick="toggleTaskType('plan')">แผนปฏิบัติการ</button>
+                                <button class="btn btn-sm btn-outline-primary border-0 rounded-pill px-3 fw-bold" id="btnTaskBuy" onclick="toggleTaskType('buy')">ครุภัณฑ์</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1634,58 +1643,52 @@ searchInputs.forEach(input => {
             navLinks.forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
            
-
-if(tabName === 'manual') {
-        const navLinks = document.querySelectorAll('.nav-link');
-        
-        navLinks[navLinks.length-1].classList.add('active'); 
-        document.getElementById('manualPage').style.display = 'block';
-        renderManualByRole(); 
-    }
-            
+            if(tabName === 'manual') {
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks[navLinks.length-1].classList.add('active'); 
+                document.getElementById('manualPage').style.display = 'block';
+                setTimeout(() => renderManualByRole(), 10); 
+            }
             
             if(document.getElementById('searchYear')) document.getElementById('searchYear').value = '';
             if(document.getElementById('searchKeyword')) document.getElementById('searchKeyword').value = '';
-            document.getElementById('tableBody').innerHTML = '';
-            document.getElementById('myTaskTableBody').innerHTML = '';
-
+            
+            // 🌟 แก้ไข: นำคำสั่งลบตารางออก เพื่อไม่ให้จอกระพริบเป็นหน้าขาวๆ ตอนเปลี่ยนเมนู
+            
             const typeToLoad = currentSystemType || 'plan';
 
+            // 🌟 แก้ไข: ใช้ setTimeout หน่วงเวลาประมวลผลข้อมูล 10 มิลลิวินาที 
+            // เพื่อปล่อยให้เบราว์เซอร์สลับหน้าและเปลี่ยนสีปุ่มเมนูให้เสร็จก่อน ระบบจะได้ไม่ค้าง
             if(tabName === 'mytasks') { 
                 if(navLinks[0]) navLinks[0].classList.add('active'); 
                 document.getElementById('myTaskPage').style.display = 'block'; 
                 updateTaskTypeToggle(typeToLoad);
-                loadDataList(typeToLoad, 'mytasks'); 
+                setTimeout(() => loadDataList(typeToLoad, 'mytasks'), 10); 
             }
             else if(tabName === 'pending') { 
                 if(navLinks[1]) navLinks[1].classList.add('active'); 
                 document.getElementById('searchPage').style.display = 'block'; 
                 document.getElementById('pageTitle').innerText = 'รายการรอดำเนินการ'; 
                 document.getElementById('btnAddData').style.display = 'none'; 
-                
                 if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'block';
-                
-                loadDataList(currentSystemType || 'plan', 'pending'); 
+                setTimeout(() => loadDataList(currentSystemType || 'plan', 'pending'), 10); 
             } 
             else if(tabName === 'plan') { 
                 if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'none';
-                
                 if(navLinks[2]) navLinks[2].classList.add('active'); 
                 document.getElementById('searchPage').style.display = 'block'; 
                 document.getElementById('pageTitle').innerText = 'แผนปฏิบัติการ (ทั้งหมด)'; 
                 if(currentUserRole !== 'supply') document.getElementById('btnAddData').style.display = 'block'; 
-                loadDataList('plan', 'all'); 
+                setTimeout(() => loadDataList('plan', 'all'), 10); 
             }
             else if(tabName === 'buy') { 
                 if(document.getElementById('pendingToggleArea')) document.getElementById('pendingToggleArea').style.display = 'none';
-                
                 if(navLinks[3]) navLinks[3].classList.add('active'); 
                 document.getElementById('searchPage').style.display = 'block'; 
                 document.getElementById('pageTitle').innerText = 'ครุภัณฑ์ (ทั้งหมด)'; 
                 if(currentUserRole !== 'finance') document.getElementById('btnAddData').style.display = 'block'; 
-                loadDataList('buy', 'all'); 
+                setTimeout(() => loadDataList('buy', 'all'), 10); 
             }
-
            else if(tabName === 'report') {
                 if(navLinks[4]) navLinks[4].classList.add('active');
                 document.getElementById('reportPage').style.display = 'block';
@@ -1695,7 +1698,7 @@ if(tabName === 'manual') {
             else if(tabName === 'admin') { 
                 if(navLinks[5]) navLinks[5].classList.add('active'); 
                 document.getElementById('adminPage').style.display = 'block'; 
-                loadAdminList(); 
+                setTimeout(() => loadAdminList(), 10); 
             }
         }
     
